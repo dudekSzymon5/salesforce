@@ -1,0 +1,32 @@
+name: Validate PR
+
+on:
+  pull_request:
+    branches: [develop]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Salesforce CLI
+        run: npm install -g @salesforce/cli
+
+      - name: Write server key
+        run: echo "${{ secrets.SF_SERVER_KEY }}" > server.key
+
+      - name: Authorize org
+        run: |
+          sf org login jwt \
+            --client-id ${{ secrets.SF_CLIENT_ID }} \
+            --jwt-key-file server.key \
+            --username ${{ secrets.SF_USERNAME }} \
+            --alias devOrg
+
+      - name: Validate metadata
+        run: |
+          sf project deploy validate \
+            --source-dir force-app \
+            --target-org devOrg
