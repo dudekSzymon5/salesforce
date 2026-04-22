@@ -1,0 +1,19 @@
+.wrapper {
+    text-align: center;
+    padding: 40px 32px;
+    font-family: Arial, sans-serif;
+}
+.icon-wrap {
+    margin-bottom: 20px;
+}
+.title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0b7477;
+    margin: 0 0 8px 0;
+}
+.subtitle {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 24px 0;
+}

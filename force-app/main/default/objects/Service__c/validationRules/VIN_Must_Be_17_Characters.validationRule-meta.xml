@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>VIN_Must_Be_17_Characters</fullName>
+    <active>true</active>
+    <errorConditionFormula>AND(
+    NOT($Setup.Validation_Rule_Bypass__c.Bypass_Validation_Rules__c),
+    NOT(ISBLANK(VIN__c)),
+    LEN(VIN__c) &lt;&gt; 17
+)</errorConditionFormula>
+    <errorDisplayField>VIN__c</errorDisplayField>
+    <errorMessage>The VIN number must consist of exactly 17 characters.</errorMessage>
+</ValidationRule>

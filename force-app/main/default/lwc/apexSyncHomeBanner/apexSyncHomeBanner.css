@@ -1,0 +1,243 @@
+:host { display: block; }
+
+/* ── Root ────────────────────────────────────────── */
+.banner-root {
+    position: relative;
+    overflow: hidden;
+    height: 220px;
+    border: 1px solid #e0e0dc;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    background: #fafaf8;
+}
+
+/* Czerwona kreska na górze */
+.banner-root::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: #cc2200;
+    z-index: 20;
+}
+
+/* ── Track ───────────────────────────────────────── */
+.track {
+    display: flex;
+    height: 100%;
+    will-change: transform;
+    transform: translateX(calc(-1 * var(--track-offset, 0%)));
+    transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+/* ── Slide ───────────────────────────────────────── */
+.slide {
+    flex: 0 0 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #fafaf8;
+    overflow: hidden;
+}
+
+
+.slide-bg-pattern {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.slide-bg-pattern::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -40px;
+    width: 60%;
+    height: 200%;
+    background: repeating-linear-gradient(
+        -55deg,
+        transparent,
+        transparent 18px,
+        rgba(0,0,0,0.022) 18px,
+        rgba(0,0,0,0.022) 20px
+    );
+}
+
+.slide-bg-pattern::after { display: none; }
+/* ── Watermark ───────────────────────────────────── */
+
+.slide-flag {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 180px;
+    z-index: 3;
+    pointer-events: none;
+}
+.slide-flag::before {
+    content: '';
+    position: absolute;
+    right: 44px;
+    top: -4px;
+    bottom: -4px;
+    width: 4px;
+    background: linear-gradient(180deg, #888 0%, #333 100%);
+    border-radius: 2px;
+    box-shadow: -1px 0 4px rgba(0,0,0,0.15);
+}
+
+.slide-flag::after {
+    content: '';
+    position: absolute;
+    right: 48px;
+    top: 24px;
+    width: 120px;
+    height: 80px;
+
+    /* Szachownica */
+    background-color: #ffffff;
+    background-image:
+        linear-gradient(45deg, #1a1a1a 25%, transparent 25%),
+        linear-gradient(-45deg, #1a1a1a 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #1a1a1a 75%),
+        linear-gradient(-45deg, transparent 75%, #1a1a1a 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+
+    /* Kształt flagi z lekką falą */
+    clip-path: polygon(0 0, 100% 8%, 96% 55%, 100% 100%, 0 92%);
+    box-shadow: -6px 6px 20px rgba(0,0,0,0.18);
+}
+
+.slide-watermark {
+    position: absolute;
+    right: 60px;
+    bottom: 30px;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 72px;          /* mniejszy */
+    font-style: italic;
+    font-weight: bold;
+    color: rgba(0,0,0,0.05);
+    white-space: nowrap;
+    user-select: none;
+    pointer-events: none;
+    letter-spacing: -2px;
+    line-height: 1;
+    z-index: 1;
+    transform: rotate(-12deg);          /* mniejszy kąt */
+    transform-origin: center center;    /* obrót od środka, nie od rogu */
+}
+
+/* ── Content ─────────────────────────────────────── */
+.slide-content {
+    position: relative;                  /* BEZ TEGO z-index: 2 nie działa */
+    z-index: 2;
+    width: 100%;
+    padding: 0 56px;
+}
+
+.slide-left {
+    max-width: 60%;
+    border-left: 2px solid #cc2200;
+    padding-left: 22px;
+}
+
+/* ── Badge ───────────────────────────────────────── */
+.slide-badge {
+    display: block;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #aaa;
+    margin-bottom: 14px;
+}
+
+/* ── Title ───────────────────────────────────────── */
+.slide-title {
+    margin: 0 0 14px;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 28px;
+    font-weight: normal;
+    color: #111;
+    line-height: 1.25;
+    letter-spacing: -0.3px;
+}
+
+/* ── Desc ────────────────────────────────────────── */
+.slide-desc {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    color: #666;
+    line-height: 1.75;
+}
+
+/* ── Arrows ──────────────────────────────────────── */
+.arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 30px;
+    height: 30px;
+    border: 1px solid #ddd;
+    background: #fafaf8;
+    color: #999;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    z-index: 10;
+    padding: 0;
+    border-radius: 0;
+}
+.arrow:hover { color: #cc2200; border-color: #cc2200; }
+.arrow-left  { left: 12px; }
+.arrow-right { right: 12px; }
+
+/* ── Dots ────────────────────────────────────────── */
+.dots {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+}
+
+.dot {
+    width: 6px;
+    height: 6px;
+    border: 1px solid #bbb;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.25s;
+    border-radius: 0;
+}
+
+.dot-active {
+    background: #cc2200;
+    border-color: #cc2200;
+    width: 20px;
+}
+
+/* ── Progress bar ────────────────────────────────── */
+.progress-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: #e8e8e4;
+}
+
+.progress-fill {
+    height: 100%;
+    width: var(--progress-w, 0%);
+    background: #cc2200;
+    transition: width 0.04s linear;
+}
