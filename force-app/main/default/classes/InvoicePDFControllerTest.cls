@@ -24,6 +24,26 @@ private class InvoicePDFControllerTest {
             Pricebook2Id=Test.getStandardPricebookId()
         );
         insert ord;
+        
+        Product2 prod = new Product2(Name='Test Product', IsActive=true);
+        insert prod;
+        
+        PricebookEntry pbe = new PricebookEntry(
+            Pricebook2Id=Test.getStandardPricebookId(),
+            Product2Id=prod.Id,
+            UnitPrice=100,
+            IsActive=true
+        );
+        insert pbe;
+        
+        OrderItem item = new OrderItem(
+            OrderId=ord.Id,
+            PricebookEntryId=pbe.Id,
+            Quantity=1,
+            UnitPrice=100
+        );
+        insert item;
+        
         ord.Status = 'Activated';
         update ord;
         

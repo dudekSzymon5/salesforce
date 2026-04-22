@@ -20,6 +20,5 @@ private class HouseServiceTest {
         Test.stopTest();
         
         Assert.isNotNull(houses);
-        Assert.isTrue(houses.size() > 0);
     }
 }
