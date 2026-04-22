@@ -48,7 +48,6 @@ package.xml
 **/classes/SiteRegisterControllerTest.*
 **/classes/MyProfilePageController.*
 **/classes/MyProfilePageControllerTest.*
-**/classes/HomeController.*
 
 # Problematic Flows
 **/flows/Auto_Generate_Order_Invoice.*
