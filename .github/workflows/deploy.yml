@@ -1,13 +1,12 @@
 name: Deploy on Merge
 
 on:
-  pull_request:
-    branches: [develop]
-    types: [closed]
+  push:
+    branches:
+      - develop
 
 jobs:
   deploy:
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,4 +29,5 @@ jobs:
         run: |
           sf project deploy start \
             --source-dir force-app \
-            --target-org devOrg
+            --target-org devOrg \
+            --test-level RunLocalTests

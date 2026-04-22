@@ -1,0 +1,24 @@
+<template>
+    <lightning-quick-action-panel title="Sign ApexSync Invoice">
+        <div class="slds-p-around_medium">
+            <p class="slds-m-bottom_small">Please draw your signature in the box below to authorize the invoice.</p>
+            <div style="border: 2px solid #ccc; background-color: #f9f9f9; width: 100%; height: 250px;">
+                <canvas
+                    lwc:dom="manual"
+                    onmousedown={handleMouseDown}
+                    onmouseup={handleMouseUp}
+                    onmousemove={handleMouseMove}
+                    ontouchstart={handleTouchStart}
+                    ontouchend={handleTouchEnd}
+                    ontouchmove={handleTouchMove}
+                    style="width: 100%; height: 100%; touch-action: none;">
+                </canvas>
+            </div>
+        </div>
+        <div slot="footer">
+            <lightning-button label="Cancel" onclick={handleCancel} class="slds-m-right_small"></lightning-button>
+            <lightning-button label="Clear Signature" onclick={handleClear} class="slds-m-right_small"></lightning-button>
+            <lightning-button variant="brand" label="Save & Generate Invoice" onclick={handleSave}></lightning-button>
+        </div>
+    </lightning-quick-action-panel>
+</template>

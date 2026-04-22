@@ -1,0 +1,259 @@
+/* ── Wrapper ─────────────────────────────────────────────── */
+.carousel-wrapper {
+    position: relative;
+    border: 1px solid #e0e0dc;
+    font-family: Arial, Helvetica, sans-serif;
+    overflow: hidden;
+    user-select: none;
+    background: #fafaf8;
+}
+
+/* ── Top accent bar ──────────────────────────────────────── */
+.carousel-top-bar {
+    height: 3px;
+    background: #cc2200;
+}
+
+/* ── Track & Slides ──────────────────────────────────────── */
+.carousel-track {
+    display: flex;
+    width: 500%;
+}
+
+.slide {
+    width: 20%;
+    flex-shrink: 0;
+    min-height: 380px;
+    padding: 52px 56px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.slide-hero         { background: #fafaf8; }
+.slide-products     { background: #f7f7f5; }
+.slide-promo        { background: #fafaf8; position: relative; overflow: hidden; }
+.slide-sale         { background: #f7f7f5; align-items: center; text-align: center; }
+.slide-integrations { background: #fafaf8; align-items: center; text-align: center; }
+
+/* ── Tag ─────────────────────────────────────────────────── */
+.tag {
+    display: inline-block;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #cc2200;
+    margin-bottom: 18px;
+}
+
+/* ── Typography ──────────────────────────────────────────── */
+.slide-heading {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: normal;
+    line-height: 1.25;
+    margin: 0 0 16px;
+    color: #111;
+    letter-spacing: -0.3px;
+}
+.heading-hero         { font-size: 36px; max-width: 460px; }
+.heading-products     { font-size: 26px; margin-bottom: 24px; }
+.heading-promo        { font-size: 34px; }
+.heading-sale         { font-size: 30px; }
+.heading-integrations { font-size: 26px; margin-bottom: 8px; }
+
+.accent-italic { color: #cc2200; font-style: italic; }
+
+.slide-body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    line-height: 1.8;
+    color: #555;
+    margin: 0 0 0;
+}
+.body-hero         { max-width: 400px; }
+.body-promo        { max-width: 280px; }
+.body-sale         { margin-bottom: 24px; }
+.body-integrations { margin-bottom: 28px; max-width: 380px; }
+
+.sale-pct { color: #cc2200; font-weight: 600; }
+
+/* ── Product cards ───────────────────────────────────────── */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.product-card {
+    background: #fff;
+    border: 1px solid #e8e8e4;
+    border-radius: 2px;
+    padding: 18px 16px;
+    box-sizing: border-box;
+}
+
+.product-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    background: #f4f4f2;
+}
+
+.product-name  { font-size: 13px; font-weight: 600; color: #111; margin: 0 0 4px; }
+.product-desc  { font-size: 12px; color: #999; margin: 0 0 10px; }
+.product-price { font-family: Georgia, 'Times New Roman', serif; font-size: 15px; color: #cc2200; margin: 0; }
+
+/* ── Promo slide ─────────────────────────────────────────── */
+.promo-deco-big,
+.promo-deco-small {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+.promo-deco-big   { width: 320px; height: 320px; right: -50px; top: -60px;  background: rgba(204,34,0,.04); }
+.promo-deco-small { width: 200px; height: 200px; right: 60px;  bottom: -80px; background: rgba(204,34,0,.03); }
+
+.promo-inner {
+    display: flex;
+    align-items: center;
+    gap: 48px;
+    position: relative;
+    z-index: 1;
+}
+.promo-text { flex: 1; }
+
+.promo-badge {
+    background: #cc2200;
+    border-radius: 50%;
+    width: 140px;
+    height: 140px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.promo-pct   { font-family: Georgia, 'Times New Roman', serif; font-size: 44px; font-weight: normal; color: #fff; line-height: 1; }
+.promo-label { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: rgba(255,255,255,.85); margin-top: 6px; }
+
+/* ── Timer ───────────────────────────────────────────────── */
+.timer-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 0;
+}
+
+.timer-box {
+    background: #fff;
+    border: 1px solid #e8e8e4;
+    border-radius: 2px;
+    padding: 14px 18px;
+    min-width: 64px;
+    text-align: center;
+}
+.timer-num   { display: block; font-family: Georgia, 'Times New Roman', serif; font-size: 28px; font-weight: normal; color: #111; line-height: 1; }
+.timer-label { display: block; font-size: 10px; color: #999; margin-top: 5px; text-transform: uppercase; letter-spacing: 1.5px; }
+.timer-colon { font-family: Georgia, 'Times New Roman', serif; font-size: 26px; color: #cc2200; padding-top: 12px; line-height: 1; }
+
+/* ── Integrations slide ──────────────────────────────────── */
+.integrations-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    max-width: 360px;
+}
+
+.integration-card {
+    background: #fff;
+    border: 1px solid #e8e8e4;
+    border-radius: 2px;
+    padding: 24px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    box-sizing: border-box;
+}
+
+.integration-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f4f4f2;
+}
+
+.integration-name { font-size: 12px; font-weight: 600; color: #444; margin: 0; }
+
+/* ── Arrows ──────────────────────────────────────────────── */
+.arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border-radius: 2px;
+    background: rgba(250,250,248,0.96);
+    border: 1px solid #e0e0dc;
+    cursor: pointer;
+    font-size: 22px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    padding: 0;
+    color: #333;
+    transition: background 0.15s, border-color 0.15s;
+}
+.arrow:hover { background: #fff; border-color: #bbb; }
+.arrow-prev  { left: 12px; }
+.arrow-next  { right: 12px; }
+
+/* ── Progress bar ────────────────────────────────────────── */
+.progress-track {
+    height: 2px;
+    background: #e8e8e4;
+}
+.progress-bar {
+    height: 100%;
+    background: #cc2200;
+    width: 0%;
+    transition: none;
+}
+
+/* ── Dots ────────────────────────────────────────────────── */
+.dots-row {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    padding: 11px 0 7px;
+    background: #f0f0ec;
+    border-top: 1px solid #e8e8e4;
+}
+.dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ccc;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.3s;
+}
+.dot-active {
+    width: 20px;
+    border-radius: 1px;
+    background: #cc2200;
+}

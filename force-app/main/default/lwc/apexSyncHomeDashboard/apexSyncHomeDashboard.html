@@ -1,0 +1,126 @@
+<template>
+    <div class="dash-root">
+
+        <!-- Header -->
+        <div class="dash-header">
+            <div class="dash-header-left">
+                <lightning-icon icon-name="standard:dashboard" size="small" class="dash-icon"></lightning-icon>
+                <span class="dash-title">System Overview</span>
+            </div>
+            <span class="dash-live">● Live</span>
+        </div>
+
+        <!-- Loader / Error -->
+        <template if:true={isLoading}>
+            <div class="loading-wrap">
+                <lightning-spinner alternative-text="Ładowanie..." size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+
+            <!-- Conversion + Pipeline hero bar -->
+            <div class="hero-bar">
+                <div class="hero-item">
+                    <span class="hero-label">Konwersja Leadów → Szanse</span>
+                    <div class="conv-row">
+                        <span class="conv-pct">{stats.conversionRate}%</span>
+                        <div class="conv-track">
+                            <div class="conv-fill"></div>
+                        </div>
+                        <span class="conv-sub">{stats.convertedLeads} / {stats.totalLeads}</span>
+                    </div>
+                </div>
+                <div class="hero-divider"></div>
+                <div class="hero-item hero-pipeline">
+                    <span class="hero-label">Pipeline Value</span>
+                    <span class="hero-big green">{pipelineFormatted}</span>
+                    <span class="hero-sub">{stats.openOpps} szans w toku</span>
+                </div>
+                <div class="hero-divider"></div>
+                <div class="hero-item">
+                    <span class="hero-label">Deals Won</span>
+                    <span class="hero-big">{stats.wonOpps}</span>
+                    <span class="hero-sub">zamkniętych sukcesem</span>
+                </div>
+            </div>
+
+            <!-- Metric cards -->
+            <div class="cards-grid">
+
+                <div class="card card-leads">
+                    <div class="card-top">
+                        <lightning-icon icon-name="standard:lead" size="small"></lightning-icon>
+                        <span class="card-label">Leady</span>
+                    </div>
+                    <div class="card-num">{stats.totalLeads}</div>
+                    <div class="card-bottom">
+                        <span class="chip chip-purple">+{stats.newLeadsMonth} ten miesiąc</span>
+                    </div>
+                </div>
+
+                <div class="card card-accounts">
+                    <div class="card-top">
+                        <lightning-icon icon-name="standard:account" size="small"></lightning-icon>
+                        <span class="card-label">Konta</span>
+                    </div>
+                    <div class="card-num">{stats.totalAccounts}</div>
+                    <div class="card-bottom">
+                        <span class="chip chip-blue">+{stats.newAccountsQuarter} ten kwartał</span>
+                    </div>
+                </div>
+
+                <div class="card card-opps">
+                    <div class="card-top">
+                        <lightning-icon icon-name="standard:opportunity" size="small"></lightning-icon>
+                        <span class="card-label">Szanse Sprzedaży</span>
+                    </div>
+                    <div class="card-num">
+                        {stats.openOpps}
+                        <span class="card-num-sub">/{stats.totalOpps}</span>
+                    </div>
+                    <div class="card-bottom">
+                        <span class="chip chip-green">otwarte / wszystkie</span>
+                    </div>
+                </div>
+
+                <div class="card card-contacts">
+                    <div class="card-top">
+                        <lightning-icon icon-name="standard:contact" size="small"></lightning-icon>
+                        <span class="card-label">Kontakty</span>
+                    </div>
+                    <div class="card-num">{stats.totalContacts}</div>
+                    <div class="card-bottom">
+                        <span class="chip chip-teal">w bazie danych</span>
+                    </div>
+                </div>
+
+                <div class="card card-orders">
+                    <div class="card-top">
+                        <lightning-icon icon-name="standard:orders" size="small"></lightning-icon>
+                        <span class="card-label">Zamówienia</span>
+                    </div>
+                    <div class="card-num">
+                        {stats.activeOrders}
+                        <span class="card-num-sub">/{stats.totalOrders}</span>
+                    </div>
+                    <div class="card-bottom">
+                        <span class="chip chip-orange">aktywne / wszystkie</span>
+                    </div>
+                </div>
+
+                <div class="card card-complaints">
+                    <div class="card-top">
+                        <lightning-icon icon-name="standard:case" size="small"></lightning-icon>
+                        <span class="card-label">Reklamacje</span>
+                    </div>
+                    <div class="card-num">{stats.openComplaints}</div>
+                    <div class="card-bottom">
+                        <span class="chip chip-red">otwartych z {stats.totalComplaints}</span>
+                    </div>
+                </div>
+
+            </div>
+        </template>
+    </div>
+</template>

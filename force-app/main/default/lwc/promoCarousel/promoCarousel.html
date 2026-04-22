@@ -1,0 +1,151 @@
+<template>
+    <div class="carousel-wrapper">
+
+        <div class="carousel-top-bar"></div>
+
+        <!-- Track -->
+        <div class="carousel-track" style={trackStyle}>
+
+            <!-- SLIDE 1: HERO -->
+            <div class="slide slide-hero">
+                <span class="tag">Industry Leader</span>
+                <h2 class="slide-heading heading-hero">
+                    Technology that <span class="accent-italic">powers</span> your business
+                </h2>
+                <p class="slide-body body-hero">
+                    Over 10 years of experience delivering modern solutions
+                    for demanding clients worldwide.
+                </p>
+            </div>
+
+          <!-- SLIDE 2: NEW PRODUCTS -->
+        <div class="slide slide-products">
+            <span class="tag">New arrivals</span>
+            <h2 class="slide-heading heading-products">New products available</h2>
+            <div class="product-grid">
+                <div class="product-card">
+                    <div class="product-icon">
+                        <lightning-icon icon-name="utility:metrics" size="small"></lightning-icon>
+                    </div>
+                    <p class="product-name">Real-Time Telemetry Stream</p>
+                    <p class="product-desc">Live race data at your fingertips</p>
+                    <p class="product-price">$49/mo.</p>
+                </div>
+                <div class="product-card">
+                    <div class="product-icon">
+                        <lightning-icon icon-name="utility:user" size="small"></lightning-icon>
+                    </div>
+                    <p class="product-name">Driver Performance Analytics</p>
+                    <p class="product-desc">In-depth driver stats & insights</p>
+                    <p class="product-price">$39/mo.</p>
+                </div>
+                <div class="product-card">
+                    <div class="product-icon">
+                        <lightning-icon icon-name="utility:chart" size="small"></lightning-icon>
+                    </div>
+                    <p class="product-name">Constructor Performance Report</p>
+                    <p class="product-desc">Team-level analytics & comparisons</p>
+                    <p class="product-price">$29/mo.</p>
+                </div>
+            </div>
+        </div>
+
+            <!-- SLIDE 3: PROMOTION -->
+            <div class="slide slide-promo">
+                <div class="promo-deco-big"></div>
+                <div class="promo-deco-small"></div>
+                <div class="promo-inner">
+                    <div class="promo-text">
+                        <span class="tag">Special offer</span>
+                        <h2 class="slide-heading heading-promo">Spring<br/>sale</h2>
+                        <p class="slide-body body-promo">
+                            Exclusive terms for new customers.
+                            Offer valid until the end of May 2026.
+                        </p>
+                    </div>
+                    <div class="promo-badge">
+                        <span class="promo-pct">20%</span>
+                        <span class="promo-label">OFF</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 4: FLASH SALE -->
+            <div class="slide slide-sale">
+                <span class="tag">Sale</span>
+                <h2 class="slide-heading heading-sale">Summer sale</h2>
+                <p class="slide-body body-sale">
+                    Selected plans up to <strong class="sale-pct">–40%</strong> off. Limited time only!
+                </p>
+                <div class="timer-row">
+                    <div class="timer-box">
+                        <span class="timer-num">{timerH}</span>
+                        <span class="timer-label">hrs</span>
+                    </div>
+                    <span class="timer-colon">:</span>
+                    <div class="timer-box">
+                        <span class="timer-num">{timerM}</span>
+                        <span class="timer-label">min</span>
+                    </div>
+                    <span class="timer-colon">:</span>
+                    <div class="timer-box">
+                        <span class="timer-num">{timerS}</span>
+                        <span class="timer-label">sec</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 5: INTEGRATIONS -->
+            <div class="slide slide-integrations">
+                <span class="tag">Integrations</span>
+                <h2 class="slide-heading heading-integrations">Works with your stack</h2>
+                <p class="slide-body body-integrations">
+                    Connect to the tools you already use — no coding required.
+                </p>
+                <div class="integrations-grid">
+                    <div class="integration-card">
+                        <div class="integration-icon">
+                            <lightning-icon icon-name="utility:salesforce1" size="small"></lightning-icon>
+                        </div>
+                        <p class="integration-name">Salesforce</p>
+                    </div>
+                    <div class="integration-card">
+                        <div class="integration-icon">
+                            <lightning-icon icon-name="utility:chat" size="small"></lightning-icon>
+                        </div>
+                        <p class="integration-name">Slack</p>
+                    </div>
+                    <div class="integration-card">
+                        <div class="integration-icon">
+                            <lightning-icon icon-name="utility:email" size="small"></lightning-icon>
+                        </div>
+                        <p class="integration-name">Outlook</p>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- end track -->
+
+        <!-- Arrows -->
+        <button class="arrow arrow-prev" onclick={prev}>&#8249;</button>
+        <button class="arrow arrow-next" onclick={next}>&#8250;</button>
+
+        <!-- Progress bar -->
+        <div class="progress-track">
+            <div class="progress-bar" style={progressStyle}></div>
+        </div>
+
+        <!-- Dots -->
+        <div class="dots-row">
+            <template for:each={slides} for:item="s">
+                <button
+                    key={s.index}
+                    class={s.dotClass}
+                    data-index={s.index}
+                    onclick={goTo}>
+                </button>
+            </template>
+        </div>
+
+    </div>
+</template>

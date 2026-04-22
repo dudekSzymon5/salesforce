@@ -1,0 +1,34 @@
+<template>
+    <div class="banner-root">
+
+        <div class="track">
+            <template for:each={slides} for:item="slide">
+                <div key={slide.id} class="slide">
+                    <div class="slide-bg-pattern"></div>
+                    <div class="slide-flag"></div>
+                    <div class="slide-content">
+                        <div class="slide-left">
+                            <span class="slide-badge">{slide.badge}</span>
+                            <h2 class="slide-title">{slide.title}</h2>
+                            <p class="slide-desc">{slide.desc}</p>
+                        </div>
+                    </div>
+                    <div class="slide-watermark">{slide.watermark}</div>
+                </div>
+            </template>
+        </div>
+
+        <button class="arrow arrow-left" onclick={handlePrev}>&#8249;</button>
+        <button class="arrow arrow-right" onclick={handleNext}>&#8250;</button>
+
+        <div class="dots">
+            <template for:each={dotList} for:item="d">
+                <button key={d.i} class={d.cls} data-idx={d.i} onclick={handleDot}></button>
+            </template>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+    </div>
+</template>

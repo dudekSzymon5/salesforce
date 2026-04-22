@@ -8,6 +8,56 @@ package.xml
 **/jsconfig.json
 **/.eslintrc.json
 
+**/pages/BandwidthExceeded.*
+**/pages/ChangePassword.*
+**/pages/Exception.*
+**/pages/FileNotFound.*
+**/pages/ForgotPassword.*
+**/pages/ForgotPasswordConfirm.*
+**/pages/InMaintenance.*
+**/pages/SiteLogin.*
+**/pages/SiteRegister.*
+**/pages/SiteRegisterConfirm.*
+**/pages/SiteTemplate.*
+**/pages/StdExceptionTemplate.*
+**/pages/Unauthorized.*
+**/pages/UnderConstruction.*
+
+# Site pages
+**/pages/MyProfilePage.*
+**/pages/AnswersHome.*
+**/pages/IdeasHome.*
+
+# Problematic FlexiPages
+**/flexipages/Home_Page_Default.*
+**/flexipages/Opportunity_Record_Page1.*
+**/flexipages/Order_Record_Page.*
+**/flexipages/Quote_Record_Page.*
+
+# Problematic ListViews
+**/listViews/TestView.*
+
+# Site Apex Classes
+**/classes/ChangePasswordController.*
+**/classes/ChangePasswordControllerTest.*
+**/classes/ForgotPasswordController.*
+**/classes/ForgotPasswordControllerTest.*
+**/classes/SiteLoginController.*
+**/classes/SiteLoginControllerTest.*
+**/classes/SiteRegisterController.*
+**/classes/SiteRegisterControllerTest.*
+**/classes/MyProfilePageController.*
+**/classes/MyProfilePageControllerTest.*
+
+# Problematic Flows
+**/flows/Auto_Generate_Order_Invoice.*
+**/flows/Complaint_Case_Flow.*
+**/flows/Create_Order_Complaint.*
+
+# Problematic LWC
+**/lwc/housingMap
+**/lwc/apexSyncHomeDashboard
+
 # LWC Jest
 **/__tests__/**
 
