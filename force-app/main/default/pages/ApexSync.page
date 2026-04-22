@@ -1,0 +1,842 @@
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false" docType="html-5.0">
+<html lang="en">
+<head>
+  <meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Join the Grid</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&amp;family=DM+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+  <style>
+    /* ── RESET ─────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── TOKENS ────────────────────────────────────────────────────── */
+    :root {
+      --red:    #E10600;
+      --red2:   #C50500;
+      --bg:     #F4F4F4;
+      --s0:     #FFFFFF;
+      --s1:     #F8F8F8;
+      --border: #E2E2E2;
+      --text:   #0A0A0A;
+      --mid:    #5A5A5A;
+      --muted:  #AAAAAA;
+      --teal:   #007A6E;
+      --r:      5px;
+      --sans:   'DM Sans', sans-serif;
+      --mono:   'DM Sans', sans-serif;
+    }
+
+    /* ── BODY ──────────────────────────────────────────────────────── */
+    body {
+      font-family: var(--sans);
+      background-color: var(--bg);
+      background-image: radial-gradient(rgba(0,0,0,.07) 1px, transparent 1px);
+      background-size: 20px 20px;
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-bottom: 140px;
+    }
+
+    /* ── TICKER BAR ────────────────────────────────────────────────── */
+    .ticker {
+      background: var(--text);
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .07em;
+      padding: 5px 0;
+      overflow: hidden;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .ticker-inner {
+      display: inline-block;
+      animation: tickerScroll 32s linear infinite;
+    }
+    .ticker-inner span { margin: 0 2.5rem; opacity: .92; }
+    .ticker-inner span::before { content: '■ '; opacity: .6; }
+    @keyframes tickerScroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ── LOGO ──────────────────────────────────────────────────────── */
+    .logo-wrap {
+      position: fixed;
+      top: 24px; left: 22px;
+      z-index: 30;
+    }
+    .logo { height: 30px; display: block; }
+
+    /* ── TRACK STRIPE ──────────────────────────────────────────────── */
+    .track-stripe {
+      position: fixed;
+      bottom: 50px; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(225,6,0,.3) 20%, rgba(225,6,0,.3) 80%, transparent);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .track-stripe-2 {
+      position: fixed;
+      bottom: 48px; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,0,0,.08) 20%, rgba(0,0,0,.08) 80%, transparent);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ── PAGE CONTAINER ────────────────────────────────────────────── */
+    .page {
+      position: relative;
+      z-index: 10;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 4rem 1rem 3rem;
+      animation: fadeUp .55s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RACE PROGRESS ─────────────────────────────────────────────── */
+    .race-progress {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 2.8rem;
+    }
+    .rp-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: .12em;
+      white-space: nowrap;
+    }
+    .rp-track {
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .rp-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--red), var(--red2));
+      border-radius: 99px;
+      transition: width .4s cubic-bezier(.4,0,.2,1);
+      box-shadow: 0 0 6px rgba(225,6,0,.35);
+    }
+    .rp-pct {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--red);
+      min-width: 32px;
+      text-align: right;
+    }
+
+    /* ── HEADER ────────────────────────────────────────────────────── */
+    .eyebrow {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .2em;
+      color: var(--red);
+      margin-bottom: .8rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .eyebrow::before {
+      content: '';
+      width: 18px; height: 2px;
+      background: var(--red);
+      flex-shrink: 0;
+    }
+    h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(48px, 10vw, 72px);
+      font-weight: 400;
+      line-height: 1;
+      letter-spacing: -.01em;
+      text-transform: uppercase;
+      margin-bottom: .5rem;
+    }
+    h1 em { color: var(--red); font-style: normal; }
+    .sub {
+      font-size: 14px;
+      color: var(--mid);
+      line-height: 1.65;
+      margin-bottom: 2rem;
+      max-width: 400px;
+      font-weight: 400;
+    }
+
+    /* ── TELEMETRY STATS ───────────────────────────────────────────── */
+    .telem {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      margin-bottom: 1.8rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      background: var(--border);
+    }
+    .tl {
+      background: var(--s0);
+      padding: 10px 12px;
+      text-align: center;
+    }
+    .tl-val {
+      font-family: var(--mono);
+      font-size: 17px;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 3px;
+    }
+    .tl-val .accent { color: var(--red); }
+    .tl-lbl {
+      font-size: 9px;
+      letter-spacing: .12em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    /* ── CARD ──────────────────────────────────────────────────────── */
+    .card {
+      background: var(--s0);
+      border: 1px solid var(--border);
+      border-top: 2px solid var(--red);
+      border-radius: 4px;
+      padding: 1.8rem 1.8rem 2rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07), 0 1px 3px rgba(0,0,0,.05);
+    }
+
+    /* ── SECTION LABEL ─────────────────────────────────────────────── */
+    .sec {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: .15em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 1.1rem;
+    }
+    .sec-n { color: var(--red); }
+    .sec::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ── FIELDS ────────────────────────────────────────────────────── */
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field { margin-bottom: 1.1rem; }
+    .lbl {
+      display: block;
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--mid);
+      margin-bottom: 6px;
+    }
+    .req { color: var(--red); margin-left: 2px; }
+    .ctrl {
+      display: block;
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-family: var(--sans);
+      font-weight: 500;
+      color: var(--text);
+      background: var(--s0);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .ctrl::placeholder { color: var(--muted); font-weight: 400; }
+    .ctrl:hover  { border-color: #C8C8C8; }
+    .ctrl:focus  { border-color: var(--red); box-shadow: 0 0 0 3px rgba(225,6,0,.10); }
+    .ctrl.is-ok  { border-color: var(--teal); }
+    .ctrl.is-err { border-color: var(--red); box-shadow: 0 0 0 3px rgba(225,6,0,.10); }
+    select.ctrl {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='6' viewBox='0 0 11 6'%3E%3Cpath d='M1 1l4.5 4 4.5-4' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+      cursor: pointer;
+    }
+    select.ctrl option { background: #fff; }
+
+    /* ── ERROR MSG ─────────────────────────────────────────────────── */
+    .errmsg {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--red);
+      margin-top: 4px;
+      letter-spacing: .04em;
+    }
+    .errmsg.show { display: flex; }
+
+    /* ── DIVIDER ───────────────────────────────────────────────────── */
+    .divider { height: 1px; background: var(--border); margin: 1.4rem 0; }
+
+    /* ── SUBMIT BUTTON ─────────────────────────────────────────────── */
+    .btn {
+      width: 100%;
+      padding: 14px 24px;
+      background: var(--red);
+      color: #fff;
+      font-family: var(--sans);
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: var(--r);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: background .15s, box-shadow .15s, transform .08s;
+    }
+    .btn:hover {
+      background: var(--red2);
+      box-shadow: 0 0 24px rgba(225,6,0,.45), 0 4px 20px rgba(225,6,0,.3);
+    }
+    .btn:active  { transform: scale(.99); }
+    .btn:disabled {
+      background: #450200;
+      color: rgba(255,255,255,.3);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Checkered flag on button */
+    .chk {
+      width: 22px; height: 14px;
+      flex-shrink: 0;
+      background-image:
+        linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%),
+        linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%);
+      background-size: 6px 6px;
+      background-position: 0 0, 3px 3px;
+      background-color: #000;
+      border-radius: 2px;
+      opacity: .85;
+    }
+
+    .req-note {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--muted);
+      text-align: right;
+      margin-top: 10px;
+      letter-spacing: .05em;
+    }
+
+    /* ── SHAKE ─────────────────────────────────────────────────────── */
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      15%     { transform: translateX(-7px); }
+      30%     { transform: translateX(7px); }
+      45%     { transform: translateX(-5px); }
+      60%     { transform: translateX(5px); }
+      75%     { transform: translateX(-3px); }
+      90%     { transform: translateX(3px); }
+    }
+    .shake { animation: shake .45s ease; }
+
+    /* ── SPINNER ───────────────────────────────────────────────────── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 15px; height: 15px;
+      border: 2px solid rgba(255,255,255,.25);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .55s linear infinite;
+      display: none;
+    }
+    .btn.loading .spinner { display: block; }
+    .btn.loading .btn-txt { opacity: .65; }
+
+    /* ── RESPONSIVE ────────────────────────────────────────────────── */
+    @media (max-width: 500px) {
+      .card  { padding: 1.25rem; }
+      .row2  { grid-template-columns: 1fr; }
+      h1     { font-size: 54px; }
+      .telem { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── TELEMETRY TICKER ──────────────────────────────────────────────── -->
+<div class="ticker">
+  <div class="ticker-inner" id="ticker-inner">
+    <span>LAP 1/57 &mdash; P1 GAP: +0.248s</span>
+    <span>TYRE: SOFT &bull; TEMP: 98&deg;C</span>
+    <span>DRS ENABLED</span>
+    <span>SPEED TRAP: 338 KM/H</span>
+    <span>ENGINE MODE: PARTY</span>
+    <span>PIT WINDOW: OPEN</span>
+    <span>SAFETY CAR: CLEAR</span>
+    <span>FASTEST LAP: 1:23.456</span>
+    <span>ERS HARVEST: 94%</span>
+    <span>FUEL LOAD: 102 KG</span>
+    <span>LAP 1/57 &mdash; P1 GAP: +0.248s</span>
+    <span>TYRE: SOFT &bull; TEMP: 98&deg;C</span>
+    <span>DRS ENABLED</span>
+    <span>SPEED TRAP: 338 KM/H</span>
+    <span>ENGINE MODE: PARTY</span>
+    <span>PIT WINDOW: OPEN</span>
+    <span>SAFETY CAR: CLEAR</span>
+    <span>FASTEST LAP: 1:23.456</span>
+    <span>ERS HARVEST: 94%</span>
+    <span>FUEL LOAD: 102 KG</span>
+  </div>
+</div>
+
+<!-- ── LOGO ──────────────────────────────────────────────────────────── -->
+<div class="logo-wrap">
+  <img src="{!URLFOR($Resource.ApexSync)}" alt="Logo" class="logo" />
+</div>
+
+
+<!-- ── TRACK LINE ─────────────────────────────────────────────────────── -->
+<div class="track-stripe"></div>
+<div class="track-stripe-2"></div>
+
+<!-- ── MAIN PAGE ─────────────────────────────────────────────────────── -->
+<div class="page">
+
+  <!-- Race Progress -->
+  <div class="race-progress">
+    <div class="rp-label">RACE PROGRESS</div>
+    <div class="rp-track"><div class="rp-bar" id="prog"></div></div>
+    <div class="rp-pct" id="prog-pct">0%</div>
+  </div>
+
+  <!-- Header -->
+  <h1>JOIN <em>THE GRID</em></h1>
+  <p class="sub">Submit your details and our team will reach out within 24 hours.</p>
+
+  <!-- Form Card -->
+  <div class="card" id="form-section">
+    <form id="wtl"
+      action="https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8"
+      method="POST"
+      novalidate="novalidate">
+
+      <input type="hidden" name="oid"          value="00DgK00000Ldsnd" />
+      <input type="hidden" name="lead_source"  value="Web" />
+      <input type="hidden" name="retURL"       value="https://orgfarm-bd0745f77b-dev-ed.develop.my.salesforce-sites.com/ThankYou" />
+
+      <!-- Section 01 -->
+      <div class="sec"><span class="sec-n">01</span> DRIVER PROFILE</div>
+
+      <div class="row2">
+        <div class="field">
+          <label class="lbl" for="first_name">First Name <span class="req">*</span></label>
+          <input class="ctrl" id="first_name" name="first_name" type="text" maxlength="40" placeholder="Lewis" autocomplete="given-name" />
+          <div class="errmsg" id="e-first_name">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4.5" stroke="#E10600" stroke-width="1"/><line x1="5" y1="3" x2="5" y2="5.5" stroke="#E10600" stroke-width="1.3" stroke-linecap="round"/><circle cx="5" cy="7.6" r=".65" fill="#E10600"/></svg>
+            <span id="e-first_name-txt">Min. 2 characters, no digits</span>
+          </div>
+        </div>
+        <div class="field">
+          <label class="lbl" for="last_name">Last Name <span class="req">*</span></label>
+          <input class="ctrl" id="last_name" name="last_name" type="text" maxlength="80" placeholder="Hamilton" autocomplete="family-name" />
+          <div class="errmsg" id="e-last_name">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4.5" stroke="#E10600" stroke-width="1"/><line x1="5" y1="3" x2="5" y2="5.5" stroke="#E10600" stroke-width="1.3" stroke-linecap="round"/><circle cx="5" cy="7.6" r=".65" fill="#E10600"/></svg>
+            <span id="e-last_name-txt">Min. 2 characters, no digits</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="lbl" for="email">Email Address <span class="req">*</span></label>
+        <input class="ctrl" id="email" name="email" type="text" maxlength="254" placeholder="lewis@team.com" autocomplete="email" />
+        <div class="errmsg" id="e-email">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4.5" stroke="#E10600" stroke-width="1"/><line x1="5" y1="3" x2="5" y2="5.5" stroke="#E10600" stroke-width="1.3" stroke-linecap="round"/><circle cx="5" cy="7.6" r=".65" fill="#E10600"/></svg>
+          Valid email address required
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="lbl" for="mobile">Contact Number</label>
+        <input class="ctrl" id="mobile" name="mobile" type="tel" maxlength="20" placeholder="+1 500 000 000" autocomplete="tel" />
+        <div class="errmsg" id="e-mobile">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4.5" stroke="#E10600" stroke-width="1"/><line x1="5" y1="3" x2="5" y2="5.5" stroke="#E10600" stroke-width="1.3" stroke-linecap="round"/><circle cx="5" cy="7.6" r=".65" fill="#E10600"/></svg>
+          Min. 7 digits, valid format
+        </div>
+      </div>
+
+      <!-- Section 02 -->
+      <div class="sec"><span class="sec-n">02</span> CONSTRUCTOR</div>
+
+      <div class="field">
+        <label class="lbl" for="company">Team / Company <span class="req">*</span></label>
+        <input class="ctrl" id="company" name="company" type="text" maxlength="40" placeholder="Mercedes-AMG Petronas" autocomplete="organization" />
+        <div class="errmsg" id="e-company">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4.5" stroke="#E10600" stroke-width="1"/><line x1="5" y1="3" x2="5" y2="5.5" stroke="#E10600" stroke-width="1.3" stroke-linecap="round"/><circle cx="5" cy="7.6" r=".65" fill="#E10600"/></svg>
+          <span id="e-company-txt">Min. 2 characters required</span>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label class="lbl" for="city">City <span class="req">*</span></label>
+          <input class="ctrl" id="city" name="city" type="text" maxlength="40" placeholder="Monaco" autocomplete="address-level2" />
+          <div class="errmsg" id="e-city">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4.5" stroke="#E10600" stroke-width="1"/><line x1="5" y1="3" x2="5" y2="5.5" stroke="#E10600" stroke-width="1.3" stroke-linecap="round"/><circle cx="5" cy="7.6" r=".65" fill="#E10600"/></svg>
+            City required
+          </div>
+        </div>
+        <div class="field">
+          <label class="lbl" for="country_code">Nationality <span class="req">*</span></label>
+          <select class="ctrl" id="country_code" name="country_code">
+            <option value="">— Select country —</option>
+            <option value="PL" selected="selected">Poland</option>
+            <option value="AF">Afghanistan</option>
+            <option value="AL">Albania</option>
+            <option value="DZ">Algeria</option>
+            <option value="AD">Andorra</option>
+            <option value="AO">Angola</option>
+            <option value="AG">Antigua and Barbuda</option>
+            <option value="AR">Argentina</option>
+            <option value="AM">Armenia</option>
+            <option value="AU">Australia</option>
+            <option value="AT">Austria</option>
+            <option value="AZ">Azerbaijan</option>
+            <option value="BS">Bahamas</option>
+            <option value="BH">Bahrain</option>
+            <option value="BD">Bangladesh</option>
+            <option value="BB">Barbados</option>
+            <option value="BE">Belgium</option>
+            <option value="BZ">Belize</option>
+            <option value="BJ">Benin</option>
+            <option value="BY">Belarus</option>
+            <option value="BO">Bolivia</option>
+            <option value="BA">Bosnia and Herzegovina</option>
+            <option value="BW">Botswana</option>
+            <option value="BR">Brazil</option>
+            <option value="BN">Brunei</option>
+            <option value="BG">Bulgaria</option>
+            <option value="BF">Burkina Faso</option>
+            <option value="BI">Burundi</option>
+            <option value="BT">Bhutan</option>
+            <option value="CL">Chile</option>
+            <option value="CN">China</option>
+            <option value="HR">Croatia</option>
+            <option value="CY">Cyprus</option>
+            <option value="CZ">Czech Republic</option>
+            <option value="ME">Montenegro</option>
+            <option value="CF">Central African Republic</option>
+            <option value="DK">Denmark</option>
+            <option value="CD">Dem. Republic of Congo</option>
+            <option value="DJ">Djibouti</option>
+            <option value="DM">Dominica</option>
+            <option value="DO">Dominican Republic</option>
+            <option value="EG">Egypt</option>
+            <option value="EC">Ecuador</option>
+            <option value="ER">Eritrea</option>
+            <option value="EE">Estonia</option>
+            <option value="SZ">Eswatini</option>
+            <option value="ET">Ethiopia</option>
+            <option value="FJ">Fiji</option>
+            <option value="PH">Philippines</option>
+            <option value="FI">Finland</option>
+            <option value="FR">France</option>
+            <option value="GA">Gabon</option>
+            <option value="GM">Gambia</option>
+            <option value="GH">Ghana</option>
+            <option value="GR">Greece</option>
+            <option value="GD">Grenada</option>
+            <option value="GE">Georgia</option>
+            <option value="GY">Guyana</option>
+            <option value="GT">Guatemala</option>
+            <option value="GN">Guinea</option>
+            <option value="GW">Guinea-Bissau</option>
+            <option value="GQ">Equatorial Guinea</option>
+            <option value="HT">Haiti</option>
+            <option value="ES">Spain</option>
+            <option value="HN">Honduras</option>
+            <option value="IN">India</option>
+            <option value="ID">Indonesia</option>
+            <option value="IQ">Iraq</option>
+            <option value="IE">Ireland</option>
+            <option value="IS">Iceland</option>
+            <option value="IL">Israel</option>
+            <option value="JM">Jamaica</option>
+            <option value="JP">Japan</option>
+            <option value="JO">Jordan</option>
+            <option value="KH">Cambodia</option>
+            <option value="CM">Cameroon</option>
+            <option value="CA">Canada</option>
+            <option value="QA">Qatar</option>
+            <option value="KZ">Kazakhstan</option>
+            <option value="KE">Kenya</option>
+            <option value="KG">Kyrgyzstan</option>
+            <option value="KI">Kiribati</option>
+            <option value="CO">Colombia</option>
+            <option value="KM">Comoros</option>
+            <option value="CG">Congo</option>
+            <option value="KR">South Korea</option>
+            <option value="CR">Costa Rica</option>
+            <option value="XK">Kosovo</option>
+            <option value="KW">Kuwait</option>
+            <option value="LA">Laos</option>
+            <option value="LS">Lesotho</option>
+            <option value="LB">Lebanon</option>
+            <option value="LR">Liberia</option>
+            <option value="LY">Libya</option>
+            <option value="LI">Liechtenstein</option>
+            <option value="LT">Lithuania</option>
+            <option value="LU">Luxembourg</option>
+            <option value="LV">Latvia</option>
+            <option value="MK">North Macedonia</option>
+            <option value="MG">Madagascar</option>
+            <option value="MY">Malaysia</option>
+            <option value="MW">Malawi</option>
+            <option value="MV">Maldives</option>
+            <option value="ML">Mali</option>
+            <option value="MT">Malta</option>
+            <option value="MA">Morocco</option>
+            <option value="MR">Mauritania</option>
+            <option value="MU">Mauritius</option>
+            <option value="MX">Mexico</option>
+            <option value="MD">Moldova</option>
+            <option value="MC">Monaco</option>
+            <option value="MN">Mongolia</option>
+            <option value="MZ">Mozambique</option>
+            <option value="MM">Myanmar</option>
+            <option value="NA">Namibia</option>
+            <option value="NR">Nauru</option>
+            <option value="NP">Nepal</option>
+            <option value="NL">Netherlands</option>
+            <option value="DE">Germany</option>
+            <option value="NI">Nicaragua</option>
+            <option value="NE">Niger</option>
+            <option value="NG">Nigeria</option>
+            <option value="NO">Norway</option>
+            <option value="NZ">New Zealand</option>
+            <option value="OM">Oman</option>
+            <option value="PK">Pakistan</option>
+            <option value="PA">Panama</option>
+            <option value="PG">Papua New Guinea</option>
+            <option value="PY">Paraguay</option>
+            <option value="PE">Peru</option>
+            <option value="PT">Portugal</option>
+            <option value="ZA">South Africa</option>
+            <option value="RU">Russia</option>
+            <option value="RO">Romania</option>
+            <option value="RW">Rwanda</option>
+            <option value="KN">Saint Kitts and Nevis</option>
+            <option value="LC">Saint Lucia</option>
+            <option value="VC">Saint Vincent and the Grenadines</option>
+            <option value="SV">El Salvador</option>
+            <option value="WS">Samoa</option>
+            <option value="SM">San Marino</option>
+            <option value="SA">Saudi Arabia</option>
+            <option value="SN">Senegal</option>
+            <option value="RS">Serbia</option>
+            <option value="SC">Seychelles</option>
+            <option value="SL">Sierra Leone</option>
+            <option value="SG">Singapore</option>
+            <option value="SK">Slovakia</option>
+            <option value="SI">Slovenia</option>
+            <option value="SB">Solomon Islands</option>
+            <option value="SO">Somalia</option>
+            <option value="LK">Sri Lanka</option>
+            <option value="SS">South Sudan</option>
+            <option value="SR">Suriname</option>
+            <option value="CH">Switzerland</option>
+            <option value="SE">Sweden</option>
+            <option value="TJ">Tajikistan</option>
+            <option value="TH">Thailand</option>
+            <option value="TW">Taiwan</option>
+            <option value="TZ">Tanzania</option>
+            <option value="TL">East Timor</option>
+            <option value="TG">Togo</option>
+            <option value="TO">Tonga</option>
+            <option value="TT">Trinidad and Tobago</option>
+            <option value="TN">Tunisia</option>
+            <option value="TR">Turkey</option>
+            <option value="TM">Turkmenistan</option>
+            <option value="TV">Tuvalu</option>
+            <option value="UA">Ukraine</option>
+            <option value="UY">Uruguay</option>
+            <option value="UZ">Uzbekistan</option>
+            <option value="VU">Vanuatu</option>
+            <option value="VE">Venezuela</option>
+            <option value="HU">Hungary</option>
+            <option value="GB">United Kingdom</option>
+            <option value="VN">Vietnam</option>
+            <option value="IT">Italy</option>
+            <option value="US">United States</option>
+            <option value="AE">United Arab Emirates</option>
+            <option value="ZM">Zambia</option>
+            <option value="ZW">Zimbabwe</option>
+          </select>
+          <div class="errmsg" id="e-country_code">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4.5" stroke="#E10600" stroke-width="1"/><line x1="5" y1="3" x2="5" y2="5.5" stroke="#E10600" stroke-width="1.3" stroke-linecap="round"/><circle cx="5" cy="7.6" r=".65" fill="#E10600"/></svg>
+            Select nationality
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="btn" id="submit-btn">
+        <span class="btn-txt">Submit</span>
+        <div class="spinner"></div>
+      </button>
+      <p class="req-note"><span class="req">*</span> Required to enter the grid</p>
+
+    </form>
+  </div>
+
+</div>
+
+<script>
+// ── CONSTANTS ───────────────────────────────────────────────────────────────
+var REQUIRED   = ['first_name', 'last_name', 'email', 'company', 'city', 'country_code'];
+var VALIDATORS = {
+  first_name:   function(v) { return /^[^\d]{2,40}$/.test(v.trim()); },
+  last_name:    function(v) { return /^[^\d]{2,80}$/.test(v.trim()); },
+  email:        function(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()); },
+  company:      function(v) { return v.trim().length >= 2 && v.trim().length <= 40; },
+  city:         function(v) { return /^[^\d]{2,40}$/.test(v.trim()); },
+  country_code: function(v) { return v.trim() !== ''; },
+  mobile:       function(v) { return v.trim() === '' || /^[\d\s\+\-\(\)]{7,20}$/.test(v.trim()); }
+};
+
+// ── BLOCK DISALLOWED CHARS ───────────────────────────────────────────────────
+['first_name', 'last_name', 'city'].forEach(function(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('keypress', function(e) { if (/\d/.test(e.key)) e.preventDefault(); });
+  el.addEventListener('input', function() {
+    var sel = this.selectionStart;
+    var cleaned = this.value.replace(/\d/g, '');
+    if (cleaned !== this.value) { this.value = cleaned; this.setSelectionRange(sel - 1, sel - 1); }
+  });
+});
+
+var mobileEl = document.getElementById('mobile');
+if (mobileEl) {
+  mobileEl.addEventListener('keypress', function(e) {
+    if (!/[\d\s\+\-\(\)]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete') e.preventDefault();
+  });
+  mobileEl.addEventListener('input', function() {
+    var sel = this.selectionStart;
+    var cleaned = this.value.replace(/[^\d\s\+\-\(\)]/g, '');
+    if (cleaned !== this.value) { this.value = cleaned; this.setSelectionRange(sel - 1, sel - 1); }
+  });
+}
+
+// ── VALIDATION ───────────────────────────────────────────────────────────────
+function validateField(id, show) {
+  var el  = document.getElementById(id);
+  var err = document.getElementById('e-' + id);
+  if (!el) return true;
+  var val   = el.value;
+  var empty = val.trim() === '';
+  var isReq = REQUIRED.indexOf(id) > -1;
+  var fn    = VALIDATORS[id];
+  var valid = fn ? fn(val) : true;
+  var ok    = isReq ? (!empty && valid) : (empty || valid);
+  el.classList.toggle('is-ok',  ok && !empty);
+  el.classList.toggle('is-err', show && !ok);
+  if (err) err.classList.toggle('show', show && !ok);
+  return ok;
+}
+
+// ── PROGRESS BAR ─────────────────────────────────────────────────────────────
+function updateProgress() {
+  var filled = REQUIRED.filter(function(id) {
+    var e = document.getElementById(id);
+    return e && VALIDATORS[id] && VALIDATORS[id](e.value);
+  }).length;
+  var pct = Math.round((filled / REQUIRED.length) * 100);
+  document.getElementById('prog').style.width = pct + '%';
+  document.getElementById('prog-pct').textContent = pct + '%';
+}
+
+// ── FIELD EVENTS ──────────────────────────────────────────────────────────────
+['first_name', 'last_name', 'email', 'company', 'city', 'mobile'].forEach(function(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('blur',  function() { validateField(id, true); updateProgress(); });
+  el.addEventListener('input', function() { if (el.classList.contains('is-err')) validateField(id, true); updateProgress(); });
+});
+document.getElementById('country_code').addEventListener('change', function() {
+  validateField('country_code', true);
+  updateProgress();
+});
+
+// ── SUBMIT ────────────────────────────────────────────────────────────────────
+document.getElementById('wtl').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var ok = true;
+  REQUIRED.forEach(function(id) { if (!validateField(id, true)) ok = false; });
+  if (!validateField('mobile', true)) ok = false;
+  if (!ok) {
+    document.querySelectorAll('.is-err').forEach(function(el) {
+      el.classList.remove('shake');
+      void el.offsetWidth; // reflow to restart animation
+      el.classList.add('shake');
+      el.addEventListener('animationend', function() { el.classList.remove('shake'); }, { once: true });
+    });
+    var first = document.querySelector('.is-err');
+    if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  var btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  btn.querySelector('.btn-txt').textContent = 'IGNITION...';
+  document.getElementById('prog').style.width = '100%';
+  document.getElementById('prog-pct').textContent = '100%';
+  e.target.submit();
+});
+
+// ── RESET ON BACK/FORWARD CACHE ───────────────────────────────────────────────
+window.addEventListener('pageshow', function(e) {
+  if (e.persisted) {
+    var btn = document.getElementById('submit-btn');
+    btn.disabled = false;
+    btn.classList.remove('loading');
+    btn.querySelector('.btn-txt').textContent = 'Submit';
+    document.getElementById('wtl').reset();
+    document.getElementById('prog').style.width = '0%';
+    document.getElementById('prog-pct').textContent = '0%';
+    document.querySelectorAll('.ctrl').forEach(function(el) {
+      el.classList.remove('is-ok', 'is-err');
+    });
+  }
+});
+
+// ── LIVE TELEMETRY ────────────────────────────────────────────────────────────
+function rnd(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+setInterval(function() {
+  var spd = document.getElementById('tel-speed');
+  var ms  = document.getElementById('tel-ms');
+  var rpm = document.getElementById('tel-rpm');
+  if (spd) spd.textContent = rnd(312, 342);
+  if (ms)  ms.textContent  = ('00' + rnd(100, 999)).slice(-3);
+  if (rpm) rpm.textContent = rnd(10800, 13500).toLocaleString();
+}, 1100);
+</script>
+</body>
+</html>
+</apex:page>
