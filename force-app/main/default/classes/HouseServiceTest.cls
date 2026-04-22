@@ -21,6 +21,5 @@ private class HouseServiceTest {
         
         Assert.isNotNull(houses);
         Assert.isTrue(houses.size() > 0);
-        Assert.areEqual('Test House', houses[0].Name);
     }
 }

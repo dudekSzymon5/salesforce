@@ -13,6 +13,8 @@ private class InvoicePDFControllerTest {
             Status='Draft'
         );
         insert con;
+        con.Status = 'Activated';
+        update con;
         
         Order ord = new Order(
             AccountId=acc.Id,
