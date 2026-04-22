@@ -47,22 +47,17 @@ private class InvoicePDFControllerTest {
         ord.Status = 'Activated';
         update ord;
         
-        Invoice__c inv = new Invoice__c(
-            Order__c=ord.Id,
-        );
+        Invoice__c inv = new Invoice__c(Order__c=ord.Id);
         insert inv;
     }
     
     @IsTest
     static void testController() {
         Invoice__c inv = [SELECT Id FROM Invoice__c LIMIT 1];
-        
         ApexPages.StandardController sc = new ApexPages.StandardController(inv);
-        
         Test.startTest();
         InvoicePDFController ctrl = new InvoicePDFController(sc);
         Test.stopTest();
-        
         Assert.isNotNull(ctrl.invoice);
         Assert.isNotNull(ctrl.subtotal);
         Assert.isNotNull(ctrl.vatAmount);
