@@ -1,0 +1,50 @@
+@IsTest
+private class InvoicePDFControllerTest {
+    
+    @TestSetup
+    static void setupData() {
+        Account acc = new Account(Name='Test Account');
+        insert acc;
+        
+        Contract con = new Contract(
+            AccountId=acc.Id,
+            StartDate=Date.today(),
+            ContractTerm=12,
+            Status='Draft'
+        );
+        insert con;
+        
+        Order ord = new Order(
+            AccountId=acc.Id,
+            ContractId=con.Id,
+            Status='Draft',
+            EffectiveDate=Date.today(),
+            Pricebook2Id=Test.getStandardPricebookId()
+        );
+        insert ord;
+        ord.Status = 'Activated';
+        update ord;
+        
+        Invoice__c inv = new Invoice__c(
+            Order__c=ord.Id,
+            Status__c='Unsigned'
+        );
+        insert inv;
+    }
+    
+    @IsTest
+    static void testController() {
+        Invoice__c inv = [SELECT Id FROM Invoice__c LIMIT 1];
+        
+        ApexPages.StandardController sc = new ApexPages.StandardController(inv);
+        
+        Test.startTest();
+        InvoicePDFController ctrl = new InvoicePDFController(sc);
+        Test.stopTest();
+        
+        Assert.isNotNull(ctrl.invoice);
+        Assert.isNotNull(ctrl.subtotal);
+        Assert.isNotNull(ctrl.vatAmount);
+        Assert.isNotNull(ctrl.total);
+    }
+}
