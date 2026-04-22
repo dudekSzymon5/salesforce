@@ -3,7 +3,6 @@ private class BusinessDaysCalculatorTest {
     
     @IsTest
     static void testCalculateBusinessDeadline() {
-        // Poniedziałek 2025-01-06 + 5 dni roboczych = poniedziałek 2025-01-13
         BusinessDaysCalculator.FlowInput input = new BusinessDaysCalculator.FlowInput();
         input.startDate = Date.newInstance(2025, 1, 6);
         
