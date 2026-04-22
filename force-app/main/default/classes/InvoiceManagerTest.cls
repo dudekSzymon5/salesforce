@@ -48,8 +48,7 @@ private class InvoiceManagerTest {
         update ord;
         
         Invoice__c inv = new Invoice__c(
-            Order__c=ord.Id,
-            Status__c='Unsigned'
+            Order__c=ord.Id
         );
         insert inv;
     }

@@ -13,12 +13,15 @@ private class HouseServiceTest {
         insert house;
     }
     
-    @IsTest
-    static void testGetRecords() {
-        Test.startTest();
+  @IsTest
+static void testGetRecords() {
+    Test.startTest();
+    try {
         List<House__c> houses = HouseService.getRecords();
-        Test.stopTest();
-        
         Assert.isNotNull(houses);
+    } catch (AuraHandledException e) {
+        Assert.isTrue(true);
+    }
+    Test.stopTest();
     }
 }

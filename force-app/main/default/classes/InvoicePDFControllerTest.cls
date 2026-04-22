@@ -49,7 +49,6 @@ private class InvoicePDFControllerTest {
         
         Invoice__c inv = new Invoice__c(
             Order__c=ord.Id,
-            Status__c='Unsigned'
         );
         insert inv;
     }
