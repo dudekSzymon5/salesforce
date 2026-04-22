@@ -57,6 +57,7 @@ package.xml
 
 # Problematic LWC
 **/lwc/housingMap
+**/lwc/apexSyncHomeDashboard
 
 # LWC Jest
 **/__tests__/**
