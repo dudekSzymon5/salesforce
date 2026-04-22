@@ -29,4 +29,5 @@ jobs:
         run: |
           sf project deploy validate \
             --source-dir force-app \
-            --target-org devOrg
+            --target-org devOrg \
+            --test-level RunLocalTests
