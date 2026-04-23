@@ -9,18 +9,25 @@ import applyDiscountsToOrder from '@salesforce/apex/DiscountController.applyDisc
 export default class ProductSearchModal extends NavigationMixin(LightningElement) {
     @api recordId;
 
-    @track step = 'search'; // 'search' | 'summary'
+    @track step = 'search';
     @track searchName = '';
     @track searchFamily = '';
     @track products = [];
-    @track selectedProducts = {}; // { pricebookEntryId: { ...product, quantity } }
+    @track selectedProducts = {};
     @track quantities = {};
     @track isLoading = false;
     @track familyOptions = [{ label: 'Wszystkie', value: '' }];
+    @track appliedDiscounts = [];
+    @track _orderId;
 
     get isSearchStep() { return this.step === 'search'; }
     get isSummaryStep() { return this.step === 'summary'; }
+    get isDiscountStep() { return this.step === 'discounts'; }
     get isNextDisabled() { return Object.keys(this.selectedProducts).length === 0; }
+
+    get hasDiscounts() {
+        return this.appliedDiscounts && this.appliedDiscounts.length > 0;
+    }
 
     get selectedProductsList() {
         return Object.values(this.selectedProducts).map(p => ({
@@ -115,25 +122,32 @@ export default class ProductSearchModal extends NavigationMixin(LightningElement
     }
 
     handleSubmit() {
-    const items = this.selectedProductsList.map(p => ({
-        pricebookEntryId: p.pricebookEntryId,
-        quantity: p.quantity,
-        unitPrice: p.unitPrice
-    }));
+        const items = this.selectedProductsList.map(p => ({
+            pricebookEntryId: p.pricebookEntryId,
+            quantity: p.quantity,
+            unitPrice: p.unitPrice
+        }));
 
-    createOrder({ opportunityId: this.recordId, items })
-    .then(orderId => {
-        this._orderId = orderId;
-        return applyDiscountsToOrder({ 
-            orderId: orderId, 
-            orderAmount: this.totalAmount 
+        createOrder({ opportunityId: this.recordId, items })
+        .then(orderId => {
+            this._orderId = orderId;
+            return applyDiscountsToOrder({ 
+                orderId: orderId, 
+                orderAmount: this.totalAmount 
+            });
+        })
+        .then(discounts => {
+            this.appliedDiscounts = discounts || [];
+            this.step = 'discounts';
+        })
+        .catch(error => {
+            console.error('Error:', JSON.stringify(error));
+            this.step = 'discounts';
+            this.appliedDiscounts = [];
         });
-    })
-    .then(discounts => {
-        this.appliedDiscounts = discounts;
-        this.step = 'discounts';
-    })
-    .catch(() => {
+    }
+
+    handleFinish() {
         this.dispatchEvent(new CloseActionScreenEvent());
         this[NavigationMixin.Navigate]({
             type: 'standard__recordPage',
@@ -142,25 +156,5 @@ export default class ProductSearchModal extends NavigationMixin(LightningElement
                 actionName: 'view'
             }
         });
-    });
-}
-@track appliedDiscounts = [];
-@track _orderId;
-
-get hasDiscounts() {
-    return this.appliedDiscounts && this.appliedDiscounts.length > 0;
-}
-
-get isDiscountStep() { return this.step === 'discounts'; }
-
-handleFinish() {
-    this.dispatchEvent(new CloseActionScreenEvent());
-    this[NavigationMixin.Navigate]({
-        type: 'standard__recordPage',
-        attributes: {
-            recordId: this._orderId,
-            actionName: 'view'
-        }
-    });
     }
 }
