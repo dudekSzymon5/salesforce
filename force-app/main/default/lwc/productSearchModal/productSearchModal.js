@@ -4,6 +4,7 @@ import { CloseActionScreenEvent } from 'lightning/actions';
 import getProducts from '@salesforce/apex/ProductSearchController.getProducts';
 import getProductFamilies from '@salesforce/apex/ProductSearchController.getProductFamilies';
 import createOrder from '@salesforce/apex/ProductSearchController.createOrder';
+import applyDiscountsToOrder from '@salesforce/apex/DiscountController.applyDiscountsToOrder';
 
 export default class ProductSearchModal extends NavigationMixin(LightningElement) {
     @api recordId;
@@ -114,22 +115,52 @@ export default class ProductSearchModal extends NavigationMixin(LightningElement
     }
 
     handleSubmit() {
-        const items = this.selectedProductsList.map(p => ({
-            pricebookEntryId: p.pricebookEntryId,
-            quantity: p.quantity,
-            unitPrice: p.unitPrice
-        }));
+    const items = this.selectedProductsList.map(p => ({
+        pricebookEntryId: p.pricebookEntryId,
+        quantity: p.quantity,
+        unitPrice: p.unitPrice
+    }));
 
-        createOrder({ opportunityId: this.recordId, items })
-        .then(orderId => {
-            this.dispatchEvent(new CloseActionScreenEvent());
-            this[NavigationMixin.Navigate]({
-                type: 'standard__recordPage',
-                attributes: {
-                    recordId: orderId,
-                    actionName: 'view'
-                }
-            });
+    createOrder({ opportunityId: this.recordId, items })
+    .then(orderId => {
+        this._orderId = orderId;
+        return applyDiscountsToOrder({ 
+            orderId: orderId, 
+            orderAmount: this.totalAmount 
         });
+    })
+    .then(discounts => {
+        this.appliedDiscounts = discounts;
+        this.step = 'discounts';
+    })
+    .catch(() => {
+        this.dispatchEvent(new CloseActionScreenEvent());
+        this[NavigationMixin.Navigate]({
+            type: 'standard__recordPage',
+            attributes: {
+                recordId: this._orderId,
+                actionName: 'view'
+            }
+        });
+    });
+}
+@track appliedDiscounts = [];
+@track _orderId;
+
+get hasDiscounts() {
+    return this.appliedDiscounts && this.appliedDiscounts.length > 0;
+}
+
+get isDiscountStep() { return this.step === 'discounts'; }
+
+handleFinish() {
+    this.dispatchEvent(new CloseActionScreenEvent());
+    this[NavigationMixin.Navigate]({
+        type: 'standard__recordPage',
+        attributes: {
+            recordId: this._orderId,
+            actionName: 'view'
+        }
+    });
     }
 }
