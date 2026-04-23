@@ -126,6 +126,74 @@
                 </table>
             </div>
 
+            <!-- KROK 3: Zniżki -->
+    <template if:true={isDiscountStep}>
+        <div class="slds-p-around_medium">
+            <h2 class="slds-text-heading_medium slds-m-bottom_medium">Order Summary with Discounts</h2>
+            
+            <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Original Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={selectedProductsList} for:item="item">
+                        <tr key={item.pricebookEntryId}>
+                            <td>{item.name}</td>
+                            <td>{item.unitPrice}</td>
+                            <td>{item.quantity}</td>
+                            <td>{item.total}</td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+
+            <template if:true={hasDiscounts}>
+                <h3 class="slds-text-heading_small slds-m-top_medium slds-m-bottom_small">Applied Discounts</h3>
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                    <thead>
+                        <tr>
+                            <th>Discount</th>
+                            <th>Original Price</th>
+                            <th>Discount Value</th>
+                            <th>Price After Discount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={appliedDiscounts} for:item="od">
+                            <tr key={od.Id}>
+                                <td>{od.Discount__r.Name}</td>
+                                <td>
+                                    <span class="slds-text-color_error" style="text-decoration: line-through">
+                                        {od.Original_Price__c}
+                                    </span>
+                                </td>
+                                <td>{od.Applied_Value__c}</td>
+                                <td>{od.Discounted_Price__c}</td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </template>
+
+            <template if:false={hasDiscounts}>
+                <p class="slds-m-top_medium">No discounts applied.</p>
+            </template>
+        </div>
+
+        <div slot="footer">
+            <lightning-button
+                label="Go to Order"
+                variant="brand"
+                onclick={handleFinish}>
+            </lightning-button>
+        </div>
+    </template>
+
             <!-- Footer -->
             <div slot="footer">
                 <lightning-button
