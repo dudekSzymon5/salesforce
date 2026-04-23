@@ -10,7 +10,7 @@ export default class ApexSyncHomeDashboard extends LightningElement {
     if (data) {
         this.stats = data;
         this.isLoading = false;
-        // Ustaw CSS var po renderze
+        // Set CSS var after render
         Promise.resolve().then(() => {
             const r = Math.min(data.conversionRate || 0, 100);
             this.template.host.style.setProperty('--conv-w', `${r}%`);

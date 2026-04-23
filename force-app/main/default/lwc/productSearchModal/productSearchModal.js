@@ -16,7 +16,7 @@ export default class ProductSearchModal extends NavigationMixin(LightningElement
     @track selectedProducts = {};
     @track quantities = {};
     @track isLoading = false;
-    @track familyOptions = [{ label: 'Wszystkie', value: '' }];
+    @track familyOptions = [{ label: 'All', value: '' }];
     @track appliedDiscounts = [];
     @track _orderId;
 
@@ -44,7 +44,7 @@ export default class ProductSearchModal extends NavigationMixin(LightningElement
     wiredFamilies({ data, error }) {
         if (data) {
             this.familyOptions = [
-                { label: 'Wszystkie', value: '' },
+                { label: 'All', value: '' },
                 ...data.map(f => ({ label: f, value: f }))
             ];
         }
