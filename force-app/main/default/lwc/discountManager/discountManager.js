@@ -40,6 +40,10 @@ export default class DiscountManager extends LightningElement {
         { label: 'Custom Date', value: 'Custom Date' }
     ];
 
+    get hasDiscounts() {
+    return this.discounts && this.discounts.length > 0;
+    }
+
     get formTitle() {
         return this.formDiscount.Id ? 'Edit Discount' : 'New Discount';
     }

@@ -22,13 +22,23 @@ public with sharing class DiscountController {
 
     @AuraEnabled
     public static void saveDiscountSettings(String strategy, Decimal minPercentage) {
-        Discount_Settings__mdt settings = new Discount_Settings__mdt(
-            MasterLabel = 'Default',
-            DeveloperName = 'Default',
-            Discount_Strategy__c = strategy,
-            Minimum_Discount_Percentage__c = minPercentage
-        );
-        Database.upsert(settings, true);
+        Metadata.CustomMetadata cm = new Metadata.CustomMetadata();
+        cm.fullName = 'Discount_Settings__mdt.Default';
+        cm.label = 'Default';
+
+        Metadata.CustomMetadataValue strategyVal = new Metadata.CustomMetadataValue();
+        strategyVal.field = 'Discount_Strategy__c';
+        strategyVal.value = strategy;
+        cm.values.add(strategyVal);
+
+        Metadata.CustomMetadataValue minVal = new Metadata.CustomMetadataValue();
+        minVal.field = 'Minimum_Discount_Percentage__c';
+        minVal.value = minPercentage;
+        cm.values.add(minVal);
+
+        Metadata.DeployContainer container = new Metadata.DeployContainer();
+        container.addMetadata(cm);
+        Metadata.Operations.enqueueDeployment(container, null);
     }
 
     @AuraEnabled
