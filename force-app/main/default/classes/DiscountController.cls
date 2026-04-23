@@ -128,8 +128,16 @@ public with sharing class DiscountController {
             remaining -= applied;
         }
 
-        if (!orderDiscounts.isEmpty()) insert orderDiscounts;
-        return orderDiscounts;
+        if (!orderDiscounts.isEmpty()) {
+            insert orderDiscounts;
+            return [
+                SELECT Id, Discount__c, Discount__r.Name, Applied_Value__c, 
+                    Original_Price__c, Discounted_Price__c
+                FROM Order_Discount__c
+                WHERE Order__c = :orderId
+            ];
+        }
+        return new List<Order_Discount__c>();
     }
 
     private static Boolean isApplicable(Discount__c d, Decimal amount, Date today) {
