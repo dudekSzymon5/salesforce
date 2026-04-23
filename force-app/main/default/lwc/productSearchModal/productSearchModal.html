@@ -1,20 +1,20 @@
 <template>
     <lightning-card>
-        <!-- KROK 1: Wyszukiwarka -->
+        <!-- STEP 1: Search -->
         <template if:true={isSearchStep}>
             <div class="slds-p-around_medium">
-                <h2 class="slds-text-heading_medium slds-m-bottom_medium">Wybierz produkty</h2>
+                <h2 class="slds-text-heading_medium slds-m-bottom_medium">Select Products</h2>
                 <div class="slds-grid slds-gutters slds-m-bottom_medium">
                     <div class="slds-col">
                         <lightning-input
-                            label="Nazwa produktu"
+                            label="Product Name"
                             value={searchName}
                             onchange={handleSearchName}>
                         </lightning-input>
                     </div>
                     <div class="slds-col">
                         <lightning-combobox
-                            label="Rodzina produktu"
+                            label="Product Family"
                             value={searchFamily}
                             options={familyOptions}
                             onchange={handleSearchFamily}>
@@ -22,7 +22,7 @@
                     </div>
                     <div class="slds-col slds-align-bottom">
                         <lightning-button
-                            label="Szukaj"
+                            label="Search"
                             variant="brand"
                             onclick={handleSearch}>
                         </lightning-button>
@@ -32,11 +32,11 @@
                     <table class="slds-table slds-table_cell-buffer slds-table_bordered">
                         <thead>
                             <tr>
-                                <th>Wybierz</th>
-                                <th>Nazwa</th>
-                                <th>Rodzina</th>
-                                <th>Cena</th>
-                                <th>Ilość</th>
+                                <th>Select</th>
+                                <th>Name</th>
+                                <th>Family</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -69,12 +69,12 @@
                     </table>
                 </template>
                 <template if:true={isLoading}>
-                    <lightning-spinner alternative-text="Ładowanie..."></lightning-spinner>
+                    <lightning-spinner alternative-text="Loading..."></lightning-spinner>
                 </template>
             </div>
             <div slot="footer">
                 <lightning-button
-                    label="Anuluj"
+                    label="Cancel"
                     onclick={handleCancel}
                     class="slds-m-right_small">
                 </lightning-button>
@@ -87,17 +87,17 @@
             </div>
         </template>
 
-        <!-- KROK 2: Podsumowanie -->
+        <!-- STEP 2: Summary -->
         <template if:true={isSummaryStep}>
             <div class="slds-p-around_medium">
-                <h2 class="slds-text-heading_medium slds-m-bottom_medium">Podsumowanie zamówienia</h2>
+                <h2 class="slds-text-heading_medium slds-m-bottom_medium">Order Summary</h2>
                 <table class="slds-table slds-table_cell-buffer slds-table_bordered">
                     <thead>
                         <tr>
-                            <th>Produkt</th>
-                            <th>Cena jednostkowa</th>
-                            <th>Ilość</th>
-                            <th>Łącznie</th>
+                            <th>Product</th>
+                            <th>Unit Price</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -112,7 +112,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="3"><strong>Suma</strong></td>
+                            <td colspan="3"><strong>Total</strong></td>
                             <td><strong>{totalAmount}</strong></td>
                         </tr>
                     </tfoot>
@@ -120,7 +120,7 @@
             </div>
             <div slot="footer">
                 <lightning-button
-                    label="Wróć"
+                    label="Back"
                     onclick={handleBack}
                     class="slds-m-right_small">
                 </lightning-button>
@@ -132,7 +132,7 @@
             </div>
         </template>
 
-        <!-- KROK 3: Zniżki -->
+        <!-- STEP 3: Discounts -->
         <template if:true={isDiscountStep}>
             <div class="slds-p-around_medium">
                 <h2 class="slds-text-heading_medium slds-m-bottom_medium">Order Summary with Discounts</h2>
