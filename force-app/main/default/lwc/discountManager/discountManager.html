@@ -1,6 +1,6 @@
 <template>
     <lightning-card title="Discount Management">
-        
+
         <!-- GLOBAL SETTINGS -->
         <div class="slds-p-around_medium">
             <h2 class="slds-text-heading_medium slds-m-bottom_medium">Global Discount Settings</h2>
@@ -55,46 +55,62 @@
             </div>
 
             <template if:true={hasDiscounts}>
-                <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_fixed-layout">
                     <thead>
-                        <tr>
-                            <th><input type="checkbox" onchange={handleSelectAll}/></th>
-                            <th>Name</th>
-                            <th>Type</th>
-                            <th>Form</th>
-                            <th>Value</th>
-                            <th>Active</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>
-                            <th>Actions</th>
+                        <tr class="slds-line-height_reset">
+                            <th scope="col" style="width: 3rem;">
+                                <span class="slds-checkbox">
+                                    <input type="checkbox" onchange={handleSelectAll} id="select-all" />
+                                    <label class="slds-checkbox__label" for="select-all">
+                                        <span class="slds-checkbox_faux"></span>
+                                        <span class="slds-form-element__label slds-assistive-text">Select All</span>
+                                    </label>
+                                </span>
+                            </th>
+                            <th scope="col"><div class="slds-truncate slds-th__action" title="Name">Name</div></th>
+                            <th scope="col"><div class="slds-truncate slds-th__action" title="Type">Type</div></th>
+                            <th scope="col"><div class="slds-truncate slds-th__action" title="Form">Form</div></th>
+                            <th scope="col"><div class="slds-truncate slds-th__action" title="Value">Value</div></th>
+                            <th scope="col" style="width: 5rem;"><div class="slds-truncate slds-th__action" title="Active">Active</div></th>
+                            <th scope="col"><div class="slds-truncate slds-th__action" title="Start Date">Start Date</div></th>
+                            <th scope="col"><div class="slds-truncate slds-th__action" title="End Date">End Date</div></th>
+                            <th scope="col" style="width: 6rem;"><div class="slds-truncate slds-th__action" title="Actions">Actions</div></th>
                         </tr>
                     </thead>
                     <tbody>
                         <template for:each={discounts} for:item="discount">
                             <tr key={discount.Id}>
                                 <td>
-                                    <lightning-input
-                                        type="checkbox"
-                                        label=""
-                                        data-id={discount.Id}
-                                        onchange={handleSelectDiscount}>
-                                    </lightning-input>
+                                    <span class="slds-checkbox">
+                                        <input
+                                            type="checkbox"
+                                            checked={discount.isSelected}
+                                            data-id={discount.Id}
+                                            onchange={handleSelectDiscount}
+                                            id={discount.Id}
+                                        />
+                                        <label class="slds-checkbox__label" for={discount.Id}>
+                                            <span class="slds-checkbox_faux"></span>
+                                            <span class="slds-form-element__label slds-assistive-text">Select</span>
+                                        </label>
+                                    </span>
                                 </td>
-                                <td>{discount.Name}</td>
-                                <td>{discount.Type__c}</td>
-                                <td>{discount.Discount_Form__c}</td>
-                                <td>{discount.Value__c}</td>
+                                <td><span class="slds-truncate" title={discount.Name}>{discount.Name}</span></td>
+                                <td><span class="slds-truncate" title={discount.Type__c}>{discount.Type__c}</span></td>
+                                <td><span class="slds-truncate" title={discount.Discount_Form__c}>{discount.Discount_Form__c}</span></td>
+                                <td><span class="slds-truncate">{discount.Value__c}</span></td>
                                 <td>
                                     <lightning-icon
                                         icon-name={discount.activeIcon}
                                         size="x-small">
                                     </lightning-icon>
                                 </td>
-                                <td>{discount.Start_Date__c}</td>
-                                <td>{discount.End_Date__c}</td>
+                                <td><span class="slds-truncate">{discount.Start_Date__c}</span></td>
+                                <td><span class="slds-truncate">{discount.End_Date__c}</span></td>
                                 <td>
                                     <lightning-button
                                         label="Edit"
+                                        size="small"
                                         data-id={discount.Id}
                                         onclick={handleEditDiscount}
                                         disabled={discount.isAssigned}>
@@ -112,74 +128,99 @@
             <section class="slds-modal slds-fade-in-open">
                 <div class="slds-modal__container">
                     <header class="slds-modal__header">
+                        <lightning-button-icon
+                            class="slds-modal__close"
+                            icon-name="utility:close"
+                            icon-class="slds-button__icon_large"
+                            variant="bare-inverse"
+                            onclick={handleCloseForm}>
+                        </lightning-button-icon>
                         <h2 class="slds-text-heading_medium">{formTitle}</h2>
                     </header>
                     <div class="slds-modal__content slds-p-around_medium">
-                        <lightning-input
-                            label="Name"
-                            value={formDiscount.Name}
-                            data-field="Name"
-                            onchange={handleFormChange}>
-                        </lightning-input>
-                        <lightning-combobox
-                            label="Type"
-                            value={formDiscount.Type__c}
-                            options={typeOptions}
-                            data-field="Type__c"
-                            onchange={handleFormChange}>
-                        </lightning-combobox>
-                        <lightning-combobox
-                            label="Discount Form"
-                            value={formDiscount.Discount_Form__c}
-                            options={formOptions}
-                            data-field="Discount_Form__c"
-                            onchange={handleFormChange}>
-                        </lightning-combobox>
-                        <lightning-input
-                            type="number"
-                            label="Value"
-                            value={formDiscount.Value__c}
-                            data-field="Value__c"
-                            onchange={handleFormChange}>
-                        </lightning-input>
-                        <lightning-input
-                            type="checkbox"
-                            label="Is Active"
-                            checked={formDiscount.Is_Active__c}
-                            data-field="Is_Active__c"
-                            onchange={handleFormCheckbox}>
-                        </lightning-input>
-                        <lightning-input
-                            type="date"
-                            label="Start Date"
-                            value={formDiscount.Start_Date__c}
-                            data-field="Start_Date__c"
-                            onchange={handleFormChange}>
-                        </lightning-input>
-                        <lightning-input
-                            type="date"
-                            label="End Date"
-                            value={formDiscount.End_Date__c}
-                            data-field="End_Date__c"
-                            onchange={handleFormChange}>
-                        </lightning-input>
-                        <template if:true={isRecurring}>
-                            <lightning-combobox
-                                label="Recurrence Pattern"
-                                value={formDiscount.Recurrence_Pattern__c}
-                                options={recurrenceOptions}
-                                data-field="Recurrence_Pattern__c"
-                                onchange={handleFormChange}>
-                            </lightning-combobox>
-                        </template>
-                        <template if:true={isConditional}>
+                        <div class="slds-m-bottom_small">
                             <lightning-input
-                                type="number"
-                                label="Minimum Order Amount"
-                                value={formDiscount.Minimum_Order_Amount__c}
-                                data-field="Minimum_Order_Amount__c"
+                                label="Name"
+                                value={formDiscount.Name}
+                                data-field="Name"
                                 onchange={handleFormChange}>
                             </lightning-input>
+                        </div>
+                        <div class="slds-m-bottom_small">
+                            <lightning-combobox
+                                label="Type"
+                                value={formDiscount.Type__c}
+                                options={typeOptions}
+                                data-field="Type__c"
+                                onchange={handleFormChange}>
+                            </lightning-combobox>
+                        </div>
+                        <div class="slds-m-bottom_small">
+                            <lightning-combobox
+                                label="Discount Form"
+                                value={formDiscount.Discount_Form__c}
+                                options={formOptions}
+                                data-field="Discount_Form__c"
+                                onchange={handleFormChange}>
+                            </lightning-combobox>
+                        </div>
+                        <div class="slds-m-bottom_small">
+                            <lightning-input
+                                type="number"
+                                label="Value"
+                                value={formDiscount.Value__c}
+                                data-field="Value__c"
+                                onchange={handleFormChange}>
+                            </lightning-input>
+                        </div>
+                        <div class="slds-m-bottom_small">
+                            <lightning-input
+                                type="checkbox"
+                                label="Is Active"
+                                checked={formDiscount.Is_Active__c}
+                                data-field="Is_Active__c"
+                                onchange={handleFormCheckbox}>
+                            </lightning-input>
+                        </div>
+                        <div class="slds-m-bottom_small">
+                            <lightning-input
+                                type="date"
+                                label="Start Date"
+                                value={formDiscount.Start_Date__c}
+                                data-field="Start_Date__c"
+                                onchange={handleFormChange}>
+                            </lightning-input>
+                        </div>
+                        <div class="slds-m-bottom_small">
+                            <lightning-input
+                                type="date"
+                                label="End Date"
+                                value={formDiscount.End_Date__c}
+                                data-field="End_Date__c"
+                                onchange={handleFormChange}>
+                            </lightning-input>
+                        </div>
+                        <template if:true={isRecurring}>
+                            <div class="slds-m-bottom_small">
+                                <lightning-combobox
+                                    label="Recurrence Pattern"
+                                    value={formDiscount.Recurrence_Pattern__c}
+                                    options={recurrenceOptions}
+                                    data-field="Recurrence_Pattern__c"
+                                    onchange={handleFormChange}>
+                                </lightning-combobox>
+                            </div>
+                        </template>
+                        <template if:true={isConditional}>
+                            <div class="slds-m-bottom_small">
+                                <lightning-input
+                                    type="number"
+                                    label="Minimum Order Amount"
+                                    value={formDiscount.Minimum_Order_Amount__c}
+                                    data-field="Minimum_Order_Amount__c"
+                                    onchange={handleFormChange}>
+                                </lightning-input>
+                            </div>
                         </template>
                     </div>
                     <footer class="slds-modal__footer">
