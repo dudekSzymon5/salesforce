@@ -52,7 +52,12 @@
                                     </td>
                                     <td>{product.Product2.Name}</td>
                                     <td>{product.Product2.Family}</td>
-                                    <td>{product.UnitPrice}</td>
+                                    <td>
+                                        <lightning-formatted-number
+                                            value={product.UnitPrice}
+                                            format-style="currency">
+                                        </lightning-formatted-number>
+                                    </td>
                                     <td>
                                         <lightning-input
                                             type="number"
@@ -104,16 +109,33 @@
                         <template for:each={selectedProductsList} for:item="item">
                             <tr key={item.pricebookEntryId}>
                                 <td>{item.name}</td>
-                                <td>{item.unitPrice}</td>
+                                <td>
+                                    <lightning-formatted-number
+                                        value={item.unitPrice}
+                                        format-style="currency">
+                                    </lightning-formatted-number>
+                                </td>
                                 <td>{item.quantity}</td>
-                                <td>{item.total}</td>
+                                <td>
+                                    <lightning-formatted-number
+                                        value={item.total}
+                                        format-style="currency">
+                                    </lightning-formatted-number>
+                                </td>
                             </tr>
                         </template>
                     </tbody>
                     <tfoot>
                         <tr>
                             <td colspan="3"><strong>Total</strong></td>
-                            <td><strong>{totalAmount}</strong></td>
+                            <td>
+                                <strong>
+                                    <lightning-formatted-number
+                                        value={totalAmount}
+                                        format-style="currency">
+                                    </lightning-formatted-number>
+                                </strong>
+                            </td>
                         </tr>
                     </tfoot>
                 </table>
@@ -149,9 +171,19 @@
                         <template for:each={selectedProductsList} for:item="item">
                             <tr key={item.pricebookEntryId}>
                                 <td>{item.name}</td>
-                                <td>{item.unitPrice}</td>
+                                <td>
+                                    <lightning-formatted-number
+                                        value={item.unitPrice}
+                                        format-style="currency">
+                                    </lightning-formatted-number>
+                                </td>
                                 <td>{item.quantity}</td>
-                                <td>{item.total}</td>
+                                <td>
+                                    <lightning-formatted-number
+                                        value={item.total}
+                                        format-style="currency">
+                                    </lightning-formatted-number>
+                                </td>
                             </tr>
                         </template>
                     </tbody>
@@ -172,12 +204,27 @@
                                 <tr key={od.Id}>
                                     <td>{od.Discount__r.Name}</td>
                                     <td>
-                                        <span style="text-decoration: line-through">
-                                            {od.Original_Price__c}
+                                        <span style="text-decoration: line-through; color: #666;">
+                                            <lightning-formatted-number
+                                                value={od.Original_Price__c}
+                                                format-style="currency">
+                                            </lightning-formatted-number>
                                         </span>
                                     </td>
-                                    <td>{od.Applied_Value__c}</td>
-                                    <td>{od.Discounted_Price__c}</td>
+                                    <td>
+                                        <lightning-formatted-number
+                                            value={od.Applied_Value__c}
+                                            format-style="currency">
+                                        </lightning-formatted-number>
+                                    </td>
+                                    <td>
+                                        <strong>
+                                            <lightning-formatted-number
+                                                value={od.Discounted_Price__c}
+                                                format-style="currency">
+                                            </lightning-formatted-number>
+                                        </strong>
+                                    </td>
                                 </tr>
                             </template>
                         </tbody>
