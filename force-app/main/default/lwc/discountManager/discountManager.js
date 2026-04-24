@@ -41,7 +41,7 @@ export default class DiscountManager extends LightningElement {
     ];
 
     get hasDiscounts() {
-    return this.discounts && this.discounts.length > 0;
+        return this.discounts && this.discounts.length > 0;
     }
 
     get formTitle() {
@@ -70,7 +70,8 @@ export default class DiscountManager extends LightningElement {
         if (result.data) {
             this.discounts = result.data.map(d => ({
                 ...d,
-                activeIcon: d.Is_Active__c ? 'utility:check' : 'utility:close'
+                activeIcon: d.Is_Active__c ? 'utility:check' : 'utility:close',
+                isSelected: false
             }));
         }
     }
@@ -96,6 +97,7 @@ export default class DiscountManager extends LightningElement {
     handleSelectAll(event) {
         const checked = event.target.checked;
         this.selectedIds = checked ? this.discounts.map(d => d.Id) : [];
+        this.discounts = this.discounts.map(d => ({ ...d, isSelected: checked }));
     }
 
     handleSelectDiscount(event) {
@@ -106,6 +108,7 @@ export default class DiscountManager extends LightningElement {
         } else {
             this.selectedIds = this.selectedIds.filter(i => i !== id);
         }
+        this.discounts = this.discounts.map(d => d.Id === id ? { ...d, isSelected: checked } : d);
     }
 
     handleActivate() {
@@ -113,6 +116,7 @@ export default class DiscountManager extends LightningElement {
         toggleDiscounts({ discountIds: this.selectedIds, isActive: true })
         .then(() => {
             this.showToast('Success', 'Discounts activated', 'success');
+            this.selectedIds = [];
             refreshApex(this.wiredDiscountsResult);
         });
     }
@@ -122,6 +126,7 @@ export default class DiscountManager extends LightningElement {
         toggleDiscounts({ discountIds: this.selectedIds, isActive: false })
         .then(() => {
             this.showToast('Success', 'Discounts deactivated', 'success');
+            this.selectedIds = [];
             refreshApex(this.wiredDiscountsResult);
         });
     }
