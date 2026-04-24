@@ -148,13 +148,15 @@ export default class ProductSearchModal extends NavigationMixin(LightningElement
     }
 
     handleFinish() {
-        this.dispatchEvent(new CloseActionScreenEvent());
-        this[NavigationMixin.Navigate]({
+        const newTab = window.top.open('about:blank', '_blank');
+        this[NavigationMixin.GenerateUrl]({
             type: 'standard__recordPage',
             attributes: {
                 recordId: this._orderId,
                 actionName: 'view'
             }
+        }).then(url => {
+            newTab.location.href = window.top.location.origin + url;
         });
     }
 }
