@@ -51,6 +51,9 @@ public with sharing class DiscountController {
                 throw new AuraHandledException('This discount is already assigned to an order and cannot be edited.');
             }
         }
+        if (discount.Discount_Form__c == 'Percentage' && (discount.Value__c < 0 || discount.Value__c > 100)) {
+            throw new AuraHandledException('Percentage discount value must be between 0 and 100.');
+        }
         upsert discount;
         return discount;
     }

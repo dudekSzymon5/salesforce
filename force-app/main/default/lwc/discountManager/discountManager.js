@@ -56,6 +56,14 @@ export default class DiscountManager extends LightningElement {
         return this.formDiscount.Type__c === 'Conditional';
     }
 
+    get isPercentage() {
+        return this.formDiscount.Discount_Form__c === 'Percentage';
+    }
+
+    get valueMax() {
+        return this.isPercentage ? 100 : undefined;
+    }
+
     @wire(getDiscountSettings)
     wiredSettings({ data }) {
         if (data) {
