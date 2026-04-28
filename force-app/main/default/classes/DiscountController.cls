@@ -218,18 +218,30 @@ public with sharing class DiscountController {
 
     private static Boolean isApplicable(Discount__c d, Decimal amount, Date today) {
         if (d.Type__c == 'Conditional' && d.Minimum_Order_Amount__c != null && amount < d.Minimum_Order_Amount__c) return false;
+
         if (d.Type__c == 'Recurring') {
-            if (d.Recurrence_Pattern__c == 'Every Monday' && today.toStartOfWeek().addDays(1) != today) return false;
-            if (d.Recurrence_Pattern__c == 'Last Day of Month' && today.addDays(1).month() != today.month()) return false;
+            if (d.Recurrence_Pattern__c == 'Every Monday') {
+                return today.toStartOfWeek().addDays(1) == today;
+            }
+            if (d.Recurrence_Pattern__c == 'Last Day of Month') {
+                return today.addDays(1).month() != today.month();
+            }
             if (d.Recurrence_Pattern__c == 'Black Friday') {
                 if (today.month() != 11) return false;
                 Date nov1 = Date.newInstance(today.year(), 11, 1);
                 Integer dow = Math.mod(Date.newInstance(1900,1,7).daysBetween(nov1), 7);
                 Integer daysToFriday = Math.mod(5 - dow, 7);
                 Date blackFriday = nov1.addDays(daysToFriday + 21);
-                if (today != blackFriday) return false;
+                return today == blackFriday;
             }
+            if (d.Recurrence_Pattern__c == 'Custom Date') {
+                return d.Start_Date__c != null
+                    && today.month() == d.Start_Date__c.month()
+                    && today.day() == d.Start_Date__c.day();
+            }
+            return false;
         }
+
         if (d.Start_Date__c != null && today < d.Start_Date__c) return false;
         if (d.End_Date__c != null && today > d.End_Date__c) return false;
         return true;
