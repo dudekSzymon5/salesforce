@@ -8,6 +8,7 @@
                     <div class="slds-col">
                         <lightning-input
                             label="Product Name"
+                            placeholder="Search by name..."
                             value={searchName}
                             onchange={handleSearchName}>
                         </lightning-input>
@@ -28,54 +29,56 @@
                         </lightning-button>
                     </div>
                 </div>
-                <template if:true={products}>
-                    <table class="slds-table slds-table_cell-buffer slds-table_bordered">
-                        <thead>
-                            <tr>
-                                <th>Select</th>
-                                <th>Name</th>
-                                <th>Family</th>
-                                <th>Price</th>
-                                <th>Quantity</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <template for:each={products} for:item="product">
-                                <tr key={product.Id}>
-                                    <td>
-                                        <lightning-input
-                                            type="checkbox"
-                                            label=""
-                                            data-id={product.Id}
-                                            onchange={handleProductSelect}>
-                                        </lightning-input>
-                                    </td>
-                                    <td>{product.Product2.Name}</td>
-                                    <td>{product.Product2.Family}</td>
-                                    <td>
-                                        <lightning-formatted-number
-                                            value={product.UnitPrice}
-                                            format-style="currency">
-                                        </lightning-formatted-number>
-                                    </td>
-                                    <td>
-                                        <lightning-input
-                                            type="number"
-                                            label=""
-                                            min="1"
-                                            value="1"
-                                            data-id={product.Id}
-                                            onchange={handleQuantityChange}>
-                                        </lightning-input>
-                                    </td>
+                <div class="content-scroll">
+                    <template if:true={products}>
+                        <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                            <thead>
+                                <tr>
+                                    <th>Select</th>
+                                    <th>Name</th>
+                                    <th>Family</th>
+                                    <th>Price</th>
+                                    <th style="width: 7rem;">Quantity</th>
                                 </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </template>
-                <template if:true={isLoading}>
-                    <lightning-spinner alternative-text="Loading..."></lightning-spinner>
-                </template>
+                            </thead>
+                            <tbody>
+                                <template for:each={products} for:item="product">
+                                    <tr key={product.Id}>
+                                        <td>
+                                            <lightning-input
+                                                type="checkbox"
+                                                label=""
+                                                data-id={product.Id}
+                                                onchange={handleProductSelect}>
+                                            </lightning-input>
+                                        </td>
+                                        <td>{product.Product2.Name}</td>
+                                        <td>{product.Product2.Family}</td>
+                                        <td>
+                                            <lightning-formatted-number
+                                                value={product.UnitPrice}
+                                                format-style="currency">
+                                            </lightning-formatted-number>
+                                        </td>
+                                        <td>
+                                            <lightning-input
+                                                type="number"
+                                                label=""
+                                                min="1"
+                                                value="1"
+                                                data-id={product.Id}
+                                                onchange={handleQuantityChange}>
+                                            </lightning-input>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template if:true={isLoading}>
+                        <lightning-spinner alternative-text="Loading..."></lightning-spinner>
+                    </template>
+                </div>
             </div>
             <div slot="footer">
                 <lightning-button
@@ -96,6 +99,7 @@
         <template if:true={isSummaryStep}>
             <div class="slds-p-around_medium">
                 <h2 class="slds-text-heading_medium slds-m-bottom_medium">Order Summary</h2>
+                <div class="content-scroll">
                 <table class="slds-table slds-table_cell-buffer slds-table_bordered">
                     <thead>
                         <tr>
@@ -139,6 +143,7 @@
                         </tr>
                     </tfoot>
                 </table>
+                </div>
             </div>
             <div slot="footer">
                 <lightning-button

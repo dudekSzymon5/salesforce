@@ -7,7 +7,18 @@ import createOrder from '@salesforce/apex/ProductSearchController.createOrder';
 import applyDiscountsToOrder from '@salesforce/apex/DiscountController.applyDiscountsToOrder';
 
 export default class ProductSearchModal extends NavigationMixin(LightningElement) {
-    @api recordId;
+    _recordId;
+
+    @api
+    get recordId() {
+        return this._recordId;
+    }
+    set recordId(value) {
+        this._recordId = value;
+        if (value) {
+            this.handleSearch();
+        }
+    }
 
     @track step = 'search';
     @track searchName = '';
