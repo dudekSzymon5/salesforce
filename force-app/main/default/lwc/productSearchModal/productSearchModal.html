@@ -30,6 +30,9 @@
                     </div>
                 </div>
                 <div class="content-scroll">
+                    <template if:true={isLoading}>
+                        <lightning-spinner alternative-text="Loading..."></lightning-spinner>
+                    </template>
                     <template if:true={products}>
                         <table class="slds-table slds-table_cell-buffer slds-table_bordered">
                             <thead>
@@ -42,12 +45,13 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <template for:each={products} for:item="product">
+                                <template for:each={productsWithSelection} for:item="product">
                                     <tr key={product.Id}>
                                         <td>
                                             <lightning-input
                                                 type="checkbox"
                                                 label=""
+                                                checked={product.isSelected}
                                                 data-id={product.Id}
                                                 onchange={handleProductSelect}>
                                             </lightning-input>
@@ -65,7 +69,7 @@
                                                 type="number"
                                                 label=""
                                                 min="1"
-                                                value="1"
+                                                value={product.currentQuantity}
                                                 data-id={product.Id}
                                                 onchange={handleQuantityChange}>
                                             </lightning-input>
@@ -74,9 +78,6 @@
                                 </template>
                             </tbody>
                         </table>
-                    </template>
-                    <template if:true={isLoading}>
-                        <lightning-spinner alternative-text="Loading..."></lightning-spinner>
                     </template>
                 </div>
             </div>
@@ -95,55 +96,123 @@
             </div>
         </template>
 
-        <!-- STEP 2: Summary -->
+        <!-- STEP 2: Order Summary with Discounts -->
         <template if:true={isSummaryStep}>
             <div class="slds-p-around_medium">
                 <h2 class="slds-text-heading_medium slds-m-bottom_medium">Order Summary</h2>
-                <div class="content-scroll">
-                <table class="slds-table slds-table_cell-buffer slds-table_bordered">
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Unit Price</th>
-                            <th>Quantity</th>
-                            <th>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template for:each={selectedProductsList} for:item="item">
-                            <tr key={item.pricebookEntryId}>
-                                <td>{item.name}</td>
-                                <td>
-                                    <lightning-formatted-number
-                                        value={item.unitPrice}
-                                        format-style="currency">
-                                    </lightning-formatted-number>
-                                </td>
-                                <td>{item.quantity}</td>
-                                <td>
-                                    <lightning-formatted-number
-                                        value={item.total}
-                                        format-style="currency">
-                                    </lightning-formatted-number>
-                                </td>
-                            </tr>
+                <template if:true={isLoading}>
+                    <lightning-spinner alternative-text="Calculating discounts..."></lightning-spinner>
+                </template>
+                <template if:false={isLoading}>
+                    <div class="content-scroll">
+                        <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Unit Price</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={selectedProductsList} for:item="item">
+                                    <tr key={item.pricebookEntryId}>
+                                        <td>{item.name}</td>
+                                        <td>
+                                            <lightning-formatted-number
+                                                value={item.unitPrice}
+                                                format-style="currency">
+                                            </lightning-formatted-number>
+                                        </td>
+                                        <td>{item.quantity}</td>
+                                        <td>
+                                            <lightning-formatted-number
+                                                value={item.total}
+                                                format-style="currency">
+                                            </lightning-formatted-number>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3"><strong>Subtotal</strong></td>
+                                    <td>
+                                        <strong>
+                                            <lightning-formatted-number
+                                                value={totalAmount}
+                                                format-style="currency">
+                                            </lightning-formatted-number>
+                                        </strong>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <!-- Applied Discounts -->
+                        <template if:true={hasDiscounts}>
+                            <h3 class="slds-text-heading_small slds-m-top_medium slds-m-bottom_small">Applied Discounts</h3>
+                            <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Discount</th>
+                                        <th>Original Price</th>
+                                        <th>Discount Value</th>
+                                        <th>Price After Discount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={discountPreviews} for:item="d">
+                                        <tr key={d.discountName}>
+                                            <td>{d.discountName}</td>
+                                            <td>
+                                                <span class="original-price">
+                                                    <lightning-formatted-number
+                                                        value={d.originalPrice}
+                                                        format-style="currency">
+                                                    </lightning-formatted-number>
+                                                </span>
+                                            </td>
+                                            <td class="discount-value">
+                                                −&nbsp;<lightning-formatted-number
+                                                    value={d.appliedValue}
+                                                    format-style="currency">
+                                                </lightning-formatted-number>
+                                            </td>
+                                            <td>
+                                                <strong>
+                                                    <lightning-formatted-number
+                                                        value={d.discountedPrice}
+                                                        format-style="currency">
+                                                    </lightning-formatted-number>
+                                                </strong>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3"><strong>Total After Discounts</strong></td>
+                                        <td>
+                                            <strong class="slds-text-color_success">
+                                                <lightning-formatted-number
+                                                    value={discountedTotal}
+                                                    format-style="currency">
+                                                </lightning-formatted-number>
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
                         </template>
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="3"><strong>Total</strong></td>
-                            <td>
-                                <strong>
-                                    <lightning-formatted-number
-                                        value={totalAmount}
-                                        format-style="currency">
-                                    </lightning-formatted-number>
-                                </strong>
-                            </td>
-                        </tr>
-                    </tfoot>
-                </table>
-                </div>
+
+                        <template if:false={hasDiscounts}>
+                            <p class="slds-m-top_medium slds-text-body_regular slds-text-color_weak">
+                                No discounts applicable for this order.
+                            </p>
+                        </template>
+                    </div>
+                </template>
             </div>
             <div slot="footer">
                 <lightning-button
@@ -154,96 +223,8 @@
                 <lightning-button
                     label="Submit"
                     variant="brand"
-                    onclick={handleSubmit}>
-                </lightning-button>
-            </div>
-        </template>
-
-        <!-- STEP 3: Discounts -->
-        <template if:true={isDiscountStep}>
-            <div class="slds-p-around_medium">
-                <h2 class="slds-text-heading_medium slds-m-bottom_medium">Order Summary with Discounts</h2>
-                <table class="slds-table slds-table_cell-buffer slds-table_bordered">
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Original Price</th>
-                            <th>Quantity</th>
-                            <th>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template for:each={selectedProductsList} for:item="item">
-                            <tr key={item.pricebookEntryId}>
-                                <td>{item.name}</td>
-                                <td>
-                                    <lightning-formatted-number
-                                        value={item.unitPrice}
-                                        format-style="currency">
-                                    </lightning-formatted-number>
-                                </td>
-                                <td>{item.quantity}</td>
-                                <td>
-                                    <lightning-formatted-number
-                                        value={item.total}
-                                        format-style="currency">
-                                    </lightning-formatted-number>
-                                </td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-                <template if:true={hasDiscounts}>
-                    <h3 class="slds-text-heading_small slds-m-top_medium slds-m-bottom_small">Applied Discounts</h3>
-                    <table class="slds-table slds-table_cell-buffer slds-table_bordered">
-                        <thead>
-                            <tr>
-                                <th>Discount</th>
-                                <th>Original Price</th>
-                                <th>Discount Value</th>
-                                <th>Price After Discount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <template for:each={appliedDiscounts} for:item="od">
-                                <tr key={od.Id}>
-                                    <td>{od.Discount__r.Name}</td>
-                                    <td>
-                                        <span style="text-decoration: line-through; color: #666;">
-                                            <lightning-formatted-number
-                                                value={od.Original_Price__c}
-                                                format-style="currency">
-                                            </lightning-formatted-number>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <lightning-formatted-number
-                                            value={od.Applied_Value__c}
-                                            format-style="currency">
-                                        </lightning-formatted-number>
-                                    </td>
-                                    <td>
-                                        <strong>
-                                            <lightning-formatted-number
-                                                value={od.Discounted_Price__c}
-                                                format-style="currency">
-                                            </lightning-formatted-number>
-                                        </strong>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </template>
-                <template if:false={hasDiscounts}>
-                    <p class="slds-m-top_medium">No discounts applied.</p>
-                </template>
-            </div>
-            <div slot="footer">
-                <lightning-button
-                    label="Go to Order"
-                    variant="brand"
-                    onclick={handleFinish}>
+                    onclick={handleSubmit}
+                    disabled={isLoading}>
                 </lightning-button>
             </div>
         </template>

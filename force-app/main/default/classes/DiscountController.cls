@@ -131,13 +131,81 @@ public with sharing class DiscountController {
         if (!orderDiscounts.isEmpty()) {
             insert orderDiscounts;
             return [
-                SELECT Id, Discount__c, Discount__r.Name, Applied_Value__c, 
+                SELECT Id, Discount__c, Discount__r.Name, Applied_Value__c,
                     Original_Price__c, Discounted_Price__c
                 FROM Order_Discount__c
                 WHERE Order__c = :orderId
             ];
         }
         return new List<Order_Discount__c>();
+    }
+
+    public class DiscountPreview {
+        @AuraEnabled public String discountName;
+        @AuraEnabled public Decimal appliedValue;
+        @AuraEnabled public Decimal originalPrice;
+        @AuraEnabled public Decimal discountedPrice;
+    }
+
+    @AuraEnabled
+    public static List<DiscountPreview> previewDiscounts(Decimal orderAmount) {
+        Discount_Settings__mdt settings = getDiscountSettings();
+        String strategy = settings.Discount_Strategy__c;
+        Decimal minPct = settings.Minimum_Discount_Percentage__c;
+
+        Date today = Date.today();
+        List<Discount__c> activeDiscounts = [
+            SELECT Id, Name, Type__c, Discount_Form__c, Value__c,
+                   Recurrence_Pattern__c, Minimum_Order_Amount__c,
+                   Start_Date__c, End_Date__c
+            FROM Discount__c
+            WHERE Is_Active__c = true
+        ];
+
+        List<Discount__c> applicable = new List<Discount__c>();
+        for (Discount__c d : activeDiscounts) {
+            if (isApplicable(d, orderAmount, today)) applicable.add(d);
+        }
+
+        if (applicable.isEmpty()) return new List<DiscountPreview>();
+
+        List<Discount__c> toApply = new List<Discount__c>();
+        if (strategy == 'Highest Discount') {
+            Discount__c best = applicable[0];
+            Decimal bestVal = getDiscountAmount(best, orderAmount);
+            for (Discount__c d : applicable) {
+                Decimal val = getDiscountAmount(d, orderAmount);
+                if (val > bestVal) { bestVal = val; best = d; }
+            }
+            toApply.add(best);
+        } else if (strategy == 'Lowest Discount') {
+            Discount__c lowest = applicable[0];
+            Decimal lowestVal = getDiscountAmount(lowest, orderAmount);
+            for (Discount__c d : applicable) {
+                Decimal val = getDiscountAmount(d, orderAmount);
+                if (val < lowestVal) { lowestVal = val; lowest = d; }
+            }
+            toApply.add(lowest);
+        } else {
+            toApply = applicable;
+        }
+
+        List<DiscountPreview> previews = new List<DiscountPreview>();
+        Decimal remaining = orderAmount;
+        for (Discount__c d : toApply) {
+            Decimal applied = getDiscountAmount(d, remaining);
+            Decimal effectivePct = d.Discount_Form__c == 'Percentage' ? d.Value__c : (applied / orderAmount * 100);
+            if (minPct != null && effectivePct < minPct) continue;
+
+            DiscountPreview p = new DiscountPreview();
+            p.discountName = d.Name;
+            p.appliedValue = applied;
+            p.originalPrice = remaining;
+            p.discountedPrice = remaining - applied;
+            previews.add(p);
+            remaining -= applied;
+        }
+        return previews;
     }
 
     private static Boolean isApplicable(Discount__c d, Decimal amount, Date today) {

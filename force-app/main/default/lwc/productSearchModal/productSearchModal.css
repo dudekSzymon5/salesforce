@@ -2,3 +2,12 @@
     max-height: 55vh;
     overflow-y: auto;
 }
+
+.original-price {
+    text-decoration: line-through;
+    color: #706e6b;
+}
+
+.discount-value {
+    color: #c23934;
+}
