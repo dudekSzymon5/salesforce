@@ -56,6 +56,14 @@ export default class DiscountManager extends LightningElement {
         return this.formDiscount.Type__c === 'Conditional';
     }
 
+    get showDateRange() {
+        return this.formDiscount.Type__c === 'One-Time' || this.formDiscount.Type__c === 'Conditional';
+    }
+
+    get showCustomDate() {
+        return this.formDiscount.Type__c === 'Recurring' && this.formDiscount.Recurrence_Pattern__c === 'Custom Date';
+    }
+
     get isPercentage() {
         return this.formDiscount.Discount_Form__c === 'Percentage';
     }
@@ -79,7 +87,12 @@ export default class DiscountManager extends LightningElement {
             this.discounts = result.data.map(d => ({
                 ...d,
                 activeIcon: d.Is_Active__c ? 'utility:check' : 'utility:close',
-                isSelected: false
+                isSelected: false,
+                scheduleDisplay: d.Type__c === 'Recurring'
+                    ? (d.Recurrence_Pattern__c === 'Custom Date' && d.Start_Date__c
+                        ? 'Annual: ' + d.Start_Date__c
+                        : (d.Recurrence_Pattern__c || '-'))
+                    : ([d.Start_Date__c, d.End_Date__c].filter(Boolean).join(' – ') || 'Any time')
             }));
         }
     }
@@ -152,7 +165,22 @@ export default class DiscountManager extends LightningElement {
 
     handleFormChange(event) {
         const field = event.target.dataset.field;
-        this.formDiscount = { ...this.formDiscount, [field]: event.target.value };
+        const value = event.target.value;
+        let updated = { ...this.formDiscount, [field]: value };
+
+        if (field === 'Type__c') {
+            if (value === 'Recurring') {
+                updated = { ...updated, Start_Date__c: null, End_Date__c: null };
+            } else {
+                updated = { ...updated, Recurrence_Pattern__c: null, Start_Date__c: null };
+            }
+        }
+
+        if (field === 'Recurrence_Pattern__c' && value !== 'Custom Date') {
+            updated = { ...updated, Start_Date__c: null };
+        }
+
+        this.formDiscount = updated;
     }
 
     handleFormCheckbox(event) {

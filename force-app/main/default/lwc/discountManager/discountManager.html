@@ -72,8 +72,7 @@
                             <th scope="col"><div class="slds-truncate slds-th__action" title="Form">Form</div></th>
                             <th scope="col"><div class="slds-truncate slds-th__action" title="Value">Value</div></th>
                             <th scope="col" style="width: 5rem;"><div class="slds-truncate slds-th__action" title="Active">Active</div></th>
-                            <th scope="col"><div class="slds-truncate slds-th__action" title="Start Date">Start Date</div></th>
-                            <th scope="col"><div class="slds-truncate slds-th__action" title="End Date">End Date</div></th>
+                            <th scope="col"><div class="slds-truncate slds-th__action" title="Schedule">Schedule</div></th>
                             <th scope="col" style="width: 6rem;"><div class="slds-truncate slds-th__action" title="Actions">Actions</div></th>
                         </tr>
                     </thead>
@@ -105,8 +104,7 @@
                                         size="x-small">
                                     </lightning-icon>
                                 </td>
-                                <td><span class="slds-truncate">{discount.Start_Date__c}</span></td>
-                                <td><span class="slds-truncate">{discount.End_Date__c}</span></td>
+                                <td><span class="slds-truncate">{discount.scheduleDisplay}</span></td>
                                 <td>
                                     <lightning-button
                                         label="Edit"
@@ -178,24 +176,6 @@
                                 onchange={handleFormChange}>
                             </lightning-input>
                         </div>
-                        <div class="slds-m-bottom_small">
-                            <lightning-input
-                                type="date"
-                                label="Start Date"
-                                value={formDiscount.Start_Date__c}
-                                data-field="Start_Date__c"
-                                onchange={handleFormChange}>
-                            </lightning-input>
-                        </div>
-                        <div class="slds-m-bottom_small">
-                            <lightning-input
-                                type="date"
-                                label="End Date"
-                                value={formDiscount.End_Date__c}
-                                data-field="End_Date__c"
-                                onchange={handleFormChange}>
-                            </lightning-input>
-                        </div>
                         <template if:true={isRecurring}>
                             <div class="slds-m-bottom_small">
                                 <lightning-combobox
@@ -205,6 +185,37 @@
                                     data-field="Recurrence_Pattern__c"
                                     onchange={handleFormChange}>
                                 </lightning-combobox>
+                            </div>
+                            <template if:true={showCustomDate}>
+                                <div class="slds-m-bottom_small">
+                                    <lightning-input
+                                        type="date"
+                                        label="Custom Date (applies annually on this day)"
+                                        value={formDiscount.Start_Date__c}
+                                        data-field="Start_Date__c"
+                                        onchange={handleFormChange}>
+                                    </lightning-input>
+                                </div>
+                            </template>
+                        </template>
+                        <template if:true={showDateRange}>
+                            <div class="slds-m-bottom_small">
+                                <lightning-input
+                                    type="date"
+                                    label="Start Date"
+                                    value={formDiscount.Start_Date__c}
+                                    data-field="Start_Date__c"
+                                    onchange={handleFormChange}>
+                                </lightning-input>
+                            </div>
+                            <div class="slds-m-bottom_small">
+                                <lightning-input
+                                    type="date"
+                                    label="End Date"
+                                    value={formDiscount.End_Date__c}
+                                    data-field="End_Date__c"
+                                    onchange={handleFormChange}>
+                                </lightning-input>
                             </div>
                         </template>
                         <template if:true={isConditional}>
