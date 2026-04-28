@@ -89,7 +89,10 @@ public with sharing class DiscountController {
             }
         }
 
-        if (applicable.isEmpty()) return new List<Order_Discount__c>();
+        if (applicable.isEmpty()) {
+            update new Order(Id = orderId, Total_After_Discounts__c = orderAmount);
+            return new List<Order_Discount__c>();
+        }
 
         List<Discount__c> toApply = new List<Discount__c>();
 
@@ -133,6 +136,7 @@ public with sharing class DiscountController {
 
         if (!orderDiscounts.isEmpty()) {
             insert orderDiscounts;
+            update new Order(Id = orderId, Total_After_Discounts__c = remaining);
             return [
                 SELECT Id, Discount__c, Discount__r.Name, Applied_Value__c,
                     Original_Price__c, Discounted_Price__c
@@ -140,6 +144,7 @@ public with sharing class DiscountController {
                 WHERE Order__c = :orderId
             ];
         }
+        update new Order(Id = orderId, Total_After_Discounts__c = orderAmount);
         return new List<Order_Discount__c>();
     }
 
