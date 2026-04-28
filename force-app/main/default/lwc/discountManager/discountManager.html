@@ -172,6 +172,8 @@
                                 type="number"
                                 label="Value"
                                 value={formDiscount.Value__c}
+                                min="0"
+                                max={valueMax}
                                 data-field="Value__c"
                                 onchange={handleFormChange}>
                             </lightning-input>
