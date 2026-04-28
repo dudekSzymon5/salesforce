@@ -3,19 +3,19 @@
         <!-- STEP 1: Search -->
         <template if:true={isSearchStep}>
             <div class="slds-p-around_medium">
-                <h2 class="slds-text-heading_medium slds-m-bottom_medium">Select Products</h2>
+                <h2 class="slds-text-heading_medium slds-m-bottom_medium">{label.selectProducts}</h2>
                 <div class="slds-grid slds-gutters slds-m-bottom_medium">
                     <div class="slds-col">
                         <lightning-input
-                            label="Product Name"
-                            placeholder="Search by name..."
+                            label={label.productName}
+                            placeholder={label.searchPlaceholder}
                             value={searchName}
                             onchange={handleSearchName}>
                         </lightning-input>
                     </div>
                     <div class="slds-col">
                         <lightning-combobox
-                            label="Product Family"
+                            label={label.productFamily}
                             value={searchFamily}
                             options={familyOptions}
                             onchange={handleSearchFamily}>
@@ -23,7 +23,7 @@
                     </div>
                     <div class="slds-col slds-align-bottom">
                         <lightning-button
-                            label="Search"
+                            label={label.search}
                             variant="brand"
                             onclick={handleSearch}>
                         </lightning-button>
@@ -37,11 +37,11 @@
                         <table class="slds-table slds-table_cell-buffer slds-table_bordered">
                             <thead>
                                 <tr>
-                                    <th>Select</th>
-                                    <th>Name</th>
-                                    <th>Family</th>
-                                    <th>Price</th>
-                                    <th style="width: 7rem;">Quantity</th>
+                                    <th>{label.select}</th>
+                                    <th>{label.name}</th>
+                                    <th>{label.colFamily}</th>
+                                    <th>{label.colPrice}</th>
+                                    <th style="width: 7rem;">{label.colQuantity}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -84,12 +84,12 @@
             </div>
             <div slot="footer">
                 <lightning-button
-                    label="Cancel"
+                    label={label.cancel}
                     onclick={handleCancel}
                     class="slds-m-right_small">
                 </lightning-button>
                 <lightning-button
-                    label="Next"
+                    label={label.next}
                     variant="brand"
                     onclick={handleNext}
                     disabled={isNextDisabled}>
@@ -100,7 +100,7 @@
         <!-- STEP 2: Order Summary with Discounts -->
         <template if:true={isSummaryStep}>
             <div class="slds-p-around_medium">
-                <h2 class="slds-text-heading_medium slds-m-bottom_medium">Order Summary</h2>
+                <h2 class="slds-text-heading_medium slds-m-bottom_medium">{label.orderSummary}</h2>
                 <template if:true={isLoading}>
                     <lightning-spinner alternative-text="Calculating discounts..."></lightning-spinner>
                 </template>
@@ -109,10 +109,10 @@
                         <table class="slds-table slds-table_cell-buffer slds-table_bordered">
                             <thead>
                                 <tr>
-                                    <th>Product</th>
-                                    <th>Unit Price</th>
-                                    <th>Quantity</th>
-                                    <th>Total</th>
+                                    <th>{label.colProduct}</th>
+                                    <th>{label.colUnitPrice}</th>
+                                    <th>{label.colQuantity}</th>
+                                    <th>{label.colTotal}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -137,7 +137,7 @@
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <td colspan="3"><strong>Subtotal</strong></td>
+                                    <td colspan="3"><strong>{label.subtotal}</strong></td>
                                     <td>
                                         <strong>
                                             <lightning-formatted-number
@@ -152,14 +152,14 @@
 
                         <!-- Applied Discounts -->
                         <template if:true={hasDiscounts}>
-                            <h3 class="slds-text-heading_small slds-m-top_medium slds-m-bottom_small">Applied Discounts</h3>
+                            <h3 class="slds-text-heading_small slds-m-top_medium slds-m-bottom_small">{label.appliedDiscounts}</h3>
                             <table class="slds-table slds-table_cell-buffer slds-table_bordered">
                                 <thead>
                                     <tr>
-                                        <th>Discount</th>
-                                        <th>Original Price</th>
-                                        <th>Discount Value</th>
-                                        <th>Price After Discount</th>
+                                        <th>{label.colDiscount}</th>
+                                        <th>{label.colOriginalPrice}</th>
+                                        <th>{label.colDiscountValue}</th>
+                                        <th>{label.colPriceAfterDiscount}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -193,7 +193,7 @@
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                        <td colspan="3"><strong>Total After Discounts</strong></td>
+                                        <td colspan="3"><strong>{label.totalAfterDiscounts}</strong></td>
                                         <td>
                                             <strong class="slds-text-color_success">
                                                 <lightning-formatted-number
@@ -209,7 +209,7 @@
 
                         <template if:false={hasDiscounts}>
                             <p class="slds-m-top_medium slds-text-body_regular slds-text-color_weak">
-                                No discounts applicable for this order.
+                                {label.noDiscounts}
                             </p>
                         </template>
                     </div>
@@ -217,12 +217,12 @@
             </div>
             <div slot="footer">
                 <lightning-button
-                    label="Back"
+                    label={label.back}
                     onclick={handleBack}
                     class="slds-m-right_small">
                 </lightning-button>
                 <lightning-button
-                    label="Submit"
+                    label={label.submit}
                     variant="brand"
                     onclick={handleSubmit}
                     disabled={isLoading}>

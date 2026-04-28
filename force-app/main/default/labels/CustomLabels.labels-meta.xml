@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+
+    <!-- Common -->
+    <labels>
+        <fullName>Common_Cancel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Cancel button</shortDescription>
+        <value>Cancel</value>
+    </labels>
+    <labels>
+        <fullName>Common_Save</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Save button</shortDescription>
+        <value>Save</value>
+    </labels>
+    <labels>
+        <fullName>Common_Name</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Name field label</shortDescription>
+        <value>Name</value>
+    </labels>
+    <labels>
+        <fullName>Common_Select</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Select checkbox label</shortDescription>
+        <value>Select</value>
+    </labels>
+    <labels>
+        <fullName>Common_SelectAll</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Select All checkbox label</shortDescription>
+        <value>Select All</value>
+    </labels>
+    <labels>
+        <fullName>Common_Back</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Back button</shortDescription>
+        <value>Back</value>
+    </labels>
+    <labels>
+        <fullName>Common_Next</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Next button</shortDescription>
+        <value>Next</value>
+    </labels>
+    <labels>
+        <fullName>Common_Active</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Active field label</shortDescription>
+        <value>Active</value>
+    </labels>
+    <labels>
+        <fullName>Common_Type</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Type field label</shortDescription>
+        <value>Type</value>
+    </labels>
+    <labels>
+        <fullName>Common_Value</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Value field label</shortDescription>
+        <value>Value</value>
+    </labels>
+    <labels>
+        <fullName>Common_StartDate</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Start Date field label</shortDescription>
+        <value>Start Date</value>
+    </labels>
+    <labels>
+        <fullName>Common_EndDate</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>End Date field label</shortDescription>
+        <value>End Date</value>
+    </labels>
+    <labels>
+        <fullName>Common_CancelClose</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Cancel and close button title</shortDescription>
+        <value>Cancel and close</value>
+    </labels>
+
+    <!-- Discount -->
+    <labels>
+        <fullName>Discount_Title</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Discount Management card title</shortDescription>
+        <value>Discount Management</value>
+    </labels>
+    <labels>
+        <fullName>Discount_GlobalSettings</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Global Discount Settings heading</shortDescription>
+        <value>Global Discount Settings</value>
+    </labels>
+    <labels>
+        <fullName>Discount_Strategy</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Discount Strategy combobox label</shortDescription>
+        <value>Discount Strategy</value>
+    </labels>
+    <labels>
+        <fullName>Discount_MinPercentage</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Minimum Discount Percentage field label</shortDescription>
+        <value>Minimum Discount Percentage</value>
+    </labels>
+    <labels>
+        <fullName>Discount_SaveSettings</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Save Settings button label</shortDescription>
+        <value>Save Settings</value>
+    </labels>
+    <labels>
+        <fullName>Discount_Discounts</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Discounts section heading</shortDescription>
+        <value>Discounts</value>
+    </labels>
+    <labels>
+        <fullName>Discount_ActivateSelected</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Activate Selected button label</shortDescription>
+        <value>Activate Selected</value>
+    </labels>
+    <labels>
+        <fullName>Discount_DeactivateSelected</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Deactivate Selected button label</shortDescription>
+        <value>Deactivate Selected</value>
+    </labels>
+    <labels>
+        <fullName>Discount_NewDiscount</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>New Discount button label</shortDescription>
+        <value>New Discount</value>
+    </labels>
+    <labels>
+        <fullName>Discount_ColForm</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Form column header in discounts table</shortDescription>
+        <value>Form</value>
+    </labels>
+    <labels>
+        <fullName>Discount_ColSchedule</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Schedule column header in discounts table</shortDescription>
+        <value>Schedule</value>
+    </labels>
+    <labels>
+        <fullName>Discount_ColActions</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Actions column header in discounts table</shortDescription>
+        <value>Actions</value>
+    </labels>
+    <labels>
+        <fullName>Discount_Edit</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Edit button label</shortDescription>
+        <value>Edit</value>
+    </labels>
+    <labels>
+        <fullName>Discount_EditTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Edit Discount modal title</shortDescription>
+        <value>Edit Discount</value>
+    </labels>
+    <labels>
+        <fullName>Discount_NewTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>New Discount modal title</shortDescription>
+        <value>New Discount</value>
+    </labels>
+    <labels>
+        <fullName>Discount_Form</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Discount Form field label</shortDescription>
+        <value>Discount Form</value>
+    </labels>
+    <labels>
+        <fullName>Discount_RecurrencePattern</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Recurrence Pattern field label</shortDescription>
+        <value>Recurrence Pattern</value>
+    </labels>
+    <labels>
+        <fullName>Discount_CustomDateLabel</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Custom Date field label</shortDescription>
+        <value>Custom Date (applies annually on this day)</value>
+    </labels>
+    <labels>
+        <fullName>Discount_MinOrderAmount</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Minimum Order Amount field label</shortDescription>
+        <value>Minimum Order Amount</value>
+    </labels>
+
+    <!-- Order -->
+    <labels>
+        <fullName>Order_SelectProducts</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Select Products step heading</shortDescription>
+        <value>Select Products</value>
+    </labels>
+    <labels>
+        <fullName>Order_ProductName</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Product Name search field label</shortDescription>
+        <value>Product Name</value>
+    </labels>
+    <labels>
+        <fullName>Order_SearchPlaceholder</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Product Name search placeholder</shortDescription>
+        <value>Search by name...</value>
+    </labels>
+    <labels>
+        <fullName>Order_ProductFamily</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Product Family combobox label</shortDescription>
+        <value>Product Family</value>
+    </labels>
+    <labels>
+        <fullName>Order_Search</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Search button label</shortDescription>
+        <value>Search</value>
+    </labels>
+    <labels>
+        <fullName>Order_ColFamily</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Family column header in products table</shortDescription>
+        <value>Family</value>
+    </labels>
+    <labels>
+        <fullName>Order_ColPrice</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Price column header in products table</shortDescription>
+        <value>Price</value>
+    </labels>
+    <labels>
+        <fullName>Order_ColQuantity</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Quantity column header</shortDescription>
+        <value>Quantity</value>
+    </labels>
+    <labels>
+        <fullName>Order_Summary</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Order Summary step heading</shortDescription>
+        <value>Order Summary</value>
+    </labels>
+    <labels>
+        <fullName>Order_ColProduct</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Product column header in order summary table</shortDescription>
+        <value>Product</value>
+    </labels>
+    <labels>
+        <fullName>Order_ColUnitPrice</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Unit Price column header</shortDescription>
+        <value>Unit Price</value>
+    </labels>
+    <labels>
+        <fullName>Order_ColTotal</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Total column header</shortDescription>
+        <value>Total</value>
+    </labels>
+    <labels>
+        <fullName>Order_Subtotal</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Subtotal row label</shortDescription>
+        <value>Subtotal</value>
+    </labels>
+    <labels>
+        <fullName>Order_AppliedDiscounts</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Applied Discounts section heading</shortDescription>
+        <value>Applied Discounts</value>
+    </labels>
+    <labels>
+        <fullName>Order_ColDiscount</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Discount column header</shortDescription>
+        <value>Discount</value>
+    </labels>
+    <labels>
+        <fullName>Order_ColOriginalPrice</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Original Price column header</shortDescription>
+        <value>Original Price</value>
+    </labels>
+    <labels>
+        <fullName>Order_ColDiscountValue</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Discount Value column header</shortDescription>
+        <value>Discount Value</value>
+    </labels>
+    <labels>
+        <fullName>Order_ColPriceAfterDiscount</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Price After Discount column header</shortDescription>
+        <value>Price After Discount</value>
+    </labels>
+    <labels>
+        <fullName>Order_TotalAfterDiscounts</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Total After Discounts row label</shortDescription>
+        <value>Total After Discounts</value>
+    </labels>
+    <labels>
+        <fullName>Order_NoDiscounts</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>No discounts applicable message</shortDescription>
+        <value>No discounts applicable for this order.</value>
+    </labels>
+    <labels>
+        <fullName>Order_Submit</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Submit button label</shortDescription>
+        <value>Submit</value>
+    </labels>
+
+</CustomLabels>
