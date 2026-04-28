@@ -5,6 +5,7 @@ import getProducts from '@salesforce/apex/ProductSearchController.getProducts';
 import getProductFamilies from '@salesforce/apex/ProductSearchController.getProductFamilies';
 import createOrder from '@salesforce/apex/ProductSearchController.createOrder';
 import applyDiscountsToOrder from '@salesforce/apex/DiscountController.applyDiscountsToOrder';
+import previewDiscounts from '@salesforce/apex/DiscountController.previewDiscounts';
 
 export default class ProductSearchModal extends NavigationMixin(LightningElement) {
     _recordId;
@@ -28,16 +29,23 @@ export default class ProductSearchModal extends NavigationMixin(LightningElement
     @track quantities = {};
     @track isLoading = false;
     @track familyOptions = [{ label: 'All', value: '' }];
-    @track appliedDiscounts = [];
+    @track discountPreviews = [];
     @track _orderId;
 
     get isSearchStep() { return this.step === 'search'; }
     get isSummaryStep() { return this.step === 'summary'; }
-    get isDiscountStep() { return this.step === 'discounts'; }
     get isNextDisabled() { return Object.keys(this.selectedProducts).length === 0; }
 
     get hasDiscounts() {
-        return this.appliedDiscounts && this.appliedDiscounts.length > 0;
+        return this.discountPreviews && this.discountPreviews.length > 0;
+    }
+
+    get productsWithSelection() {
+        return this.products.map(p => ({
+            ...p,
+            isSelected: !!this.selectedProducts[p.Id],
+            currentQuantity: this.quantities[p.Id] || 1
+        }));
     }
 
     get selectedProductsList() {
@@ -51,8 +59,13 @@ export default class ProductSearchModal extends NavigationMixin(LightningElement
         return this.selectedProductsList.reduce((sum, p) => sum + p.total, 0);
     }
 
+    get discountedTotal() {
+        if (!this.hasDiscounts) return this.totalAmount;
+        return this.discountPreviews[this.discountPreviews.length - 1].discountedPrice;
+    }
+
     @wire(getProductFamilies)
-    wiredFamilies({ data, error }) {
+    wiredFamilies({ data }) {
         if (data) {
             this.familyOptions = [
                 { label: 'All', value: '' },
@@ -78,9 +91,9 @@ export default class ProductSearchModal extends NavigationMixin(LightningElement
         })
         .then(data => {
             this.products = data;
-            this.isLoading = false;
         })
-        .catch(() => {
+        .catch(() => {})
+        .finally(() => {
             this.isLoading = false;
         });
     }
@@ -121,7 +134,18 @@ export default class ProductSearchModal extends NavigationMixin(LightningElement
     }
 
     handleNext() {
-        this.step = 'summary';
+        this.isLoading = true;
+        previewDiscounts({ orderAmount: this.totalAmount })
+            .then(data => {
+                this.discountPreviews = data || [];
+            })
+            .catch(() => {
+                this.discountPreviews = [];
+            })
+            .finally(() => {
+                this.isLoading = false;
+                this.step = 'summary';
+            });
     }
 
     handleBack() {
@@ -133,6 +157,7 @@ export default class ProductSearchModal extends NavigationMixin(LightningElement
     }
 
     handleSubmit() {
+        this.isLoading = true;
         const items = this.selectedProductsList.map(p => ({
             pricebookEntryId: p.pricebookEntryId,
             quantity: p.quantity,
@@ -140,34 +165,26 @@ export default class ProductSearchModal extends NavigationMixin(LightningElement
         }));
 
         createOrder({ opportunityId: this.recordId, items })
-        .then(orderId => {
-            this._orderId = orderId;
-            return applyDiscountsToOrder({ 
-                orderId: orderId, 
-                orderAmount: this.totalAmount 
+            .then(orderId => {
+                this._orderId = orderId;
+                return applyDiscountsToOrder({
+                    orderId: orderId,
+                    orderAmount: this.totalAmount
+                });
+            })
+            .then(() => {
+                this.dispatchEvent(new CloseActionScreenEvent());
+                this[NavigationMixin.Navigate]({
+                    type: 'standard__recordPage',
+                    attributes: {
+                        recordId: this._orderId,
+                        actionName: 'view'
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error:', JSON.stringify(error));
+                this.isLoading = false;
             });
-        })
-        .then(discounts => {
-            this.appliedDiscounts = discounts || [];
-            this.step = 'discounts';
-        })
-        .catch(error => {
-            console.error('Error:', JSON.stringify(error));
-            this.step = 'discounts';
-            this.appliedDiscounts = [];
-        });
-    }
-
-    handleFinish() {
-        const newTab = window.top.open('about:blank', '_blank');
-        this[NavigationMixin.GenerateUrl]({
-            type: 'standard__recordPage',
-            attributes: {
-                recordId: this._orderId,
-                actionName: 'view'
-            }
-        }).then(url => {
-            newTab.location.href = window.top.location.origin + url;
-        });
     }
 }

@@ -118,4 +118,28 @@ private class DiscountControllerTest {
 
         Assert.isNotNull(applied);
     }
+
+    @IsTest
+    static void testPreviewDiscountsWithApplicable() {
+        Test.startTest();
+        List<DiscountController.DiscountPreview> previews = DiscountController.previewDiscounts(500);
+        Test.stopTest();
+
+        Assert.isNotNull(previews);
+        Assert.isTrue(previews.size() > 0);
+        Assert.isNotNull(previews[0].discountName);
+        Assert.isNotNull(previews[0].appliedValue);
+        Assert.isNotNull(previews[0].originalPrice);
+        Assert.isNotNull(previews[0].discountedPrice);
+    }
+
+    @IsTest
+    static void testPreviewDiscountsNoApplicable() {
+        Test.startTest();
+        List<DiscountController.DiscountPreview> previews = DiscountController.previewDiscounts(50);
+        Test.stopTest();
+
+        Assert.isNotNull(previews);
+        Assert.isTrue(previews.isEmpty());
+    }
 }
