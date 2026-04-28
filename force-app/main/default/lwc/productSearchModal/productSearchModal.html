@@ -70,6 +70,7 @@
                                                 label=""
                                                 min="1"
                                                 value={product.currentQuantity}
+                                                disabled={product.isSinglePurchase}
                                                 data-id={product.Id}
                                                 onchange={handleQuantityChange}>
                                             </lightning-input>

@@ -8,7 +8,7 @@ public with sharing class ProductSearchController {
     ) {
         Id pricebookId = getOpportunityPricebookId(opportunityId);
 
-        String query = 'SELECT Id, Name, UnitPrice, Product2.Name, Product2.Family, Product2.ProductCode, Product2.Description ' +
+        String query = 'SELECT Id, Name, UnitPrice, Product2.Name, Product2.Family, Product2.ProductCode, Product2.Description, Product2.Single_Purchase_Only__c ' +
                        'FROM PricebookEntry ' +
                        'WHERE Pricebook2Id = :pricebookId AND IsActive = true';
 

@@ -44,7 +44,8 @@ export default class ProductSearchModal extends NavigationMixin(LightningElement
         return this.products.map(p => ({
             ...p,
             isSelected: !!this.selectedProducts[p.Id],
-            currentQuantity: this.quantities[p.Id] || 1
+            currentQuantity: this.quantities[p.Id] || 1,
+            isSinglePurchase: !!p.Product2.Single_Purchase_Only__c
         }));
     }
 
@@ -104,13 +105,18 @@ export default class ProductSearchModal extends NavigationMixin(LightningElement
         const product = this.products.find(p => p.Id === id);
 
         if (checked) {
+            const isSingle = !!product.Product2.Single_Purchase_Only__c;
+            const quantity = isSingle ? 1 : (this.quantities[id] || 1);
+            if (isSingle) {
+                this.quantities = { ...this.quantities, [id]: 1 };
+            }
             this.selectedProducts = {
                 ...this.selectedProducts,
                 [id]: {
                     pricebookEntryId: id,
                     name: product.Product2.Name,
                     unitPrice: product.UnitPrice,
-                    quantity: this.quantities[id] || 1
+                    quantity
                 }
             };
         } else {
