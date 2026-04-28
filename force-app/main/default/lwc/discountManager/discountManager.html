@@ -127,14 +127,17 @@
         <template if:true={showForm}>
             <section class="slds-modal slds-fade-in-open">
                 <div class="slds-modal__container">
+                    <button
+                        class="slds-button slds-button_icon slds-modal__close slds-button_icon-bare"
+                        title="Cancel and close"
+                        type="button"
+                        onclick={handleCloseForm}>
+                        <svg class="slds-button__icon slds-button__icon_large" focusable="false" aria-hidden="true" viewBox="0 0 520 520">
+                            <g><path d="M310 254l130-131c6-6 6-15 0-21l-20-21c-6-6-15-6-21 0L268 212a10 10 0 01-14 0L123 80c-6-6-15-6-21 0l-21 21c-6 6-6 15 0 21l131 131c4 4 4 10 0 14L80 399c-6 6-6 15 0 21l21 21c6 6 15 6 21 0l131-131a10 10 0 0114 0l131 131c6 6 15 6 21 0l21-21c6-6 6-15 0-21L310 268a10 10 0 010-14"></path></g>
+                        </svg>
+                        <span class="slds-assistive-text">Cancel and close</span>
+                    </button>
                     <header class="slds-modal__header">
-                        <lightning-button-icon
-                            class="slds-modal__close"
-                            icon-name="utility:close"
-                            icon-class="slds-button__icon_large"
-                            variant="bare-inverse"
-                            onclick={handleCloseForm}>
-                        </lightning-button-icon>
                         <h2 class="slds-text-heading_medium">{formTitle}</h2>
                     </header>
                     <div class="slds-modal__content slds-p-around_medium">
@@ -171,15 +174,6 @@
                                 value={formDiscount.Value__c}
                                 data-field="Value__c"
                                 onchange={handleFormChange}>
-                            </lightning-input>
-                        </div>
-                        <div class="slds-m-bottom_small">
-                            <lightning-input
-                                type="checkbox"
-                                label="Is Active"
-                                checked={formDiscount.Is_Active__c}
-                                data-field="Is_Active__c"
-                                onchange={handleFormCheckbox}>
                             </lightning-input>
                         </div>
                         <div class="slds-m-bottom_small">
@@ -222,6 +216,15 @@
                                 </lightning-input>
                             </div>
                         </template>
+                        <div class="slds-m-bottom_small">
+                            <lightning-input
+                                type="checkbox"
+                                label="Active"
+                                checked={formDiscount.Is_Active__c}
+                                data-field="Is_Active__c"
+                                onchange={handleFormCheckbox}>
+                            </lightning-input>
+                        </div>
                     </div>
                     <footer class="slds-modal__footer">
                         <lightning-button
@@ -239,6 +242,5 @@
             </section>
             <div class="slds-backdrop slds-backdrop_open"></div>
         </template>
-
     </lightning-card>
 </template>
