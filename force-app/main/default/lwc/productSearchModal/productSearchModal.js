@@ -6,8 +6,63 @@ import getProductFamilies from '@salesforce/apex/ProductSearchController.getProd
 import createOrder from '@salesforce/apex/ProductSearchController.createOrder';
 import applyDiscountsToOrder from '@salesforce/apex/DiscountController.applyDiscountsToOrder';
 import previewDiscounts from '@salesforce/apex/DiscountController.previewDiscounts';
+import LABEL_SELECT_PRODUCTS from '@salesforce/label/c.Order_SelectProducts';
+import LABEL_PRODUCT_NAME from '@salesforce/label/c.Order_ProductName';
+import LABEL_SEARCH_PLACEHOLDER from '@salesforce/label/c.Order_SearchPlaceholder';
+import LABEL_PRODUCT_FAMILY from '@salesforce/label/c.Order_ProductFamily';
+import LABEL_SEARCH from '@salesforce/label/c.Order_Search';
+import LABEL_COL_FAMILY from '@salesforce/label/c.Order_ColFamily';
+import LABEL_COL_PRICE from '@salesforce/label/c.Order_ColPrice';
+import LABEL_COL_QUANTITY from '@salesforce/label/c.Order_ColQuantity';
+import LABEL_ORDER_SUMMARY from '@salesforce/label/c.Order_Summary';
+import LABEL_COL_PRODUCT from '@salesforce/label/c.Order_ColProduct';
+import LABEL_COL_UNIT_PRICE from '@salesforce/label/c.Order_ColUnitPrice';
+import LABEL_COL_TOTAL from '@salesforce/label/c.Order_ColTotal';
+import LABEL_SUBTOTAL from '@salesforce/label/c.Order_Subtotal';
+import LABEL_APPLIED_DISCOUNTS from '@salesforce/label/c.Order_AppliedDiscounts';
+import LABEL_COL_DISCOUNT from '@salesforce/label/c.Order_ColDiscount';
+import LABEL_COL_ORIGINAL_PRICE from '@salesforce/label/c.Order_ColOriginalPrice';
+import LABEL_COL_DISCOUNT_VALUE from '@salesforce/label/c.Order_ColDiscountValue';
+import LABEL_COL_PRICE_AFTER_DISCOUNT from '@salesforce/label/c.Order_ColPriceAfterDiscount';
+import LABEL_TOTAL_AFTER_DISCOUNTS from '@salesforce/label/c.Order_TotalAfterDiscounts';
+import LABEL_NO_DISCOUNTS from '@salesforce/label/c.Order_NoDiscounts';
+import LABEL_SUBMIT from '@salesforce/label/c.Order_Submit';
+import LABEL_CANCEL from '@salesforce/label/c.Common_Cancel';
+import LABEL_BACK from '@salesforce/label/c.Common_Back';
+import LABEL_NEXT from '@salesforce/label/c.Common_Next';
+import LABEL_SELECT from '@salesforce/label/c.Common_Select';
+import LABEL_NAME from '@salesforce/label/c.Common_Name';
 
 export default class ProductSearchModal extends NavigationMixin(LightningElement) {
+    label = {
+        selectProducts: LABEL_SELECT_PRODUCTS,
+        productName: LABEL_PRODUCT_NAME,
+        searchPlaceholder: LABEL_SEARCH_PLACEHOLDER,
+        productFamily: LABEL_PRODUCT_FAMILY,
+        search: LABEL_SEARCH,
+        colFamily: LABEL_COL_FAMILY,
+        colPrice: LABEL_COL_PRICE,
+        colQuantity: LABEL_COL_QUANTITY,
+        orderSummary: LABEL_ORDER_SUMMARY,
+        colProduct: LABEL_COL_PRODUCT,
+        colUnitPrice: LABEL_COL_UNIT_PRICE,
+        colTotal: LABEL_COL_TOTAL,
+        subtotal: LABEL_SUBTOTAL,
+        appliedDiscounts: LABEL_APPLIED_DISCOUNTS,
+        colDiscount: LABEL_COL_DISCOUNT,
+        colOriginalPrice: LABEL_COL_ORIGINAL_PRICE,
+        colDiscountValue: LABEL_COL_DISCOUNT_VALUE,
+        colPriceAfterDiscount: LABEL_COL_PRICE_AFTER_DISCOUNT,
+        totalAfterDiscounts: LABEL_TOTAL_AFTER_DISCOUNTS,
+        noDiscounts: LABEL_NO_DISCOUNTS,
+        submit: LABEL_SUBMIT,
+        cancel: LABEL_CANCEL,
+        back: LABEL_BACK,
+        next: LABEL_NEXT,
+        select: LABEL_SELECT,
+        name: LABEL_NAME
+    };
+
     _recordId;
 
     @api

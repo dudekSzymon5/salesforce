@@ -6,8 +6,71 @@ import saveDiscountSettings from '@salesforce/apex/DiscountController.saveDiscou
 import saveDiscount from '@salesforce/apex/DiscountController.saveDiscount';
 import toggleDiscounts from '@salesforce/apex/DiscountController.toggleDiscounts';
 import { refreshApex } from '@salesforce/apex';
+import LABEL_TITLE from '@salesforce/label/c.Discount_Title';
+import LABEL_GLOBAL_SETTINGS from '@salesforce/label/c.Discount_GlobalSettings';
+import LABEL_STRATEGY from '@salesforce/label/c.Discount_Strategy';
+import LABEL_MIN_PERCENTAGE from '@salesforce/label/c.Discount_MinPercentage';
+import LABEL_SAVE_SETTINGS from '@salesforce/label/c.Discount_SaveSettings';
+import LABEL_DISCOUNTS from '@salesforce/label/c.Discount_Discounts';
+import LABEL_ACTIVATE_SELECTED from '@salesforce/label/c.Discount_ActivateSelected';
+import LABEL_DEACTIVATE_SELECTED from '@salesforce/label/c.Discount_DeactivateSelected';
+import LABEL_NEW_DISCOUNT from '@salesforce/label/c.Discount_NewDiscount';
+import LABEL_COL_FORM from '@salesforce/label/c.Discount_ColForm';
+import LABEL_COL_SCHEDULE from '@salesforce/label/c.Discount_ColSchedule';
+import LABEL_COL_ACTIONS from '@salesforce/label/c.Discount_ColActions';
+import LABEL_EDIT from '@salesforce/label/c.Discount_Edit';
+import LABEL_EDIT_TITLE from '@salesforce/label/c.Discount_EditTitle';
+import LABEL_NEW_TITLE from '@salesforce/label/c.Discount_NewTitle';
+import LABEL_DISCOUNT_FORM from '@salesforce/label/c.Discount_Form';
+import LABEL_RECURRENCE_PATTERN from '@salesforce/label/c.Discount_RecurrencePattern';
+import LABEL_CUSTOM_DATE from '@salesforce/label/c.Discount_CustomDateLabel';
+import LABEL_MIN_ORDER_AMOUNT from '@salesforce/label/c.Discount_MinOrderAmount';
+import LABEL_CANCEL from '@salesforce/label/c.Common_Cancel';
+import LABEL_SAVE from '@salesforce/label/c.Common_Save';
+import LABEL_NAME from '@salesforce/label/c.Common_Name';
+import LABEL_SELECT from '@salesforce/label/c.Common_Select';
+import LABEL_SELECT_ALL from '@salesforce/label/c.Common_SelectAll';
+import LABEL_ACTIVE from '@salesforce/label/c.Common_Active';
+import LABEL_TYPE from '@salesforce/label/c.Common_Type';
+import LABEL_VALUE from '@salesforce/label/c.Common_Value';
+import LABEL_START_DATE from '@salesforce/label/c.Common_StartDate';
+import LABEL_END_DATE from '@salesforce/label/c.Common_EndDate';
+import LABEL_CANCEL_CLOSE from '@salesforce/label/c.Common_CancelClose';
 
 export default class DiscountManager extends LightningElement {
+    label = {
+        title: LABEL_TITLE,
+        globalSettings: LABEL_GLOBAL_SETTINGS,
+        strategy: LABEL_STRATEGY,
+        minPercentage: LABEL_MIN_PERCENTAGE,
+        saveSettings: LABEL_SAVE_SETTINGS,
+        discounts: LABEL_DISCOUNTS,
+        activateSelected: LABEL_ACTIVATE_SELECTED,
+        deactivateSelected: LABEL_DEACTIVATE_SELECTED,
+        newDiscount: LABEL_NEW_DISCOUNT,
+        colForm: LABEL_COL_FORM,
+        colSchedule: LABEL_COL_SCHEDULE,
+        colActions: LABEL_COL_ACTIONS,
+        edit: LABEL_EDIT,
+        editTitle: LABEL_EDIT_TITLE,
+        newTitle: LABEL_NEW_TITLE,
+        discountForm: LABEL_DISCOUNT_FORM,
+        recurrencePattern: LABEL_RECURRENCE_PATTERN,
+        customDate: LABEL_CUSTOM_DATE,
+        minOrderAmount: LABEL_MIN_ORDER_AMOUNT,
+        cancel: LABEL_CANCEL,
+        save: LABEL_SAVE,
+        name: LABEL_NAME,
+        select: LABEL_SELECT,
+        selectAll: LABEL_SELECT_ALL,
+        active: LABEL_ACTIVE,
+        type: LABEL_TYPE,
+        value: LABEL_VALUE,
+        startDate: LABEL_START_DATE,
+        endDate: LABEL_END_DATE,
+        cancelClose: LABEL_CANCEL_CLOSE
+    };
+
     @track discounts = [];
     @track selectedIds = [];
     @track strategy = 'Highest Discount';
@@ -45,7 +108,7 @@ export default class DiscountManager extends LightningElement {
     }
 
     get formTitle() {
-        return this.formDiscount.Id ? 'Edit Discount' : 'New Discount';
+        return this.formDiscount.Id ? LABEL_EDIT_TITLE : LABEL_NEW_TITLE;
     }
 
     get isRecurring() {
