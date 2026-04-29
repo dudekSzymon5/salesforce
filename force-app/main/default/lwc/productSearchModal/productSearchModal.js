@@ -244,7 +244,6 @@ export default class ProductSearchModal extends NavigationMixin(LightningElement
                 });
             })
             .catch(error => {
-                console.error('Error:', JSON.stringify(error));
                 this.isLoading = false;
             });
     }
