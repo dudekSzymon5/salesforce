@@ -122,7 +122,7 @@ private class DiscountControllerTest {
     @IsTest
     static void testPreviewDiscountsWithApplicable() {
         Test.startTest();
-        List<DiscountController.DiscountPreview> previews = DiscountController.previewDiscounts(500);
+        List<DiscountController.DiscountPreview> previews = DiscountController.previewDiscounts(500, new List<DiscountController.ItemInput>());
         Test.stopTest();
 
         Assert.isNotNull(previews);
@@ -136,7 +136,7 @@ private class DiscountControllerTest {
     @IsTest
     static void testPreviewDiscountsNoApplicable() {
         Test.startTest();
-        List<DiscountController.DiscountPreview> previews = DiscountController.previewDiscounts(50);
+        List<DiscountController.DiscountPreview> previews = DiscountController.previewDiscounts(50, new List<DiscountController.ItemInput>());
         Test.stopTest();
 
         Assert.isNotNull(previews);

@@ -73,6 +73,8 @@
                             <th scope="col"><div class="slds-truncate slds-th__action" title={label.value}>{label.value}</div></th>
                             <th scope="col" style="width: 5rem;"><div class="slds-truncate slds-th__action" title={label.active}>{label.active}</div></th>
                             <th scope="col"><div class="slds-truncate slds-th__action" title={label.colSchedule}>{label.colSchedule}</div></th>
+                            <th scope="col"><div class="slds-truncate slds-th__action" title="Target Product">Target Product</div></th>
+                            <th scope="col"><div class="slds-truncate slds-th__action" title="Trigger Product">Trigger Product</div></th>
                             <th scope="col" style="width: 6rem;"><div class="slds-truncate slds-th__action" title={label.colActions}>{label.colActions}</div></th>
                         </tr>
                     </thead>
@@ -105,6 +107,8 @@
                                     </lightning-icon>
                                 </td>
                                 <td><span class="slds-truncate">{discount.scheduleDisplay}</span></td>
+                                <td><span class="slds-truncate" title={discount.targetProductDisplay}>{discount.targetProductDisplay}</span></td>
+                                <td><span class="slds-truncate" title={discount.triggerProductDisplay}>{discount.triggerProductDisplay}</span></td>
                                 <td>
                                     <lightning-button
                                         label={label.edit}
@@ -229,6 +233,39 @@
                                 </lightning-input>
                             </div>
                         </template>
+                        <div class="slds-m-bottom_small">
+                            <lightning-combobox
+                                label="Target Product"
+                                value={formDiscount.Target_Product__c}
+                                options={productOptions}
+                                placeholder="— None —"
+                                data-field="Target_Product__c"
+                                onchange={handleFormChange}>
+                            </lightning-combobox>
+                        </div>
+                        <div class="slds-m-bottom_small">
+                            <lightning-combobox
+                                label="Trigger Product (optional — buy this to activate discount)"
+                                value={formDiscount.Trigger_Product__c}
+                                options={productOptions}
+                                placeholder="— None —"
+                                data-field="Trigger_Product__c"
+                                onchange={handleFormChange}>
+                            </lightning-combobox>
+                        </div>
+                        <template if:true={showMinimumQuantity}>
+                        <div class="slds-m-bottom_small">
+                            <lightning-input
+                                type="number"
+                                label="Minimum Quantity" 
+                                value={formDiscount.Minimum_Quantity__c}
+                                min="1"
+                                step="1"
+                                data-field="Minimum_Quantity__c"
+                                onchange={handleFormChange}>
+                            </lightning-input>
+                        </div>
+                    </template>
                         <div class="slds-m-bottom_small">
                             <lightning-input
                                 type="checkbox"

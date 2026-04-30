@@ -1,12 +1,39 @@
 public with sharing class DiscountController {
 
+    public class ItemInput {
+    @AuraEnabled public Id product2Id { get; set; }
+    @AuraEnabled public Decimal amount { get; set; }
+    @AuraEnabled public Decimal quantity { get; set; }
+}
+
+    public class DiscountPreview {
+        @AuraEnabled public String discountName;
+        @AuraEnabled public Decimal appliedValue;
+        @AuraEnabled public Decimal originalPrice;
+        @AuraEnabled public Decimal discountedPrice;
+        @AuraEnabled public String targetProductName;
+    }
+
     @AuraEnabled(cacheable=true)
     public static List<Discount__c> getDiscounts() {
         return [
             SELECT Id, Name, Type__c, Discount_Form__c, Value__c, Is_Active__c,
-                   Start_Date__c, End_Date__c, Recurrence_Pattern__c, Minimum_Order_Amount__c
+                   Start_Date__c, End_Date__c, Recurrence_Pattern__c, Minimum_Order_Amount__c,
+                   Minimum_Quantity__c,
+                   Target_Product__c, Target_Product__r.Name,
+                   Trigger_Product__c, Trigger_Product__r.Name
             FROM Discount__c
             ORDER BY CreatedDate DESC
+        ];
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static List<Product2> getProductOptions() {
+        return [
+            SELECT Id, Name FROM Product2
+            WHERE IsActive = true
+            AND Id IN (SELECT Product2Id FROM PricebookEntry WHERE IsActive = true)
+            ORDER BY Name
         ];
     }
 
@@ -69,6 +96,19 @@ public with sharing class DiscountController {
 
     @AuraEnabled
     public static List<Order_Discount__c> applyDiscountsToOrder(Id orderId, Decimal orderAmount) {
+        List<OrderItem> orderItems = [
+            SELECT PricebookEntry.Product2Id, TotalPrice, Quantity
+            FROM OrderItem WHERE OrderId = :orderId
+        ];
+        Map<Id, Decimal> productAmounts = new Map<Id, Decimal>();
+        Map<Id, Decimal> productQuantities = new Map<Id, Decimal>();
+        Set<Id> productIds = new Set<Id>();
+        for (OrderItem oi : orderItems) {
+            productAmounts.put(oi.PricebookEntry.Product2Id, oi.TotalPrice);
+            productQuantities.put(oi.PricebookEntry.Product2Id, oi.Quantity);
+            productIds.add(oi.PricebookEntry.Product2Id);
+        }
+
         Discount_Settings__mdt settings = getDiscountSettings();
         String strategy = settings.Discount_Strategy__c;
         Decimal minPct = settings.Minimum_Discount_Percentage__c;
@@ -76,62 +116,80 @@ public with sharing class DiscountController {
         Date today = Date.today();
         List<Discount__c> activeDiscounts = [
             SELECT Id, Name, Type__c, Discount_Form__c, Value__c,
-                   Recurrence_Pattern__c, Minimum_Order_Amount__c,
-                   Start_Date__c, End_Date__c
+                   Recurrence_Pattern__c, Minimum_Order_Amount__c, Minimum_Quantity__c,
+                   Start_Date__c, End_Date__c,
+                   Target_Product__c, Trigger_Product__c
             FROM Discount__c
             WHERE Is_Active__c = true
         ];
 
-        List<Discount__c> applicable = new List<Discount__c>();
+        List<Discount__c> globalApplicable = new List<Discount__c>();
+        List<Discount__c> productApplicable = new List<Discount__c>();
         for (Discount__c d : activeDiscounts) {
-            if (isApplicable(d, orderAmount, today)) {
-                applicable.add(d);
+            if (!isApplicable(d, orderAmount, today, productIds, productQuantities)) continue;
+            if (d.Target_Product__c != null) {
+                productApplicable.add(d);
+            } else {
+                globalApplicable.add(d);
             }
-        }
-
-        if (applicable.isEmpty()) {
-            update new Order(Id = orderId, Total_After_Discounts__c = orderAmount);
-            return new List<Order_Discount__c>();
-        }
-
-        List<Discount__c> toApply = new List<Discount__c>();
-
-        if (strategy == 'Highest Discount') {
-            Discount__c best = applicable[0];
-            Decimal bestVal = getDiscountAmount(best, orderAmount);
-            for (Discount__c d : applicable) {
-                Decimal val = getDiscountAmount(d, orderAmount);
-                if (val > bestVal) { bestVal = val; best = d; }
-            }
-            toApply.add(best);
-        } else if (strategy == 'Lowest Discount') {
-            Discount__c lowest = applicable[0];
-            Decimal lowestVal = getDiscountAmount(lowest, orderAmount);
-            for (Discount__c d : applicable) {
-                Decimal val = getDiscountAmount(d, orderAmount);
-                if (val < lowestVal) { lowestVal = val; lowest = d; }
-            }
-            toApply.add(lowest);
-        } else {
-            toApply = applicable;
         }
 
         List<Order_Discount__c> orderDiscounts = new List<Order_Discount__c>();
         Decimal remaining = orderAmount;
 
-        for (Discount__c d : toApply) {
-            Decimal applied = getDiscountAmount(d, remaining);
-            Decimal effectivePct = d.Discount_Form__c == 'Percentage' ? d.Value__c : (applied / orderAmount * 100);
+        for (Discount__c d : productApplicable) {
+            Decimal productAmount = productAmounts.get(d.Target_Product__c);
+            if (productAmount == null) continue;
+            Decimal applied = getDiscountAmount(d, productAmount);
+            Decimal effectivePct = d.Discount_Form__c == 'Percentage' ? d.Value__c : (productAmount > 0 ? (applied / productAmount * 100) : 0);
             if (minPct != null && effectivePct < minPct) continue;
 
             orderDiscounts.add(new Order_Discount__c(
                 Order__c = orderId,
                 Discount__c = d.Id,
                 Applied_Value__c = applied,
-                Original_Price__c = remaining,
-                Discounted_Price__c = remaining - applied
+                Original_Price__c = productAmount,
+                Discounted_Price__c = productAmount - applied
             ));
             remaining -= applied;
+        }
+
+        List<Discount__c> toApplyGlobal = new List<Discount__c>();
+        if (!globalApplicable.isEmpty()) {
+            if (strategy == 'Highest Discount') {
+                Discount__c best = globalApplicable[0];
+                Decimal bestVal = getDiscountAmount(best, remaining);
+                for (Discount__c d : globalApplicable) {
+                    Decimal val = getDiscountAmount(d, remaining);
+                    if (val > bestVal) { bestVal = val; best = d; }
+                }
+                toApplyGlobal.add(best);
+            } else if (strategy == 'Lowest Discount') {
+                Discount__c lowest = globalApplicable[0];
+                Decimal lowestVal = getDiscountAmount(lowest, remaining);
+                for (Discount__c d : globalApplicable) {
+                    Decimal val = getDiscountAmount(d, remaining);
+                    if (val < lowestVal) { lowestVal = val; lowest = d; }
+                }
+                toApplyGlobal.add(lowest);
+            } else {
+                toApplyGlobal = globalApplicable;
+            }
+
+            for (Discount__c d : toApplyGlobal) {
+                Decimal applied = getDiscountAmount(d, remaining);
+                Decimal effectivePct = d.Discount_Form__c == 'Percentage' ? d.Value__c : (orderAmount > 0 ? (applied / orderAmount * 100) : 0);
+                if (minPct != null && effectivePct < minPct) continue;
+
+                orderDiscounts.add(new Order_Discount__c(
+                    Order__c = orderId,
+                    Discount__c = d.Id,
+                    Applied_Value__c = applied,
+                    Original_Price__c = remaining,
+                    Discounted_Price__c = remaining - applied
+                ));
+                remaining -= applied;
+            }
         }
 
         if (!orderDiscounts.isEmpty()) {
@@ -148,15 +206,21 @@ public with sharing class DiscountController {
         return new List<Order_Discount__c>();
     }
 
-    public class DiscountPreview {
-        @AuraEnabled public String discountName;
-        @AuraEnabled public Decimal appliedValue;
-        @AuraEnabled public Decimal originalPrice;
-        @AuraEnabled public Decimal discountedPrice;
-    }
-
     @AuraEnabled
-    public static List<DiscountPreview> previewDiscounts(Decimal orderAmount) {
+    public static List<DiscountPreview> previewDiscounts(Decimal orderAmount, List<ItemInput> items) {
+        Map<Id, Decimal> productAmounts = new Map<Id, Decimal>();
+        Map<Id, Decimal> productQuantities = new Map<Id, Decimal>();
+        Set<Id> productIds = new Set<Id>();
+        if (items != null) {
+            for (ItemInput item : items) {
+                if (item.product2Id != null) {
+                    productAmounts.put(item.product2Id, item.amount);
+                    productQuantities.put(item.product2Id, item.quantity != null ? item.quantity : 1);
+                    productIds.add(item.product2Id);
+                }
+            }
+        }
+
         Discount_Settings__mdt settings = getDiscountSettings();
         String strategy = settings.Discount_Strategy__c;
         Decimal minPct = settings.Minimum_Discount_Percentage__c;
@@ -164,59 +228,95 @@ public with sharing class DiscountController {
         Date today = Date.today();
         List<Discount__c> activeDiscounts = [
             SELECT Id, Name, Type__c, Discount_Form__c, Value__c,
-                   Recurrence_Pattern__c, Minimum_Order_Amount__c,
-                   Start_Date__c, End_Date__c
+                   Recurrence_Pattern__c, Minimum_Order_Amount__c, Minimum_Quantity__c,
+                   Start_Date__c, End_Date__c,
+                   Target_Product__c, Target_Product__r.Name,
+                   Trigger_Product__c
             FROM Discount__c
             WHERE Is_Active__c = true
         ];
 
-        List<Discount__c> applicable = new List<Discount__c>();
+        List<Discount__c> globalApplicable = new List<Discount__c>();
+        List<Discount__c> productApplicable = new List<Discount__c>();
         for (Discount__c d : activeDiscounts) {
-            if (isApplicable(d, orderAmount, today)) applicable.add(d);
-        }
-
-        if (applicable.isEmpty()) return new List<DiscountPreview>();
-
-        List<Discount__c> toApply = new List<Discount__c>();
-        if (strategy == 'Highest Discount') {
-            Discount__c best = applicable[0];
-            Decimal bestVal = getDiscountAmount(best, orderAmount);
-            for (Discount__c d : applicable) {
-                Decimal val = getDiscountAmount(d, orderAmount);
-                if (val > bestVal) { bestVal = val; best = d; }
+            if (!isApplicable(d, orderAmount, today, productIds, productQuantities)) continue;
+            if (d.Target_Product__c != null) {
+                productApplicable.add(d);
+            } else {
+                globalApplicable.add(d);
             }
-            toApply.add(best);
-        } else if (strategy == 'Lowest Discount') {
-            Discount__c lowest = applicable[0];
-            Decimal lowestVal = getDiscountAmount(lowest, orderAmount);
-            for (Discount__c d : applicable) {
-                Decimal val = getDiscountAmount(d, orderAmount);
-                if (val < lowestVal) { lowestVal = val; lowest = d; }
-            }
-            toApply.add(lowest);
-        } else {
-            toApply = applicable;
         }
 
         List<DiscountPreview> previews = new List<DiscountPreview>();
         Decimal remaining = orderAmount;
-        for (Discount__c d : toApply) {
-            Decimal applied = getDiscountAmount(d, remaining);
-            Decimal effectivePct = d.Discount_Form__c == 'Percentage' ? d.Value__c : (applied / orderAmount * 100);
+
+        for (Discount__c d : productApplicable) {
+            Decimal productAmount = productAmounts.get(d.Target_Product__c);
+            if (productAmount == null) continue;
+            Decimal applied = getDiscountAmount(d, productAmount);
+            Decimal effectivePct = d.Discount_Form__c == 'Percentage' ? d.Value__c : (productAmount > 0 ? (applied / productAmount * 100) : 0);
             if (minPct != null && effectivePct < minPct) continue;
 
             DiscountPreview p = new DiscountPreview();
             p.discountName = d.Name;
             p.appliedValue = applied;
-            p.originalPrice = remaining;
-            p.discountedPrice = remaining - applied;
+            p.originalPrice = productAmount;
+            p.discountedPrice = productAmount - applied;
+            p.targetProductName = d.Target_Product__r.Name;
             previews.add(p);
             remaining -= applied;
         }
+
+        List<Discount__c> toApplyGlobal = new List<Discount__c>();
+        if (!globalApplicable.isEmpty()) {
+            if (strategy == 'Highest Discount') {
+                Discount__c best = globalApplicable[0];
+                Decimal bestVal = getDiscountAmount(best, remaining);
+                for (Discount__c d : globalApplicable) {
+                    Decimal val = getDiscountAmount(d, remaining);
+                    if (val > bestVal) { bestVal = val; best = d; }
+                }
+                toApplyGlobal.add(best);
+            } else if (strategy == 'Lowest Discount') {
+                Discount__c lowest = globalApplicable[0];
+                Decimal lowestVal = getDiscountAmount(lowest, remaining);
+                for (Discount__c d : globalApplicable) {
+                    Decimal val = getDiscountAmount(d, remaining);
+                    if (val < lowestVal) { lowestVal = val; lowest = d; }
+                }
+                toApplyGlobal.add(lowest);
+            } else {
+                toApplyGlobal = globalApplicable;
+            }
+
+            for (Discount__c d : toApplyGlobal) {
+                Decimal applied = getDiscountAmount(d, remaining);
+                Decimal effectivePct = d.Discount_Form__c == 'Percentage' ? d.Value__c : (orderAmount > 0 ? (applied / orderAmount * 100) : 0);
+                if (minPct != null && effectivePct < minPct) continue;
+
+                DiscountPreview p = new DiscountPreview();
+                p.discountName = d.Name;
+                p.appliedValue = applied;
+                p.originalPrice = remaining;
+                p.discountedPrice = remaining - applied;
+                p.targetProductName = null;
+                previews.add(p);
+                remaining -= applied;
+            }
+        }
+
         return previews;
     }
 
-    private static Boolean isApplicable(Discount__c d, Decimal amount, Date today) {
+    private static Boolean isApplicable(Discount__c d, Decimal amount, Date today, Set<Id> productIds, Map<Id, Decimal> productQuantities) {
+        if (d.Trigger_Product__c != null && !productIds.contains(d.Trigger_Product__c)) return false;
+        if (d.Target_Product__c != null && !productIds.contains(d.Target_Product__c)) return false;
+        if (d.Minimum_Quantity__c != null) {
+            Id qtyCheckId = d.Trigger_Product__c != null ? d.Trigger_Product__c : d.Target_Product__c;
+            Decimal qty = qtyCheckId != null ? productQuantities.get(qtyCheckId) : null;
+            if (qty == null || qty < d.Minimum_Quantity__c) return false;
+        }
+
         if (d.Type__c == 'Conditional' && d.Minimum_Order_Amount__c != null && amount < d.Minimum_Order_Amount__c) return false;
 
         if (d.Type__c == 'Recurring') {

@@ -169,6 +169,7 @@ export default class ProductSearchModal extends NavigationMixin(LightningElement
                 ...this.selectedProducts,
                 [id]: {
                     pricebookEntryId: id,
+                    product2Id: product.Product2Id,
                     name: product.Product2.Name,
                     unitPrice: product.UnitPrice,
                     quantity
@@ -196,11 +197,16 @@ export default class ProductSearchModal extends NavigationMixin(LightningElement
 
     handleNext() {
         this.isLoading = true;
-        previewDiscounts({ orderAmount: this.totalAmount })
+        const items = this.selectedProductsList.map(p => ({
+            product2Id: p.product2Id,
+            amount: p.total,
+            quantity: p.quantity
+        }));
+        previewDiscounts({ orderAmount: this.totalAmount, items })
             .then(data => {
                 this.discountPreviews = data || [];
             })
-            .catch(() => {
+            .catch(e => {
                 this.discountPreviews = [];
             })
             .finally(() => {

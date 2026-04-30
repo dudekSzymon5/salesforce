@@ -5,6 +5,7 @@ import getDiscountSettings from '@salesforce/apex/DiscountController.getDiscount
 import saveDiscountSettings from '@salesforce/apex/DiscountController.saveDiscountSettings';
 import saveDiscount from '@salesforce/apex/DiscountController.saveDiscount';
 import toggleDiscounts from '@salesforce/apex/DiscountController.toggleDiscounts';
+import getProductOptions from '@salesforce/apex/DiscountController.getProductOptions';
 import { refreshApex } from '@salesforce/apex';
 import LABEL_TITLE from '@salesforce/label/c.Discount_Title';
 import LABEL_GLOBAL_SETTINGS from '@salesforce/label/c.Discount_GlobalSettings';
@@ -77,6 +78,7 @@ export default class DiscountManager extends LightningElement {
     @track minPercentage = 0;
     @track showForm = false;
     @track formDiscount = {};
+    @track productOptions = [];
     wiredDiscountsResult;
 
     strategyOptions = [
@@ -131,6 +133,12 @@ export default class DiscountManager extends LightningElement {
         return this.formDiscount.Discount_Form__c === 'Percentage';
     }
 
+    get showMinimumQuantity() {
+    const target = this.formDiscount.Target_Product__c;
+    const trigger = this.formDiscount.Trigger_Product__c;
+    return (target && target !== '') || (trigger && trigger !== '');
+    }
+
     get valueMax() {
         return this.isPercentage ? 100 : undefined;
     }
@@ -140,6 +148,16 @@ export default class DiscountManager extends LightningElement {
         if (data) {
             this.strategy = data.Discount_Strategy__c;
             this.minPercentage = data.Minimum_Discount_Percentage__c;
+        }
+    }
+
+    @wire(getProductOptions)
+    wiredProducts({ data }) {
+        if (data) {
+            this.productOptions = [
+                { label: '— None —', value: '' },
+                ...data.map(p => ({ label: p.Name, value: p.Id }))
+            ];
         }
     }
 
@@ -155,7 +173,9 @@ export default class DiscountManager extends LightningElement {
                     ? (d.Recurrence_Pattern__c === 'Custom Date' && d.Start_Date__c
                         ? 'Annual: ' + d.Start_Date__c
                         : (d.Recurrence_Pattern__c || '-'))
-                    : ([d.Start_Date__c, d.End_Date__c].filter(Boolean).join(' – ') || 'Any time')
+                    : ([d.Start_Date__c, d.End_Date__c].filter(Boolean).join(' – ') || 'Any time'),
+                targetProductDisplay: d.Target_Product__r ? d.Target_Product__r.Name : '-',
+                triggerProductDisplay: d.Trigger_Product__r ? d.Trigger_Product__r.Name : '-'
             }));
         }
     }
@@ -257,17 +277,27 @@ export default class DiscountManager extends LightningElement {
     }
 
     handleSaveDiscount() {
-        saveDiscount({ discount: this.formDiscount })
+        const discountToSave = { ...this.formDiscount };
+        if (!discountToSave.Target_Product__c) discountToSave.Target_Product__c = null;
+        if (!discountToSave.Trigger_Product__c) discountToSave.Trigger_Product__c = null;
+
+        if (!discountToSave.Trigger_Product__c && !discountToSave.Target_Product__c) {
+            discountToSave.Minimum_Quantity__c = null;
+        }
+
+        saveDiscount({ discount: discountToSave })
         .then(() => {
             this.showToast('Success', 'Discount saved', 'success');
             this.showForm = false;
             refreshApex(this.wiredDiscountsResult);
         })
         .catch(e => {
-            this.showToast('Error', e.body.message, 'error');
+            const errorMessage = e.body?.message || e.message || e.body?.pageErrors?.[0]?.message || 'Wystąpił nieznany błąd podczas zapisu.';
+            
+            this.showToast('Error', errorMessage, 'error');
+            console.error('Save error:', JSON.stringify(e)); 
         });
     }
-
     showToast(title, message, variant) {
         this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
     }

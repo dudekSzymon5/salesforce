@@ -157,6 +157,7 @@
                                 <thead>
                                     <tr>
                                         <th>{label.colDiscount}</th>
+                                        <th>Product</th>
                                         <th>{label.colOriginalPrice}</th>
                                         <th>{label.colDiscountValue}</th>
                                         <th>{label.colPriceAfterDiscount}</th>
@@ -166,6 +167,7 @@
                                     <template for:each={discountPreviews} for:item="d">
                                         <tr key={d.discountName}>
                                             <td>{d.discountName}</td>
+                                            <td>{d.targetProductName}</td>
                                             <td>
                                                 <span class="original-price">
                                                     <lightning-formatted-number
@@ -193,7 +195,7 @@
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                        <td colspan="3"><strong>{label.totalAfterDiscounts}</strong></td>
+                                        <td colspan="4"><strong>{label.totalAfterDiscounts}</strong></td>
                                         <td>
                                             <strong class="slds-text-color_success">
                                                 <lightning-formatted-number
