@@ -71,13 +71,13 @@ private class ProductSearchControllerTest {
         Opportunity opp = [SELECT Id FROM Opportunity LIMIT 1];
         PricebookEntry pbe = [SELECT Id, UnitPrice FROM PricebookEntry LIMIT 1];
 
-        ProductSearchController.OrderLineItem item = new ProductSearchController.OrderLineItem();
+        ProductSearchService.OrderLineItem item = new ProductSearchService.OrderLineItem();
         item.pricebookEntryId = pbe.Id;
         item.quantity = 2;
         item.unitPrice = pbe.UnitPrice;
 
         Test.startTest();
-        Id orderId = ProductSearchController.createOrder(opp.Id, new List<ProductSearchController.OrderLineItem>{ item });
+        Id orderId = ProductSearchController.createOrder(opp.Id, new List<ProductSearchService.OrderLineItem>{ item });
         Test.stopTest();
 
         Assert.isNotNull(orderId);
