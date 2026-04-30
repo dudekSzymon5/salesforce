@@ -38,6 +38,18 @@ import LABEL_VALUE from '@salesforce/label/c.Common_Value';
 import LABEL_START_DATE from '@salesforce/label/c.Common_StartDate';
 import LABEL_END_DATE from '@salesforce/label/c.Common_EndDate';
 import LABEL_CANCEL_CLOSE from '@salesforce/label/c.Common_CancelClose';
+import LABEL_SUCCESS from '@salesforce/label/c.Common_Success';
+import LABEL_ERROR from '@salesforce/label/c.Common_Error';
+import LABEL_NONE from '@salesforce/label/c.Common_None';
+import LABEL_TARGET_PRODUCT from '@salesforce/label/c.Discount_TargetProduct';
+import LABEL_TRIGGER_PRODUCT from '@salesforce/label/c.Discount_TriggerProduct';
+import LABEL_MIN_QUANTITY from '@salesforce/label/c.Discount_MinQuantity';
+import LABEL_TOAST_SETTINGS_SAVED from '@salesforce/label/c.Discount_ToastSettingsSaved';
+import LABEL_TOAST_ACTIVATED from '@salesforce/label/c.Discount_ToastActivated';
+import LABEL_TOAST_DEACTIVATED from '@salesforce/label/c.Discount_ToastDeactivated';
+import LABEL_TOAST_SAVED from '@salesforce/label/c.Discount_ToastSaved';
+import LABEL_ANNUAL_PREFIX from '@salesforce/label/c.Discount_AnnualPrefix';
+import LABEL_ANY_TIME from '@salesforce/label/c.Discount_AnyTime';
 
 export default class DiscountManager extends LightningElement {
     label = {
@@ -70,7 +82,13 @@ export default class DiscountManager extends LightningElement {
         value: LABEL_VALUE,
         startDate: LABEL_START_DATE,
         endDate: LABEL_END_DATE,
-        cancelClose: LABEL_CANCEL_CLOSE
+        cancelClose: LABEL_CANCEL_CLOSE,
+        success: LABEL_SUCCESS,
+        error: LABEL_ERROR,
+        none: LABEL_NONE,
+        targetProduct: LABEL_TARGET_PRODUCT,
+        triggerProduct: LABEL_TRIGGER_PRODUCT,
+        minQuantity: LABEL_MIN_QUANTITY
     };
 
     @track discounts = [];
@@ -157,7 +175,7 @@ export default class DiscountManager extends LightningElement {
     wiredProducts({ data }) {
         if (data) {
             this.productOptions = [
-                { label: '— None —', value: '' },
+                { label: LABEL_NONE, value: '' },
                 ...data.map(p => ({ label: p.Name, value: p.Id }))
             ];
         }
@@ -188,9 +206,9 @@ export default class DiscountManager extends LightningElement {
             isSelected: false,
             scheduleDisplay: d.Type__c === 'Recurring'
                 ? (d.Recurrence_Pattern__c === 'Custom Date' && d.Start_Date__c
-                    ? 'Annual: ' + d.Start_Date__c
+                    ? LABEL_ANNUAL_PREFIX + d.Start_Date__c
                     : (d.Recurrence_Pattern__c || '-'))
-                : ([d.Start_Date__c, d.End_Date__c].filter(Boolean).join(' – ') || 'Any time'),
+                : ([d.Start_Date__c, d.End_Date__c].filter(Boolean).join(' – ') || LABEL_ANY_TIME),
             targetProductDisplay: d.Target_Product__r ? d.Target_Product__r.Name : '-',
             triggerProductDisplay: d.Trigger_Product__r ? d.Trigger_Product__r.Name : '-',
             isAssigned: this.assignedDiscountIds.has(d.Id)
@@ -208,10 +226,10 @@ export default class DiscountManager extends LightningElement {
     handleSaveSettings() {
         saveDiscountSettings({ strategy: this.strategy, minPercentage: this.minPercentage })
         .then(() => {
-            this.showToast('Success', 'Settings saved', 'success');
+            this.showToast(LABEL_SUCCESS, LABEL_TOAST_SETTINGS_SAVED, 'success');
         })
         .catch(e => {
-            this.showToast('Error', e.body.message, 'error');
+            this.showToast(LABEL_ERROR, e.body.message, 'error');
         });
     }
 
@@ -236,7 +254,7 @@ export default class DiscountManager extends LightningElement {
         if (!this.selectedIds.length) return;
         toggleDiscounts({ discountIds: this.selectedIds, isActive: true })
         .then(() => {
-            this.showToast('Success', 'Discounts activated', 'success');
+            this.showToast(LABEL_SUCCESS, LABEL_TOAST_ACTIVATED, 'success');
             this.selectedIds = [];
             refreshApex(this.wiredDiscountsResult);
         });
@@ -246,7 +264,7 @@ export default class DiscountManager extends LightningElement {
         if (!this.selectedIds.length) return;
         toggleDiscounts({ discountIds: this.selectedIds, isActive: false })
         .then(() => {
-            this.showToast('Success', 'Discounts deactivated', 'success');
+            this.showToast(LABEL_SUCCESS, LABEL_TOAST_DEACTIVATED, 'success');
             this.selectedIds = [];
             refreshApex(this.wiredDiscountsResult);
         });
@@ -304,14 +322,14 @@ export default class DiscountManager extends LightningElement {
 
         saveDiscount({ discount: discountToSave })
         .then(() => {
-            this.showToast('Success', 'Discount saved', 'success');
+            this.showToast(LABEL_SUCCESS, LABEL_TOAST_SAVED, 'success');
             this.showForm = false;
             refreshApex(this.wiredDiscountsResult);
         })
         .catch(e => {
             const errorMessage = e.body?.message || e.message || e.body?.pageErrors?.[0]?.message || 'Wystąpił nieznany błąd podczas zapisu.';
             
-            this.showToast('Error', errorMessage, 'error'); 
+            this.showToast(LABEL_ERROR, errorMessage, 'error');
         });
     }
     showToast(title, message, variant) {

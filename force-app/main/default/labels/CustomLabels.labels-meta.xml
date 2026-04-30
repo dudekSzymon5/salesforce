@@ -93,6 +93,27 @@
         <shortDescription>Cancel and close button title</shortDescription>
         <value>Cancel and close</value>
     </labels>
+    <labels>
+        <fullName>Common_Success</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Success toast title</shortDescription>
+        <value>Success</value>
+    </labels>
+    <labels>
+        <fullName>Common_Error</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Error toast title</shortDescription>
+        <value>Error</value>
+    </labels>
+    <labels>
+        <fullName>Common_None</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>None option in combobox</shortDescription>
+        <value>— None —</value>
+    </labels>
 
     <!-- Discount -->
     <labels>
@@ -227,6 +248,69 @@
         <protected>false</protected>
         <shortDescription>Minimum Order Amount field label</shortDescription>
         <value>Minimum Order Amount</value>
+    </labels>
+    <labels>
+        <fullName>Discount_TargetProduct</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Target Product field label</shortDescription>
+        <value>Target Product</value>
+    </labels>
+    <labels>
+        <fullName>Discount_TriggerProduct</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Trigger Product field label</shortDescription>
+        <value>Trigger Product (optional — buy this to activate discount)</value>
+    </labels>
+    <labels>
+        <fullName>Discount_MinQuantity</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Minimum Quantity field label</shortDescription>
+        <value>Minimum Quantity</value>
+    </labels>
+    <labels>
+        <fullName>Discount_ToastSettingsSaved</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Toast message when settings are saved</shortDescription>
+        <value>Settings saved</value>
+    </labels>
+    <labels>
+        <fullName>Discount_ToastActivated</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Toast message when discounts are activated</shortDescription>
+        <value>Discounts activated</value>
+    </labels>
+    <labels>
+        <fullName>Discount_ToastDeactivated</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Toast message when discounts are deactivated</shortDescription>
+        <value>Discounts deactivated</value>
+    </labels>
+    <labels>
+        <fullName>Discount_ToastSaved</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Toast message when discount is saved</shortDescription>
+        <value>Discount saved</value>
+    </labels>
+    <labels>
+        <fullName>Discount_AnnualPrefix</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Prefix for annual recurring discount date display</shortDescription>
+        <value>Annual: </value>
+    </labels>
+    <labels>
+        <fullName>Discount_AnyTime</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Display value when no date range is set</shortDescription>
+        <value>Any time</value>
     </labels>
 
     <!-- Order -->
