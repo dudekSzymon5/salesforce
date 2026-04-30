@@ -97,6 +97,36 @@ private class DiscountControllerTest {
     }
 
     @IsTest
+    static void testGetAssignedDiscountIds_empty() {
+        Test.startTest();
+        List<Id> ids = DiscountController.getAssignedDiscountIds();
+        Test.stopTest();
+
+        Assert.isNotNull(ids);
+        Assert.isTrue(ids.isEmpty());
+    }
+
+    @IsTest
+    static void testGetAssignedDiscountIds_withAssignment() {
+        Discount__c discount = [SELECT Id FROM Discount__c LIMIT 1];
+        Order ord = [SELECT Id FROM Order LIMIT 1];
+
+        insert new Order_Discount__c(
+            Order__c=ord.Id,
+            Discount__c=discount.Id,
+            Applied_Value__c=10,
+            Original_Price__c=100,
+            Discounted_Price__c=90
+        );
+
+        Test.startTest();
+        List<Id> ids = DiscountController.getAssignedDiscountIds();
+        Test.stopTest();
+
+        Assert.isTrue(ids.contains(discount.Id));
+    }
+
+    @IsTest
     static void testToggleDiscounts() {
         Discount__c discount = [SELECT Id FROM Discount__c LIMIT 1];
 

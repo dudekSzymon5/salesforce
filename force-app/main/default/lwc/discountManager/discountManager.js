@@ -1,6 +1,7 @@
 import { LightningElement, track, wire } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getDiscounts from '@salesforce/apex/DiscountController.getDiscounts';
+import getAssignedDiscountIds from '@salesforce/apex/DiscountController.getAssignedDiscountIds';
 import getDiscountSettings from '@salesforce/apex/DiscountController.getDiscountSettings';
 import saveDiscountSettings from '@salesforce/apex/DiscountController.saveDiscountSettings';
 import saveDiscount from '@salesforce/apex/DiscountController.saveDiscount';
@@ -79,6 +80,7 @@ export default class DiscountManager extends LightningElement {
     @track showForm = false;
     @track formDiscount = {};
     @track productOptions = [];
+    assignedDiscountIds = new Set();
     wiredDiscountsResult;
 
     strategyOptions = [
@@ -161,23 +163,38 @@ export default class DiscountManager extends LightningElement {
         }
     }
 
+    @wire(getAssignedDiscountIds)
+    wiredAssignedIds({ data }) {
+        if (data) {
+            this.assignedDiscountIds = new Set(data);
+            this.mapDiscounts();
+        }
+    }
+
     @wire(getDiscounts)
     wiredDiscounts(result) {
         this.wiredDiscountsResult = result;
         if (result.data) {
-            this.discounts = result.data.map(d => ({
-                ...d,
-                activeIcon: d.Is_Active__c ? 'utility:check' : 'utility:close',
-                isSelected: false,
-                scheduleDisplay: d.Type__c === 'Recurring'
-                    ? (d.Recurrence_Pattern__c === 'Custom Date' && d.Start_Date__c
-                        ? 'Annual: ' + d.Start_Date__c
-                        : (d.Recurrence_Pattern__c || '-'))
-                    : ([d.Start_Date__c, d.End_Date__c].filter(Boolean).join(' – ') || 'Any time'),
-                targetProductDisplay: d.Target_Product__r ? d.Target_Product__r.Name : '-',
-                triggerProductDisplay: d.Trigger_Product__r ? d.Trigger_Product__r.Name : '-'
-            }));
+            this.mapDiscounts();
         }
+    }
+
+    mapDiscounts() {
+        const data = this.wiredDiscountsResult && this.wiredDiscountsResult.data;
+        if (!data) return;
+        this.discounts = data.map(d => ({
+            ...d,
+            activeIcon: d.Is_Active__c ? 'utility:check' : 'utility:close',
+            isSelected: false,
+            scheduleDisplay: d.Type__c === 'Recurring'
+                ? (d.Recurrence_Pattern__c === 'Custom Date' && d.Start_Date__c
+                    ? 'Annual: ' + d.Start_Date__c
+                    : (d.Recurrence_Pattern__c || '-'))
+                : ([d.Start_Date__c, d.End_Date__c].filter(Boolean).join(' – ') || 'Any time'),
+            targetProductDisplay: d.Target_Product__r ? d.Target_Product__r.Name : '-',
+            triggerProductDisplay: d.Trigger_Product__r ? d.Trigger_Product__r.Name : '-',
+            isAssigned: this.assignedDiscountIds.has(d.Id)
+        }));
     }
 
     handleStrategyChange(event) {
@@ -294,8 +311,7 @@ export default class DiscountManager extends LightningElement {
         .catch(e => {
             const errorMessage = e.body?.message || e.message || e.body?.pageErrors?.[0]?.message || 'Wystąpił nieznany błąd podczas zapisu.';
             
-            this.showToast('Error', errorMessage, 'error');
-            console.error('Save error:', JSON.stringify(e)); 
+            this.showToast('Error', errorMessage, 'error'); 
         });
     }
     showToast(title, message, variant) {
