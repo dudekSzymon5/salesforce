@@ -28,6 +28,15 @@ public with sharing class DiscountController {
     }
 
     @AuraEnabled(cacheable=true)
+    public static List<Id> getAssignedDiscountIds() {
+        Set<Id> ids = new Set<Id>();
+        for (Order_Discount__c od : [SELECT Discount__c FROM Order_Discount__c WHERE Discount__c != null]) {
+            ids.add(od.Discount__c);
+        }
+        return new List<Id>(ids);
+    }
+
+    @AuraEnabled(cacheable=true)
     public static List<Product2> getProductOptions() {
         return [
             SELECT Id, Name FROM Product2

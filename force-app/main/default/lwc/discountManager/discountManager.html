@@ -110,13 +110,14 @@
                                 <td><span class="slds-truncate" title={discount.targetProductDisplay}>{discount.targetProductDisplay}</span></td>
                                 <td><span class="slds-truncate" title={discount.triggerProductDisplay}>{discount.triggerProductDisplay}</span></td>
                                 <td>
-                                    <lightning-button
-                                        label={label.edit}
-                                        size="small"
-                                        data-id={discount.Id}
-                                        onclick={handleEditDiscount}
-                                        disabled={discount.isAssigned}>
-                                    </lightning-button>
+                                    <template if:false={discount.isAssigned}>
+                                        <lightning-button
+                                            label={label.edit}
+                                            size="small"
+                                            data-id={discount.Id}
+                                            onclick={handleEditDiscount}>
+                                        </lightning-button>
+                                    </template>
                                 </td>
                             </tr>
                         </template>
