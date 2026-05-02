@@ -9,7 +9,8 @@ private class DiscountControllerTest {
             Discount_Form__c='Percentage',
             Value__c=10,
             Is_Active__c=true,
-            Minimum_Order_Amount__c=100
+            Minimum_Order_Amount__c=100,
+            Condition_Type__c='Minimum Order Value'
         );
         insert discount;
 
