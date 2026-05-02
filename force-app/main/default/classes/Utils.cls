@@ -8,6 +8,9 @@ public class Utils {
         public final String TYPE_CONDITIONAL = 'Conditional';
         public final String TYPE_ONE_TIME    = 'One-Time';
 
+        public final String CONDITION_MIN_ORDER_VALUE = 'Minimum Order Value';
+        public final String CONDITION_TWO_FOR_ONE     = 'Two For One';
+
         public final String FORM_PERCENTAGE = 'Percentage';
         public final String FORM_AMOUNT     = 'Amount';
 
@@ -18,6 +21,10 @@ public class Utils {
 
         public final String STRATEGY_HIGHEST = 'Highest Discount';
         public final String STRATEGY_LOWEST  = 'Lowest Discount';
+
+        public final String TARGET_ALL      = 'All Products';
+        public final String TARGET_FAMILIES = 'Specific Families';
+        public final String TARGET_PRODUCTS = 'Specific Products';
 
         public final String ERROR_ALREADY_ASSIGNED = 'This discount is already assigned to an order and cannot be edited.';
         public final String ERROR_PERCENTAGE_RANGE = 'Percentage discount value must be between 0 and 100.';

@@ -7,6 +7,9 @@ import saveDiscountSettings from '@salesforce/apex/DiscountController.saveDiscou
 import saveDiscount from '@salesforce/apex/DiscountController.saveDiscount';
 import toggleDiscounts from '@salesforce/apex/DiscountController.toggleDiscounts';
 import getProductOptions from '@salesforce/apex/DiscountController.getProductOptions';
+import getProductFamilies from '@salesforce/apex/DiscountController.getProductFamilies';
+import getDiscountProducts from '@salesforce/apex/DiscountController.getDiscountProducts';
+import saveDiscountProducts from '@salesforce/apex/DiscountController.saveDiscountProducts';
 import { refreshApex } from '@salesforce/apex';
 import LABEL_TITLE from '@salesforce/label/c.Discount_Title';
 import LABEL_GLOBAL_SETTINGS from '@salesforce/label/c.Discount_GlobalSettings';
@@ -41,8 +44,6 @@ import LABEL_CANCEL_CLOSE from '@salesforce/label/c.Common_CancelClose';
 import LABEL_SUCCESS from '@salesforce/label/c.Common_Success';
 import LABEL_ERROR from '@salesforce/label/c.Common_Error';
 import LABEL_NONE from '@salesforce/label/c.Common_None';
-import LABEL_TARGET_PRODUCT from '@salesforce/label/c.Discount_TargetProduct';
-import LABEL_TRIGGER_PRODUCT from '@salesforce/label/c.Discount_TriggerProduct';
 import LABEL_MIN_QUANTITY from '@salesforce/label/c.Discount_MinQuantity';
 import LABEL_TOAST_SETTINGS_SAVED from '@salesforce/label/c.Discount_ToastSettingsSaved';
 import LABEL_TOAST_ACTIVATED from '@salesforce/label/c.Discount_ToastActivated';
@@ -86,8 +87,6 @@ export default class DiscountManager extends LightningElement {
         success: LABEL_SUCCESS,
         error: LABEL_ERROR,
         none: LABEL_NONE,
-        targetProduct: LABEL_TARGET_PRODUCT,
-        triggerProduct: LABEL_TRIGGER_PRODUCT,
         minQuantity: LABEL_MIN_QUANTITY
     };
 
@@ -98,6 +97,9 @@ export default class DiscountManager extends LightningElement {
     @track showForm = false;
     @track formDiscount = {};
     @track productOptions = [];
+    rawFamilies = [];
+    @track selectedProductIds = [];
+    @track productSearch = '';
     assignedDiscountIds = new Set();
     wiredDiscountsResult;
 
@@ -113,6 +115,11 @@ export default class DiscountManager extends LightningElement {
         { label: 'Conditional', value: 'Conditional' }
     ];
 
+    conditionTypeOptions = [
+        { label: 'Minimum Order Value', value: 'Minimum Order Value' },
+        { label: 'Two For One', value: 'Two For One' }
+    ];
+
     formOptions = [
         { label: 'Percentage', value: 'Percentage' },
         { label: 'Amount', value: 'Amount' }
@@ -123,6 +130,12 @@ export default class DiscountManager extends LightningElement {
         { label: 'Every Monday', value: 'Every Monday' },
         { label: 'Black Friday', value: 'Black Friday' },
         { label: 'Custom Date', value: 'Custom Date' }
+    ];
+
+    targetApplicationOptions = [
+        { label: 'All Products', value: 'All Products' },
+        { label: 'Specific Families', value: 'Specific Families' },
+        { label: 'Specific Products', value: 'Specific Products' }
     ];
 
     get hasDiscounts() {
@@ -141,6 +154,14 @@ export default class DiscountManager extends LightningElement {
         return this.formDiscount.Type__c === 'Conditional';
     }
 
+    get isTwoForOne() {
+        return this.formDiscount.Type__c === 'Conditional' && this.formDiscount.Condition_Type__c === 'Two For One';
+    }
+
+    get isMinOrderValue() {
+        return this.formDiscount.Type__c === 'Conditional' && this.formDiscount.Condition_Type__c === 'Minimum Order Value';
+    }
+
     get showDateRange() {
         return this.formDiscount.Type__c === 'One-Time' || this.formDiscount.Type__c === 'Conditional';
     }
@@ -153,14 +174,33 @@ export default class DiscountManager extends LightningElement {
         return this.formDiscount.Discount_Form__c === 'Percentage';
     }
 
-    get showMinimumQuantity() {
-    const target = this.formDiscount.Target_Product__c;
-    const trigger = this.formDiscount.Trigger_Product__c;
-    return (target && target !== '') || (trigger && trigger !== '');
+    get showValueFields() {
+        return !this.isTwoForOne;
+    }
+
+    get isSpecificFamilies() {
+        return this.formDiscount.Target_Application__c === 'Specific Families';
+    }
+
+    get isSpecificProducts() {
+        return this.formDiscount.Target_Application__c === 'Specific Products';
     }
 
     get valueMax() {
         return this.isPercentage ? 100 : undefined;
+    }
+
+    get filteredProductOptions() {
+        const search = (this.productSearch || '').toLowerCase();
+        return this.productOptions
+            .filter(p => p.label.toLowerCase().includes(search))
+            .map(p => ({ ...p, checked: this.selectedProductIds.includes(p.value) }));
+    }
+
+    get selectedFamilies() {
+        const raw = this.formDiscount.Target_Families__c;
+        if (!raw) return [];
+        return raw.split(',').map(f => f.trim()).filter(f => f);
     }
 
     @wire(getDiscountSettings)
@@ -174,11 +214,20 @@ export default class DiscountManager extends LightningElement {
     @wire(getProductOptions)
     wiredProducts({ data }) {
         if (data) {
-            this.productOptions = [
-                { label: LABEL_NONE, value: '' },
-                ...data.map(p => ({ label: p.Name, value: p.Id }))
-            ];
+            this.productOptions = data.map(p => ({ label: p.Name, value: p.Id, family: p.Family }));
         }
+    }
+
+    @wire(getProductFamilies)
+    wiredFamilies({ data }) {
+        if (data) {
+            this.rawFamilies = data;
+        }
+    }
+
+    get familyOptions() {
+        const selected = this.selectedFamilies;
+        return this.rawFamilies.map(f => ({ label: f, value: f, checked: selected.includes(f) }));
     }
 
     @wire(getAssignedDiscountIds)
@@ -209,10 +258,17 @@ export default class DiscountManager extends LightningElement {
                     ? LABEL_ANNUAL_PREFIX + d.Start_Date__c
                     : (d.Recurrence_Pattern__c || '-'))
                 : ([d.Start_Date__c, d.End_Date__c].filter(Boolean).join(' – ') || LABEL_ANY_TIME),
-            targetProductDisplay: d.Target_Product__r ? d.Target_Product__r.Name : '-',
-            triggerProductDisplay: d.Trigger_Product__r ? d.Trigger_Product__r.Name : '-',
+            targetDisplay: this.buildTargetDisplay(d),
             isAssigned: this.assignedDiscountIds.has(d.Id)
         }));
+    }
+
+    buildTargetDisplay(d) {
+        if (!d.Target_Application__c || d.Target_Application__c === 'All Products') return 'All Products';
+        if (d.Target_Application__c === 'Specific Families') {
+            return 'Families: ' + (d.Target_Families__c || '-');
+        }
+        return 'Specific Products';
     }
 
     handleStrategyChange(event) {
@@ -271,14 +327,30 @@ export default class DiscountManager extends LightningElement {
     }
 
     handleNewDiscount() {
-        this.formDiscount = {};
+        this.formDiscount = { Target_Application__c: 'All Products' };
+        this.selectedProductIds = [];
+        this.productSearch = '';
         this.showForm = true;
     }
 
     handleEditDiscount(event) {
         const id = event.target.dataset.id;
         this.formDiscount = { ...this.discounts.find(d => d.Id === id) };
+        this.selectedProductIds = [];
+        this.productSearch = '';
         this.showForm = true;
+        if (this.formDiscount.Target_Application__c === 'Specific Products') {
+            getDiscountProducts({ discountId: id })
+            .then(ids => { this.selectedProductIds = ids || []; });
+        }
+    }
+
+    handleNextStep() {
+        this.formStep = 2;
+    }
+
+    handlePrevStep() {
+        this.formStep = 1;
     }
 
     handleFormChange(event) {
@@ -288,14 +360,26 @@ export default class DiscountManager extends LightningElement {
 
         if (field === 'Type__c') {
             if (value === 'Recurring') {
-                updated = { ...updated, Start_Date__c: null, End_Date__c: null };
+                updated = { ...updated, Start_Date__c: null, End_Date__c: null, Condition_Type__c: null };
             } else {
-                updated = { ...updated, Recurrence_Pattern__c: null, Start_Date__c: null };
+                updated = { ...updated, Recurrence_Pattern__c: null, Start_Date__c: null, Condition_Type__c: null };
             }
+        }
+
+        if (field === 'Condition_Type__c' && value === 'Two For One') {
+            updated = { ...updated, Minimum_Quantity__c: 2, Minimum_Order_Amount__c: null, Value__c: 50, Discount_Form__c: 'Percentage' };
+        }
+        if (field === 'Condition_Type__c' && value === 'Minimum Order Value') {
+            updated = { ...updated, Minimum_Quantity__c: null };
         }
 
         if (field === 'Recurrence_Pattern__c' && value !== 'Custom Date') {
             updated = { ...updated, Start_Date__c: null };
+        }
+
+        if (field === 'Target_Application__c') {
+            updated = { ...updated, Target_Families__c: null };
+            this.selectedProductIds = [];
         }
 
         this.formDiscount = updated;
@@ -306,32 +390,55 @@ export default class DiscountManager extends LightningElement {
         this.formDiscount = { ...this.formDiscount, [field]: event.target.checked };
     }
 
+    handleFamilyChange(event) {
+        const families = event.detail.value;
+        this.formDiscount = { ...this.formDiscount, Target_Families__c: families.join(',') };
+    }
+
+    handleProductSearch(event) {
+        this.productSearch = event.target.value;
+    }
+
+    handleProductSelect(event) {
+        const id = event.target.dataset.id;
+        const checked = event.target.checked;
+        if (checked) {
+            if (!this.selectedProductIds.includes(id)) {
+                this.selectedProductIds = [...this.selectedProductIds, id];
+            }
+        } else {
+            this.selectedProductIds = this.selectedProductIds.filter(pid => pid !== id);
+        }
+    }
+
     handleCloseForm() {
         this.showForm = false;
         this.formDiscount = {};
+        this.selectedProductIds = [];
+        this.formStep = 1;
     }
 
     handleSaveDiscount() {
         const discountToSave = { ...this.formDiscount };
-        if (!discountToSave.Target_Product__c) discountToSave.Target_Product__c = null;
-        if (!discountToSave.Trigger_Product__c) discountToSave.Trigger_Product__c = null;
-
-        if (!discountToSave.Trigger_Product__c && !discountToSave.Target_Product__c) {
-            discountToSave.Minimum_Quantity__c = null;
-        }
 
         saveDiscount({ discount: discountToSave })
+        .then(saved => {
+            if (discountToSave.Target_Application__c === 'Specific Products') {
+                return saveDiscountProducts({ discountId: saved.Id, productIds: this.selectedProductIds });
+            }
+        })
         .then(() => {
             this.showToast(LABEL_SUCCESS, LABEL_TOAST_SAVED, 'success');
             this.showForm = false;
+            this.selectedProductIds = [];
             refreshApex(this.wiredDiscountsResult);
         })
         .catch(e => {
             const errorMessage = e.body?.message || e.message || e.body?.pageErrors?.[0]?.message || 'Wystąpił nieznany błąd podczas zapisu.';
-            
             this.showToast(LABEL_ERROR, errorMessage, 'error');
         });
     }
+
     showToast(title, message, variant) {
         this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
     }

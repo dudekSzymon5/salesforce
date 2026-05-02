@@ -73,8 +73,7 @@
                             <th scope="col"><div class="slds-truncate slds-th__action" title={label.value}>{label.value}</div></th>
                             <th scope="col" style="width: 5rem;"><div class="slds-truncate slds-th__action" title={label.active}>{label.active}</div></th>
                             <th scope="col"><div class="slds-truncate slds-th__action" title={label.colSchedule}>{label.colSchedule}</div></th>
-                            <th scope="col"><div class="slds-truncate slds-th__action" title={label.targetProduct}>{label.targetProduct}</div></th>
-                            <th scope="col"><div class="slds-truncate slds-th__action" title={label.triggerProduct}>{label.triggerProduct}</div></th>
+                            <th scope="col"><div class="slds-truncate slds-th__action">Target Application</div></th>
                             <th scope="col" style="width: 6rem;"><div class="slds-truncate slds-th__action" title={label.colActions}>{label.colActions}</div></th>
                         </tr>
                     </thead>
@@ -107,8 +106,7 @@
                                     </lightning-icon>
                                 </td>
                                 <td><span class="slds-truncate">{discount.scheduleDisplay}</span></td>
-                                <td><span class="slds-truncate" title={discount.targetProductDisplay}>{discount.targetProductDisplay}</span></td>
-                                <td><span class="slds-truncate" title={discount.triggerProductDisplay}>{discount.triggerProductDisplay}</span></td>
+                                <td><span class="slds-truncate" title={discount.targetDisplay}>{discount.targetDisplay}</span></td>
                                 <td>
                                     <template if:false={discount.isAssigned}>
                                         <lightning-button
@@ -161,26 +159,30 @@
                                 onchange={handleFormChange}>
                             </lightning-combobox>
                         </div>
-                        <div class="slds-m-bottom_small">
-                            <lightning-combobox
-                                label={label.discountForm}
-                                value={formDiscount.Discount_Form__c}
-                                options={formOptions}
-                                data-field="Discount_Form__c"
-                                onchange={handleFormChange}>
-                            </lightning-combobox>
-                        </div>
-                        <div class="slds-m-bottom_small">
-                            <lightning-input
-                                type="number"
-                                label={label.value}
-                                value={formDiscount.Value__c}
-                                min="0"
-                                max={valueMax}
-                                data-field="Value__c"
-                                onchange={handleFormChange}>
-                            </lightning-input>
-                        </div>
+                        <template if:true={showValueFields}>
+                            <div class="slds-m-bottom_small">
+                                <lightning-combobox
+                                    label={label.discountForm}
+                                    value={formDiscount.Discount_Form__c}
+                                    options={formOptions}
+                                    data-field="Discount_Form__c"
+                                    onchange={handleFormChange}>
+                                </lightning-combobox>
+                            </div>
+                            <div class="slds-m-bottom_small">
+                                <lightning-input
+                                    type="number"
+                                    label={label.value}
+                                    value={formDiscount.Value__c}
+                                    min="0"
+                                    max={valueMax}
+                                    data-field="Value__c"
+                                    onchange={handleFormChange}>
+                                </lightning-input>
+                            </div>
+                        </template>
+
+                        <!-- RECURRING -->
                         <template if:true={isRecurring}>
                             <div class="slds-m-bottom_small">
                                 <lightning-combobox
@@ -203,6 +205,8 @@
                                 </div>
                             </template>
                         </template>
+
+                        <!-- DATE RANGE (One-Time, Conditional) -->
                         <template if:true={showDateRange}>
                             <div class="slds-m-bottom_small">
                                 <lightning-input
@@ -223,7 +227,22 @@
                                 </lightning-input>
                             </div>
                         </template>
+
+                        <!-- CONDITIONAL: condition type selector -->
                         <template if:true={isConditional}>
+                            <div class="slds-m-bottom_small">
+                                <lightning-combobox
+                                    label="Condition Type"
+                                    value={formDiscount.Condition_Type__c}
+                                    options={conditionTypeOptions}
+                                    data-field="Condition_Type__c"
+                                    onchange={handleFormChange}>
+                                </lightning-combobox>
+                            </div>
+                        </template>
+
+                        <!-- CONDITIONAL > Minimum Order Value -->
+                        <template if:true={isMinOrderValue}>
                             <div class="slds-m-bottom_small">
                                 <lightning-input
                                     type="number"
@@ -234,39 +253,106 @@
                                 </lightning-input>
                             </div>
                         </template>
+
+                        <!-- CONDITIONAL > Two For One: min quantity -->
+                        <template if:true={isTwoForOne}>
+                            <div class="slds-m-bottom_small">
+                                <lightning-input
+                                    type="number"
+                                    label={label.minQuantity}
+                                    value={formDiscount.Minimum_Quantity__c}
+                                    min="2"
+                                    step="1"
+                                    data-field="Minimum_Quantity__c"
+                                    onchange={handleFormChange}>
+                                </lightning-input>
+                            </div>
+                        </template>
+
+                        <!-- TARGET APPLICATION -->
                         <div class="slds-m-bottom_small">
                             <lightning-combobox
-                                label={label.targetProduct}
-                                value={formDiscount.Target_Product__c}
-                                options={productOptions}
-                                placeholder={label.none}
-                                data-field="Target_Product__c"
+                                label="Target Application"
+                                value={formDiscount.Target_Application__c}
+                                options={targetApplicationOptions}
+                                data-field="Target_Application__c"
                                 onchange={handleFormChange}>
                             </lightning-combobox>
                         </div>
-                        <div class="slds-m-bottom_small">
-                            <lightning-combobox
-                                label={label.triggerProduct}
-                                value={formDiscount.Trigger_Product__c}
-                                options={productOptions}
-                                placeholder={label.none}
-                                data-field="Trigger_Product__c"
-                                onchange={handleFormChange}>
-                            </lightning-combobox>
-                        </div>
-                        <template if:true={showMinimumQuantity}>
-                        <div class="slds-m-bottom_small">
-                            <lightning-input
-                                type="number"
-                                label={label.minQuantity}
-                                value={formDiscount.Minimum_Quantity__c}
-                                min="1"
-                                step="1"
-                                data-field="Minimum_Quantity__c"
-                                onchange={handleFormChange}>
-                            </lightning-input>
-                        </div>
-                    </template>
+
+                        <!-- SPECIFIC FAMILIES -->
+                        <template if:true={isSpecificFamilies}>
+                            <div class="slds-m-bottom_small">
+                                <p class="slds-form-element__label slds-m-bottom_x-small">Select Eligible Families</p>
+                                <template for:each={familyOptions} for:item="fam">
+                                    <div key={fam.value} class="slds-m-bottom_xx-small">
+                                        <span class="slds-checkbox">
+                                            <input
+                                                type="checkbox"
+                                                id={fam.value}
+                                                data-family={fam.value}
+                                                checked={fam.checked}
+                                                onchange={handleFamilyChange}
+                                            />
+                                            <label class="slds-checkbox__label" for={fam.value}>
+                                                <span class="slds-checkbox_faux"></span>
+                                                <span class="slds-form-element__label">{fam.label}</span>
+                                            </label>
+                                        </span>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <!-- SPECIFIC PRODUCTS -->
+                        <template if:true={isSpecificProducts}>
+                            <div class="slds-m-bottom_small">
+                                <p class="slds-form-element__label slds-m-bottom_x-small">Select Eligible Products</p>
+                                <lightning-input
+                                    type="search"
+                                    label="Search products..."
+                                    variant="label-hidden"
+                                    value={productSearch}
+                                    onchange={handleProductSearch}
+                                    class="slds-m-bottom_x-small">
+                                </lightning-input>
+                                <div style="max-height: 200px; overflow-y: auto; border: 1px solid #dddbda; border-radius: 4px;">
+                                    <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 3rem;"></th>
+                                                <th>Product Name</th>
+                                                <th>Family</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template for:each={filteredProductOptions} for:item="prod">
+                                                <tr key={prod.value}>
+                                                    <td>
+                                                        <span class="slds-checkbox">
+                                                            <input
+                                                                type="checkbox"
+                                                                id={prod.value}
+                                                                data-id={prod.value}
+                                                                checked={prod.checked}
+                                                                onchange={handleProductSelect}
+                                                            />
+                                                            <label class="slds-checkbox__label" for={prod.value}>
+                                                                <span class="slds-checkbox_faux"></span>
+                                                                <span class="slds-form-element__label slds-assistive-text">{prod.label}</span>
+                                                            </label>
+                                                        </span>
+                                                    </td>
+                                                    <td><span class="slds-truncate">{prod.label}</span></td>
+                                                    <td><span class="slds-truncate">{prod.family}</span></td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </template>
+
                         <div class="slds-m-bottom_small">
                             <lightning-input
                                 type="checkbox"
