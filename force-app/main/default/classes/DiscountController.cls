@@ -16,6 +16,21 @@ public with sharing class DiscountController {
     }
 
     @AuraEnabled(cacheable=true)
+    public static List<String> getProductFamilies() {
+        return DiscountService.getProductFamilies();
+    }
+
+    @AuraEnabled
+    public static List<Id> getDiscountProducts(Id discountId) {
+        return DiscountService.getDiscountProducts(discountId);
+    }
+
+    @AuraEnabled
+    public static void saveDiscountProducts(Id discountId, List<Id> productIds) {
+        DiscountService.saveDiscountProducts(discountId, productIds);
+    }
+
+    @AuraEnabled(cacheable=true)
     public static Discount_Settings__mdt getDiscountSettings() {
         return DiscountService.getDiscountSettings();
     }

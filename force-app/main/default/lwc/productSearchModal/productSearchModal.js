@@ -117,7 +117,8 @@ export default class ProductSearchModal extends NavigationMixin(LightningElement
 
     get discountedTotal() {
         if (!this.hasDiscounts) return this.totalAmount;
-        return this.discountPreviews[this.discountPreviews.length - 1].discountedPrice;
+        const totalDiscount = this.discountPreviews.reduce((sum, d) => sum + d.appliedValue, 0);
+        return this.totalAmount - totalDiscount;
     }
 
     @wire(getProductFamilies)
@@ -206,7 +207,7 @@ export default class ProductSearchModal extends NavigationMixin(LightningElement
             .then(data => {
                 this.discountPreviews = data || [];
             })
-            .catch(e => {
+            .catch(() => {
                 this.discountPreviews = [];
             })
             .finally(() => {
@@ -249,7 +250,7 @@ export default class ProductSearchModal extends NavigationMixin(LightningElement
                     }
                 });
             })
-            .catch(error => {
+            .catch(() => {
                 this.isLoading = false;
             });
     }

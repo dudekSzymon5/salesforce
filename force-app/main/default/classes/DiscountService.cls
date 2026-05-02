@@ -18,9 +18,8 @@ public with sharing class DiscountService {
         return [
             SELECT Id, Name, Type__c, Discount_Form__c, Value__c, Is_Active__c,
                    Start_Date__c, End_Date__c, Recurrence_Pattern__c, Minimum_Order_Amount__c,
-                   Minimum_Quantity__c,
-                   Target_Product__c, Target_Product__r.Name,
-                   Trigger_Product__c, Trigger_Product__r.Name
+                   Minimum_Quantity__c, Target_Application__c, Target_Families__c,
+                   Condition_Type__c
             FROM Discount__c
             ORDER BY CreatedDate DESC
         ];
@@ -36,11 +35,39 @@ public with sharing class DiscountService {
 
     public static List<Product2> getProductOptions() {
         return [
-            SELECT Id, Name FROM Product2
+            SELECT Id, Name, Family
+            FROM Product2
             WHERE IsActive = true
             AND Id IN (SELECT Product2Id FROM PricebookEntry WHERE IsActive = true)
             ORDER BY Name
         ];
+    }
+
+    public static List<String> getProductFamilies() {
+        Set<String> families = new Set<String>();
+        for (Product2 p : [SELECT Family FROM Product2 WHERE IsActive = true AND Family != null]) {
+            families.add(p.Family);
+        }
+        List<String> result = new List<String>(families);
+        result.sort();
+        return result;
+    }
+
+    public static List<Id> getDiscountProducts(Id discountId) {
+        List<Id> productIds = new List<Id>();
+        for (Discount_Product__c dp : [SELECT Product__c FROM Discount_Product__c WHERE Discount__c = :discountId]) {
+            productIds.add(dp.Product__c);
+        }
+        return productIds;
+    }
+
+    public static void saveDiscountProducts(Id discountId, List<Id> productIds) {
+        delete [SELECT Id FROM Discount_Product__c WHERE Discount__c = :discountId];
+        List<Discount_Product__c> toInsert = new List<Discount_Product__c>();
+        for (Id pid : productIds) {
+            toInsert.add(new Discount_Product__c(Discount__c = discountId, Product__c = pid));
+        }
+        if (!toInsert.isEmpty()) insert toInsert;
     }
 
     public static Discount_Settings__mdt getDiscountSettings() {
@@ -59,25 +86,31 @@ public with sharing class DiscountService {
             productQuantities.put(oi.PricebookEntry.Product2Id, oi.Quantity);
         }
 
+        Map<Id, String> productFamilies = fetchProductFamilies(productAmounts.keySet());
+        Map<Id, Set<Id>> discountToProducts = fetchDiscountToProducts();
+
         Discount_Settings__mdt settings = getSettings();
         List<Discount__c> globalApplicable = new List<Discount__c>();
-        List<Discount__c> productApplicable = new List<Discount__c>();
-        partitionDiscounts(fetchActiveDiscounts(), orderAmount, productAmounts.keySet(), productQuantities, globalApplicable, productApplicable);
+        List<Discount__c> targetedApplicable = new List<Discount__c>();
+        partitionDiscounts(
+            fetchActiveDiscounts(), orderAmount, productAmounts.keySet(), productQuantities,
+            productFamilies, discountToProducts, globalApplicable, targetedApplicable
+        );
 
         List<Order_Discount__c> orderDiscounts = new List<Order_Discount__c>();
         Decimal remaining = orderAmount;
 
-        for (Discount__c d : productApplicable) {
-            Decimal productAmount = productAmounts.get(d.Target_Product__c);
-            if (productAmount == null) continue;
-            Decimal applied = calcAmount(d, productAmount);
-            if (!meetsMinPct(d, applied, productAmount, settings.Minimum_Discount_Percentage__c)) continue;
+        for (Discount__c d : targetedApplicable) {
+            Decimal baseAmount = getTargetAmount(d, productAmounts, discountToProducts, productFamilies, productQuantities);
+            if (baseAmount == 0) continue;
+            Decimal applied = calcAmount(d, baseAmount);
+            if (!meetsMinPct(d, applied, baseAmount, settings.Minimum_Discount_Percentage__c)) continue;
             orderDiscounts.add(new Order_Discount__c(
                 Order__c = orderId,
                 Discount__c = d.Id,
                 Applied_Value__c = applied,
-                Original_Price__c = productAmount,
-                Discounted_Price__c = productAmount - applied
+                Original_Price__c = baseAmount,
+                Discounted_Price__c = baseAmount - applied
             ));
             remaining -= applied;
         }
@@ -121,20 +154,26 @@ public with sharing class DiscountService {
             }
         }
 
+        Map<Id, String> productFamilies = fetchProductFamilies(productAmounts.keySet());
+        Map<Id, Set<Id>> discountToProducts = fetchDiscountToProducts();
+
         Discount_Settings__mdt settings = getSettings();
         List<Discount__c> globalApplicable = new List<Discount__c>();
-        List<Discount__c> productApplicable = new List<Discount__c>();
-        partitionDiscounts(fetchActiveDiscountsWithProductName(), orderAmount, productAmounts.keySet(), productQuantities, globalApplicable, productApplicable);
+        List<Discount__c> targetedApplicable = new List<Discount__c>();
+        partitionDiscounts(
+            fetchActiveDiscounts(), orderAmount, productAmounts.keySet(), productQuantities,
+            productFamilies, discountToProducts, globalApplicable, targetedApplicable
+        );
 
         List<DiscountPreview> previews = new List<DiscountPreview>();
         Decimal remaining = orderAmount;
 
-        for (Discount__c d : productApplicable) {
-            Decimal productAmount = productAmounts.get(d.Target_Product__c);
-            if (productAmount == null) continue;
-            Decimal applied = calcAmount(d, productAmount);
-            if (!meetsMinPct(d, applied, productAmount, settings.Minimum_Discount_Percentage__c)) continue;
-            previews.add(buildPreview(d, applied, productAmount, d.Target_Product__r.Name));
+        for (Discount__c d : targetedApplicable) {
+            Decimal baseAmount = getTargetAmount(d, productAmounts, discountToProducts, productFamilies, productQuantities);
+            if (baseAmount == 0) continue;
+            Decimal applied = calcAmount(d, baseAmount);
+            if (!meetsMinPct(d, applied, baseAmount, settings.Minimum_Discount_Percentage__c)) continue;
+            previews.add(buildPreview(d, applied, baseAmount, d.Target_Application__c));
             remaining -= applied;
         }
 
@@ -205,27 +244,35 @@ public with sharing class DiscountService {
         return [
             SELECT Id, Name, Type__c, Discount_Form__c, Value__c,
                    Recurrence_Pattern__c, Minimum_Order_Amount__c, Minimum_Quantity__c,
-                   Start_Date__c, End_Date__c, Target_Product__c, Trigger_Product__c
+                   Start_Date__c, End_Date__c, Target_Application__c, Target_Families__c,
+                   Condition_Type__c
             FROM Discount__c
             WHERE Is_Active__c = true
         ];
     }
 
-    private static List<Discount__c> fetchActiveDiscountsWithProductName() {
-        return [
-            SELECT Id, Name, Type__c, Discount_Form__c, Value__c,
-                   Recurrence_Pattern__c, Minimum_Order_Amount__c, Minimum_Quantity__c,
-                   Start_Date__c, End_Date__c,
-                   Target_Product__c, Target_Product__r.Name, Trigger_Product__c
-            FROM Discount__c
-            WHERE Is_Active__c = true
-        ];
+    private static Map<Id, String> fetchProductFamilies(Set<Id> productIds) {
+        Map<Id, String> result = new Map<Id, String>();
+        for (Product2 p : [SELECT Id, Family FROM Product2 WHERE Id IN :productIds]) {
+            result.put(p.Id, p.Family);
+        }
+        return result;
+    }
+
+    private static Map<Id, Set<Id>> fetchDiscountToProducts() {
+        Map<Id, Set<Id>> result = new Map<Id, Set<Id>>();
+        for (Discount_Product__c dp : [SELECT Discount__c, Product__c FROM Discount_Product__c]) {
+            if (!result.containsKey(dp.Discount__c)) result.put(dp.Discount__c, new Set<Id>());
+            result.get(dp.Discount__c).add(dp.Product__c);
+        }
+        return result;
     }
 
     private static void partitionDiscounts(
         List<Discount__c> activeDiscounts, Decimal orderAmount,
         Set<Id> productIds, Map<Id, Decimal> productQuantities,
-        List<Discount__c> globalApplicable, List<Discount__c> productApplicable
+        Map<Id, String> productFamilies, Map<Id, Set<Id>> discountToProducts,
+        List<Discount__c> globalApplicable, List<Discount__c> targetedApplicable
     ) {
         Date today = Date.today();
         Map<String, DiscountTypeHandler> handlerCache = new Map<String, DiscountTypeHandler>();
@@ -233,13 +280,56 @@ public with sharing class DiscountService {
             if (!handlerCache.containsKey(d.Type__c)) {
                 handlerCache.put(d.Type__c, DiscountTypeHandler.forType(d.Type__c));
             }
-            if (!handlerCache.get(d.Type__c).isApplicable(d, orderAmount, today, productIds, productQuantities)) continue;
-            if (d.Target_Product__c != null) {
-                productApplicable.add(d);
-            } else {
+            Set<Id> linkedProducts = discountToProducts.get(d.Id);
+            if (!handlerCache.get(d.Type__c).isApplicable(
+                d, orderAmount, today, productIds, productQuantities, productFamilies, linkedProducts
+            )) continue;
+
+            String targetApp = d.Target_Application__c != null ? d.Target_Application__c : Utils.Discount.TARGET_ALL;
+            if (targetApp == Utils.Discount.TARGET_ALL) {
                 globalApplicable.add(d);
+            } else {
+                targetedApplicable.add(d);
             }
         }
+    }
+
+    private static Decimal getTargetAmount(
+        Discount__c d, Map<Id, Decimal> productAmounts,
+        Map<Id, Set<Id>> discountToProducts, Map<Id, String> productFamilies,
+        Map<Id, Decimal> productQuantities
+    ) {
+        String targetApp = d.Target_Application__c;
+        Decimal total = 0;
+
+        if (targetApp == Utils.Discount.TARGET_PRODUCTS) {
+            Set<Id> linked = discountToProducts.get(d.Id);
+            if (linked == null) return 0;
+            for (Id pid : linked) {
+                if (d.Minimum_Quantity__c != null) {
+                    Decimal qty = productQuantities.get(pid);
+                    if (qty == null || qty < d.Minimum_Quantity__c) continue;
+                }
+                Decimal amt = productAmounts.get(pid);
+                if (amt != null) total += amt;
+            }
+        } else if (targetApp == Utils.Discount.TARGET_FAMILIES) {
+            if (d.Target_Families__c == null) return 0;
+            Set<String> targetFams = new Set<String>();
+            for (String f : d.Target_Families__c.split(',')) targetFams.add(f.trim());
+            for (Id pid : productAmounts.keySet()) {
+                String fam = productFamilies.get(pid);
+                if (fam != null && targetFams.contains(fam)) {
+                    if (d.Minimum_Quantity__c != null) {
+                        Decimal qty = productQuantities.get(pid);
+                        if (qty == null || qty < d.Minimum_Quantity__c) continue;
+                    }
+                    total += productAmounts.get(pid);
+                }
+            }
+        }
+
+        return total;
     }
 
     private static List<Discount__c> selectByStrategy(List<Discount__c> candidates, String strategy, Decimal remaining) {
@@ -276,13 +366,13 @@ public with sharing class DiscountService {
         return d.Value__c;
     }
 
-    private static DiscountPreview buildPreview(Discount__c d, Decimal applied, Decimal originalPrice, String targetProductName) {
+    private static DiscountPreview buildPreview(Discount__c d, Decimal applied, Decimal originalPrice, String targetLabel) {
         DiscountPreview p = new DiscountPreview();
         p.discountName = d.Name;
         p.appliedValue = applied;
         p.originalPrice = originalPrice;
         p.discountedPrice = originalPrice - applied;
-        p.targetProductName = targetProductName;
+        p.targetProductName = targetLabel;
         return p;
     }
 }
