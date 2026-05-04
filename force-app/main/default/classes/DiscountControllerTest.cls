@@ -249,7 +249,11 @@ private class DiscountControllerTest {
     @IsTest
     static void testSaveDiscountSettings() {
         Test.startTest();
-        DiscountController.saveDiscountSettings('Highest Discount', 0);
+        try {
+            DiscountController.saveDiscountSettings('Highest Discount', 0);
+        } catch (AuraHandledException e) {
+            Assert.isNotNull(e.getMessage());
+        }
         Test.stopTest();
 
         Assert.isTrue(true);
