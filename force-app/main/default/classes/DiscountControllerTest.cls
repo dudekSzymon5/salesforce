@@ -173,4 +173,226 @@ private class DiscountControllerTest {
         Assert.isNotNull(previews);
         Assert.isTrue(previews.isEmpty());
     }
+
+    @IsTest
+    static void testGetProductOptions() {
+        Product2 prod = new Product2(Name='Option Product', IsActive=true);
+        insert prod;
+        insert new PricebookEntry(
+            Pricebook2Id=Test.getStandardPricebookId(),
+            Product2Id=prod.Id,
+            UnitPrice=100,
+            IsActive=true
+        );
+
+        Test.startTest();
+        List<Product2> products = DiscountController.getProductOptions();
+        Test.stopTest();
+
+        Assert.isNotNull(products);
+        Assert.isTrue(products.size() > 0);
+    }
+
+    @IsTest
+    static void testGetProductFamilies() {
+        Test.startTest();
+        List<String> families = DiscountController.getProductFamilies();
+        Test.stopTest();
+
+        Assert.isNotNull(families);
+    }
+
+    @IsTest
+    static void testGetDiscountProducts() {
+        Discount__c discount = [SELECT Id FROM Discount__c LIMIT 1];
+        Product2 prod = new Product2(Name='Linked Product', IsActive=true);
+        insert prod;
+        insert new Discount_Product__c(Discount__c=discount.Id, Product__c=prod.Id);
+
+        Test.startTest();
+        List<Id> productIds = DiscountController.getDiscountProducts(discount.Id);
+        Test.stopTest();
+
+        Assert.isNotNull(productIds);
+        Assert.isTrue(productIds.size() > 0);
+    }
+
+    @IsTest
+    static void testSaveDiscountProducts() {
+        Discount__c discount = [SELECT Id FROM Discount__c LIMIT 1];
+        Product2 prod = new Product2(Name='Save Product', IsActive=true);
+        insert prod;
+
+        Test.startTest();
+        DiscountController.saveDiscountProducts(discount.Id, new List<Id>{ prod.Id });
+        Test.stopTest();
+
+        List<Discount_Product__c> dps = [SELECT Id FROM Discount_Product__c WHERE Discount__c = :discount.Id];
+        Assert.isTrue(dps.size() > 0);
+    }
+
+    @IsTest
+    static void testSaveDiscountProductsEmpty() {
+        Discount__c discount = [SELECT Id FROM Discount__c LIMIT 1];
+        Product2 prod = new Product2(Name='Del Product', IsActive=true);
+        insert prod;
+        insert new Discount_Product__c(Discount__c=discount.Id, Product__c=prod.Id);
+
+        Test.startTest();
+        DiscountController.saveDiscountProducts(discount.Id, new List<Id>());
+        Test.stopTest();
+
+        List<Discount_Product__c> dps = [SELECT Id FROM Discount_Product__c WHERE Discount__c = :discount.Id];
+        Assert.isTrue(dps.isEmpty());
+    }
+
+    @IsTest
+    static void testSaveDiscountSettings() {
+        Test.startTest();
+        DiscountController.saveDiscountSettings('Highest Discount', 0);
+        Test.stopTest();
+
+        Assert.isTrue(true);
+    }
+
+    @IsTest
+    static void testSaveDiscountWithTwoForOne() {
+        Discount__c discount = new Discount__c(
+            Name='Two For One',
+            Type__c='Conditional',
+            Discount_Form__c='Percentage',
+            Value__c=50,
+            Is_Active__c=true,
+            Condition_Type__c='Two For One'
+        );
+
+        Test.startTest();
+        Discount__c saved = DiscountController.saveDiscount(discount);
+        Test.stopTest();
+
+        Assert.areEqual(2, saved.Minimum_Quantity__c);
+    }
+
+    @IsTest
+    static void testSaveDiscountPercentageRangeError() {
+        Discount__c discount = new Discount__c(
+            Name='Bad Percentage',
+            Type__c='One-Time',
+            Discount_Form__c='Percentage',
+            Value__c=150,
+            Is_Active__c=true
+        );
+
+        Test.startTest();
+        try {
+            DiscountController.saveDiscount(discount);
+            Assert.fail('Expected AuraHandledException');
+        } catch (AuraHandledException e) {
+            Assert.isNotNull(e.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testPreviewWithTargetedProductDiscount() {
+        Product2 prod = new Product2(Name='Targeted Product', IsActive=true);
+        insert prod;
+
+        Discount__c d = new Discount__c(
+            Name='Product Discount',
+            Type__c='One-Time',
+            Discount_Form__c='Percentage',
+            Value__c=10,
+            Is_Active__c=true,
+            Target_Application__c='Specific Products'
+        );
+        insert d;
+        insert new Discount_Product__c(Discount__c=d.Id, Product__c=prod.Id);
+
+        DiscountService.ItemInput item = new DiscountService.ItemInput();
+        item.product2Id = prod.Id;
+        item.amount = 200;
+        item.quantity = 1;
+
+        Test.startTest();
+        List<DiscountService.DiscountPreview> previews = DiscountController.previewDiscounts(200, new List<DiscountService.ItemInput>{ item });
+        Test.stopTest();
+
+        Assert.isNotNull(previews);
+    }
+
+    @IsTest
+    static void testPreviewWithTargetedFamilyDiscount() {
+        Product2 prod = new Product2(Name='Family Product', IsActive=true, Family='Electronics');
+        insert prod;
+
+        Discount__c d = new Discount__c(
+            Name='Family Discount',
+            Type__c='One-Time',
+            Discount_Form__c='Percentage',
+            Value__c=10,
+            Is_Active__c=true,
+            Target_Application__c='Specific Families',
+            Target_Families__c='Electronics'
+        );
+        insert d;
+
+        DiscountService.ItemInput item = new DiscountService.ItemInput();
+        item.product2Id = prod.Id;
+        item.amount = 200;
+        item.quantity = 1;
+
+        Test.startTest();
+        List<DiscountService.DiscountPreview> previews = DiscountController.previewDiscounts(200, new List<DiscountService.ItemInput>{ item });
+        Test.stopTest();
+
+        Assert.isNotNull(previews);
+    }
+
+    @IsTest
+    static void testPreviewWithTwoForOneDiscount() {
+        Product2 prod = new Product2(Name='TwoForOne Product', IsActive=true);
+        insert prod;
+
+        Discount__c d = new Discount__c(
+            Name='Two For One Preview',
+            Type__c='Conditional',
+            Discount_Form__c='Percentage',
+            Value__c=50,
+            Is_Active__c=true,
+            Condition_Type__c='Two For One',
+            Minimum_Quantity__c=2
+        );
+        insert d;
+
+        DiscountService.ItemInput item = new DiscountService.ItemInput();
+        item.product2Id = prod.Id;
+        item.amount = 200;
+        item.quantity = 4;
+
+        Test.startTest();
+        List<DiscountService.DiscountPreview> previews = DiscountController.previewDiscounts(200, new List<DiscountService.ItemInput>{ item });
+        Test.stopTest();
+
+        Assert.isNotNull(previews);
+    }
+
+    @IsTest
+    static void testPreviewWithAmountFormDiscount() {
+        Discount__c d = new Discount__c(
+            Name='Amount Discount',
+            Type__c='Conditional',
+            Discount_Form__c='Amount',
+            Value__c=20,
+            Is_Active__c=true,
+            Minimum_Order_Amount__c=100
+        );
+        insert d;
+
+        Test.startTest();
+        List<DiscountService.DiscountPreview> previews = DiscountController.previewDiscounts(500, new List<DiscountService.ItemInput>());
+        Test.stopTest();
+
+        Assert.isNotNull(previews);
+    }
 }

@@ -292,7 +292,6 @@ public with sharing class DiscountService {
 
             String targetApp = d.Target_Application__c != null ? d.Target_Application__c : Utils.Discount.TARGET_ALL;
             
-            // Poprawka dla All Products + Minimum Quantity
             if (targetApp == Utils.Discount.TARGET_ALL && (d.Minimum_Quantity__c == null || d.Minimum_Quantity__c <= 1)) {
                 globalApplicable.add(d);
             } else {
@@ -326,7 +325,6 @@ public with sharing class DiscountService {
                 }
             }
         } else if (targetApp == Utils.Discount.TARGET_ALL) {
-            // Obsługa "All Products" linijka po linijce dla warunku ilościowego
             for (Id pid : productAmounts.keySet()) {
                 total += calculateEligibleAmount(d, pid, productAmounts, productQuantities);
             }
