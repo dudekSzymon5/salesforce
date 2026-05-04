@@ -2,61 +2,133 @@ public with sharing class DiscountController {
 
     @AuraEnabled(cacheable=true)
     public static List<Discount__c> getDiscounts() {
-        return DiscountService.getDiscounts();
+        try {
+            return DiscountService.getDiscounts();
+        } catch (AuraHandledException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
     }
 
     @AuraEnabled(cacheable=true)
     public static List<Id> getAssignedDiscountIds() {
-        return DiscountService.getAssignedDiscountIds();
+        try {
+            return DiscountService.getAssignedDiscountIds();
+        } catch (AuraHandledException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
     }
 
     @AuraEnabled(cacheable=true)
     public static List<Product2> getProductOptions() {
-        return DiscountService.getProductOptions();
+        try {
+            return DiscountService.getProductOptions();
+        } catch (AuraHandledException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
     }
 
     @AuraEnabled(cacheable=true)
     public static List<String> getProductFamilies() {
-        return DiscountService.getProductFamilies();
+        try {
+            return DiscountService.getProductFamilies();
+        } catch (AuraHandledException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
     }
 
     @AuraEnabled
     public static List<Id> getDiscountProducts(Id discountId) {
-        return DiscountService.getDiscountProducts(discountId);
+        try {
+            return DiscountService.getDiscountProducts(discountId);
+        } catch (AuraHandledException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
     }
 
     @AuraEnabled
     public static void saveDiscountProducts(Id discountId, List<Id> productIds) {
-        DiscountService.saveDiscountProducts(discountId, productIds);
+        try {
+            DiscountService.saveDiscountProducts(discountId, productIds);
+        } catch (AuraHandledException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
     }
 
     @AuraEnabled(cacheable=true)
     public static Discount_Settings__mdt getDiscountSettings() {
-        return DiscountService.getDiscountSettings();
+        try {
+            return DiscountService.getDiscountSettings();
+        } catch (AuraHandledException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
     }
 
     @AuraEnabled
     public static void saveDiscountSettings(String strategy, Decimal minPercentage) {
-        DiscountService.saveDiscountSettings(strategy, minPercentage);
+        try {
+            DiscountService.saveDiscountSettings(strategy, minPercentage);
+        } catch (AuraHandledException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
     }
 
     @AuraEnabled
     public static Discount__c saveDiscount(Discount__c discount) {
-        return DiscountService.saveDiscount(discount);
+        try {
+            return DiscountService.saveDiscount(discount);
+        } catch (AuraHandledException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
     }
 
     @AuraEnabled
     public static void toggleDiscounts(List<Id> discountIds, Boolean isActive) {
-        DiscountService.toggleDiscounts(discountIds, isActive);
+        try {
+            DiscountService.toggleDiscounts(discountIds, isActive);
+        } catch (AuraHandledException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
     }
 
     @AuraEnabled
     public static List<Order_Discount__c> applyDiscountsToOrder(Id orderId, Decimal orderAmount) {
-        return DiscountService.applyDiscountsToOrder(orderId, orderAmount);
+        try {
+            return DiscountService.applyDiscountsToOrder(orderId, orderAmount);
+        } catch (AuraHandledException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
     }
 
     @AuraEnabled
     public static List<DiscountService.DiscountPreview> previewDiscounts(Decimal orderAmount, List<DiscountService.ItemInput> items) {
-        return DiscountService.previewDiscounts(orderAmount, items);
+        try {
+            return DiscountService.previewDiscounts(orderAmount, items);
+        } catch (AuraHandledException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
     }
 }

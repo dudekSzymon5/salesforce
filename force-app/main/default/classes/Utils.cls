@@ -26,8 +26,8 @@ public class Utils {
         public final String TARGET_FAMILIES = 'Specific Families';
         public final String TARGET_PRODUCTS = 'Specific Products';
 
-        public final String ERROR_ALREADY_ASSIGNED = 'This discount is already assigned to an order and cannot be edited.';
-        public final String ERROR_PERCENTAGE_RANGE = 'Percentage discount value must be between 0 and 100.';
+        public final String ERROR_ALREADY_ASSIGNED = Label.Discount_ErrorAlreadyAssigned;
+        public final String ERROR_PERCENTAGE_RANGE = Label.Discount_ErrorPercentageRange;
     }
 
     public class DiscountSettingsConst {
