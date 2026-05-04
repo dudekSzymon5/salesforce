@@ -1,7 +1,6 @@
 <template>
     <lightning-card title={label.title}>
 
-        <!-- GLOBAL SETTINGS -->
         <div class="slds-p-around_medium">
             <h2 class="slds-text-heading_medium slds-m-bottom_medium">{label.globalSettings}</h2>
             <div class="slds-grid slds-gutters slds-m-bottom_medium">
@@ -32,7 +31,6 @@
                 </div>
             </div>
 
-            <!-- DISCOUNT LIST -->
             <h2 class="slds-text-heading_medium slds-m-bottom_medium">{label.discounts}</h2>
             <div class="slds-m-bottom_medium">
                 <lightning-button
@@ -124,7 +122,6 @@
             </template>
         </div>
 
-        <!-- DISCOUNT FORM MODAL -->
         <template if:true={showForm}>
             <section class="slds-modal slds-fade-in-open">
                 <div class="slds-modal__container">
@@ -182,7 +179,6 @@
                             </div>
                         </template>
 
-                        <!-- RECURRING -->
                         <template if:true={isRecurring}>
                             <div class="slds-m-bottom_small">
                                 <lightning-combobox
@@ -206,7 +202,6 @@
                             </template>
                         </template>
 
-                        <!-- DATE RANGE (One-Time, Conditional) -->
                         <template if:true={showDateRange}>
                             <div class="slds-m-bottom_small">
                                 <lightning-input
@@ -228,7 +223,6 @@
                             </div>
                         </template>
 
-                        <!-- CONDITIONAL: condition type selector -->
                         <template if:true={isConditional}>
                             <div class="slds-m-bottom_small">
                                 <lightning-combobox
@@ -241,7 +235,6 @@
                             </div>
                         </template>
 
-                        <!-- CONDITIONAL > Minimum Order Value -->
                         <template if:true={isMinOrderValue}>
                             <div class="slds-m-bottom_small">
                                 <lightning-input
@@ -254,14 +247,13 @@
                             </div>
                         </template>
 
-                        <!-- CONDITIONAL > Two For One: min quantity -->
-                        <template if:true={isTwoForOne}>
+                        <template if:true={showMinQuantityField}>
                             <div class="slds-m-bottom_small">
                                 <lightning-input
                                     type="number"
                                     label={label.minQuantity}
                                     value={formDiscount.Minimum_Quantity__c}
-                                    min="2"
+                                    min="1"
                                     step="1"
                                     data-field="Minimum_Quantity__c"
                                     onchange={handleFormChange}>
@@ -269,7 +261,6 @@
                             </div>
                         </template>
 
-                        <!-- TARGET APPLICATION -->
                         <div class="slds-m-bottom_small">
                             <lightning-combobox
                                 label="Target Application"
@@ -280,31 +271,19 @@
                             </lightning-combobox>
                         </div>
 
-                        <!-- SPECIFIC FAMILIES -->
                         <template if:true={isSpecificFamilies}>
                             <div class="slds-m-bottom_small">
-                                <p class="slds-form-element__label slds-m-bottom_x-small">Select Eligible Families</p>
-                                <template for:each={familyOptions} for:item="fam">
-                                    <div key={fam.value} class="slds-m-bottom_xx-small">
-                                        <span class="slds-checkbox">
-                                            <input
-                                                type="checkbox"
-                                                id={fam.value}
-                                                data-family={fam.value}
-                                                checked={fam.checked}
-                                                onchange={handleFamilyChange}
-                                            />
-                                            <label class="slds-checkbox__label" for={fam.value}>
-                                                <span class="slds-checkbox_faux"></span>
-                                                <span class="slds-form-element__label">{fam.label}</span>
-                                            </label>
-                                        </span>
-                                    </div>
-                                </template>
+                                <lightning-dual-listbox
+                                    label="Select Eligible Families"
+                                    source-label="Available"
+                                    selected-label="Selected"
+                                    options={familyOptions}
+                                    value={selectedFamilies}
+                                    onchange={handleFamilyChange}>
+                                </lightning-dual-listbox>
                             </div>
                         </template>
 
-                        <!-- SPECIFIC PRODUCTS -->
                         <template if:true={isSpecificProducts}>
                             <div class="slds-m-bottom_small">
                                 <p class="slds-form-element__label slds-m-bottom_x-small">Select Eligible Products</p>

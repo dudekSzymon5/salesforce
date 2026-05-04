@@ -138,6 +138,10 @@ export default class DiscountManager extends LightningElement {
         { label: 'Specific Products', value: 'Specific Products' }
     ];
 
+    get showMinQuantityField() {
+        return this.isConditional && !this.isTwoForOne && !this.isMinOrderValue;
+    }
+
     get hasDiscounts() {
         return this.discounts && this.discounts.length > 0;
     }

@@ -199,6 +199,11 @@ public with sharing class DiscountService {
         if (discount.Discount_Form__c == Utils.Discount.FORM_PERCENTAGE && (discount.Value__c < 0 || discount.Value__c > 100)) {
             throw new AuraHandledException(Utils.Discount.ERROR_PERCENTAGE_RANGE);
         }
+        
+        if (discount.Condition_Type__c == Utils.Discount.CONDITION_TWO_FOR_ONE) {
+            discount.Minimum_Quantity__c = 2;
+        }
+
         upsert discount;
         return discount;
     }
@@ -286,7 +291,8 @@ public with sharing class DiscountService {
             )) continue;
 
             String targetApp = d.Target_Application__c != null ? d.Target_Application__c : Utils.Discount.TARGET_ALL;
-            if (targetApp == Utils.Discount.TARGET_ALL) {
+            
+            if (targetApp == Utils.Discount.TARGET_ALL && (d.Minimum_Quantity__c == null || d.Minimum_Quantity__c <= 1)) {
                 globalApplicable.add(d);
             } else {
                 targetedApplicable.add(d);
@@ -299,19 +305,14 @@ public with sharing class DiscountService {
         Map<Id, Set<Id>> discountToProducts, Map<Id, String> productFamilies,
         Map<Id, Decimal> productQuantities
     ) {
-        String targetApp = d.Target_Application__c;
+        String targetApp = d.Target_Application__c != null ? d.Target_Application__c : Utils.Discount.TARGET_ALL;
         Decimal total = 0;
 
         if (targetApp == Utils.Discount.TARGET_PRODUCTS) {
             Set<Id> linked = discountToProducts.get(d.Id);
             if (linked == null) return 0;
             for (Id pid : linked) {
-                if (d.Minimum_Quantity__c != null) {
-                    Decimal qty = productQuantities.get(pid);
-                    if (qty == null || qty < d.Minimum_Quantity__c) continue;
-                }
-                Decimal amt = productAmounts.get(pid);
-                if (amt != null) total += amt;
+                total += calculateEligibleAmount(d, pid, productAmounts, productQuantities);
             }
         } else if (targetApp == Utils.Discount.TARGET_FAMILIES) {
             if (d.Target_Families__c == null) return 0;
@@ -320,16 +321,40 @@ public with sharing class DiscountService {
             for (Id pid : productAmounts.keySet()) {
                 String fam = productFamilies.get(pid);
                 if (fam != null && targetFams.contains(fam)) {
-                    if (d.Minimum_Quantity__c != null) {
-                        Decimal qty = productQuantities.get(pid);
-                        if (qty == null || qty < d.Minimum_Quantity__c) continue;
-                    }
-                    total += productAmounts.get(pid);
+                    total += calculateEligibleAmount(d, pid, productAmounts, productQuantities);
                 }
+            }
+        } else if (targetApp == Utils.Discount.TARGET_ALL) {
+            for (Id pid : productAmounts.keySet()) {
+                total += calculateEligibleAmount(d, pid, productAmounts, productQuantities);
             }
         }
 
         return total;
+    }
+
+    private static Decimal calculateEligibleAmount(
+        Discount__c d, Id pid, 
+        Map<Id, Decimal> productAmounts, Map<Id, Decimal> productQuantities
+    ) {
+        Decimal qty = productQuantities.get(pid);
+        Decimal lineAmount = productAmounts.get(pid);
+        Decimal eligibleTotal = 0;
+
+        if (qty != null && qty > 0 && lineAmount != null) {
+            Decimal unitPrice = lineAmount / qty;
+            
+            if (d.Minimum_Quantity__c != null && d.Minimum_Quantity__c > 0) {
+                if (qty >= d.Minimum_Quantity__c) {
+                    Decimal eligibleMultiplier = Math.floor(qty / d.Minimum_Quantity__c);
+                    Decimal eligibleQty = eligibleMultiplier * d.Minimum_Quantity__c;
+                    eligibleTotal = (eligibleQty * unitPrice);
+                }
+            } else {
+                eligibleTotal = lineAmount;
+            }
+        }
+        return eligibleTotal;
     }
 
     private static List<Discount__c> selectByStrategy(List<Discount__c> candidates, String strategy, Decimal remaining) {

@@ -313,6 +313,22 @@
         <value>Any time</value>
     </labels>
 
+    <!-- Discount Errors -->
+    <labels>
+        <fullName>Discount_ErrorAlreadyAssigned</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Error when editing a discount already assigned to an order</shortDescription>
+        <value>This discount is already assigned to an order and cannot be edited.</value>
+    </labels>
+    <labels>
+        <fullName>Discount_ErrorPercentageRange</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Error when percentage discount value is out of range</shortDescription>
+        <value>Percentage discount value must be between 0 and 100.</value>
+    </labels>
+
     <!-- Order -->
     <labels>
         <fullName>Order_SelectProducts</fullName>
