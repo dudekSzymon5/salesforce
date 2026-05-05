@@ -1,15 +1,15 @@
 public abstract class DiscountTypeHandler {
 
     public Boolean isApplicable(
-        Discount__c d, Decimal amount, Date today,
+        Discount__c discount, Decimal amount, Date today,
         Set<Id> productIds, Map<Id, Decimal> productQuantities,
         Map<Id, String> productFamilies, Set<Id> linkedProductIds
     ) {
-        if (!meetsProductConditions(d, productIds, productQuantities, productFamilies, linkedProductIds)) return false;
-        return meetsTypeConditions(d, amount, today);
+        if (!meetsProductConditions(discount, productIds, productQuantities, productFamilies, linkedProductIds)) return false;
+        return meetsTypeConditions(discount, amount, today);
     }
 
-    protected abstract Boolean meetsTypeConditions(Discount__c d, Decimal amount, Date today);
+    protected abstract Boolean meetsTypeConditions(Discount__c discount, Decimal amount, Date today);
 
     public static DiscountTypeHandler forType(String type) {
         if (type == Utils.Discount.TYPE_RECURRING)   return new RecurringDiscountHandler();
@@ -18,26 +18,26 @@ public abstract class DiscountTypeHandler {
     }
 
     private Boolean meetsProductConditions(
-        Discount__c d, Set<Id> productIds, Map<Id, Decimal> productQuantities,
+        Discount__c discount, Set<Id> productIds, Map<Id, Decimal> productQuantities,
         Map<Id, String> productFamilies, Set<Id> linkedProductIds
     ) {
-        String targetApp = d.Target_Application__c != null ? d.Target_Application__c : Utils.Discount.TARGET_ALL;
+        String targetApplication = discount.Target_Application__c != null ? discount.Target_Application__c : Utils.Discount.TARGET_ALL;
         Set<Id> qualifying = new Set<Id>();
 
-        if (targetApp == Utils.Discount.TARGET_PRODUCTS) {
+        if (targetApplication == Utils.Discount.TARGET_PRODUCTS) {
             if (linkedProductIds == null || linkedProductIds.isEmpty()) return false;
-            for (Id pid : linkedProductIds) {
-                if (productIds.contains(pid)) qualifying.add(pid);
+            for (Id productId : linkedProductIds) {
+                if (productIds.contains(productId)) qualifying.add(productId);
             }
             if (qualifying.isEmpty()) return false;
 
-        } else if (targetApp == Utils.Discount.TARGET_FAMILIES) {
-            if (d.Target_Families__c == null) return false;
+        } else if (targetApplication == Utils.Discount.TARGET_FAMILIES) {
+            if (discount.Target_Families__c == null) return false;
             Set<String> targetFamilies = new Set<String>();
-            for (String f : d.Target_Families__c.split(',')) targetFamilies.add(f.trim());
-            for (Id pid : productIds) {
-                String fam = productFamilies.get(pid);
-                if (fam != null && targetFamilies.contains(fam)) qualifying.add(pid);
+            for (String family : discount.Target_Families__c.split(',')) targetFamilies.add(family.trim());
+            for (Id productId : productIds) {
+                String productFamily = productFamilies.get(productId);
+                if (productFamily != null && targetFamilies.contains(productFamily)) qualifying.add(productId);
             }
             if (qualifying.isEmpty()) return false;
 
@@ -45,13 +45,13 @@ public abstract class DiscountTypeHandler {
             qualifying = productIds;
         }
 
-        if (d.Minimum_Quantity__c != null) {
-            Boolean hasMinQty = false;
-            for (Id pid : qualifying) {
-                Decimal qty = productQuantities.get(pid);
-                if (qty != null && qty >= d.Minimum_Quantity__c) { hasMinQty = true; break; }
+        if (discount.Minimum_Quantity__c != null) {
+            Boolean anyProductMeetsMinimumQuantity = false;
+            for (Id productId : qualifying) {
+                Decimal quantity = productQuantities.get(productId);
+                if (quantity != null && quantity >= discount.Minimum_Quantity__c) { anyProductMeetsMinimumQuantity = true; break; }
             }
-            if (!hasMinQty) return false;
+            if (!anyProductMeetsMinimumQuantity) return false;
         }
 
         return true;

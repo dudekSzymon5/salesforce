@@ -7,6 +7,7 @@ public with sharing class DiscountController {
         } catch (AuraHandledException e) {
             throw e;
         } catch (Exception e) {
+            ErrorLogger.log('DiscountController', e);
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -18,6 +19,7 @@ public with sharing class DiscountController {
         } catch (AuraHandledException e) {
             throw e;
         } catch (Exception e) {
+            ErrorLogger.log('DiscountController', e);
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -29,6 +31,7 @@ public with sharing class DiscountController {
         } catch (AuraHandledException e) {
             throw e;
         } catch (Exception e) {
+            ErrorLogger.log('DiscountController', e);
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -40,6 +43,7 @@ public with sharing class DiscountController {
         } catch (AuraHandledException e) {
             throw e;
         } catch (Exception e) {
+            ErrorLogger.log('DiscountController', e);
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -51,6 +55,7 @@ public with sharing class DiscountController {
         } catch (AuraHandledException e) {
             throw e;
         } catch (Exception e) {
+            ErrorLogger.log('DiscountController', e);
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -62,6 +67,7 @@ public with sharing class DiscountController {
         } catch (AuraHandledException e) {
             throw e;
         } catch (Exception e) {
+            ErrorLogger.log('DiscountController', e);
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -73,6 +79,7 @@ public with sharing class DiscountController {
         } catch (AuraHandledException e) {
             throw e;
         } catch (Exception e) {
+            ErrorLogger.log('DiscountController', e);
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -84,6 +91,7 @@ public with sharing class DiscountController {
         } catch (AuraHandledException e) {
             throw e;
         } catch (Exception e) {
+            ErrorLogger.log('DiscountController', e);
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -95,6 +103,7 @@ public with sharing class DiscountController {
         } catch (AuraHandledException e) {
             throw e;
         } catch (Exception e) {
+            ErrorLogger.log('DiscountController', e);
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -106,6 +115,7 @@ public with sharing class DiscountController {
         } catch (AuraHandledException e) {
             throw e;
         } catch (Exception e) {
+            ErrorLogger.log('DiscountController', e);
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -117,6 +127,7 @@ public with sharing class DiscountController {
         } catch (AuraHandledException e) {
             throw e;
         } catch (Exception e) {
+            ErrorLogger.log('DiscountController', e);
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -128,6 +139,7 @@ public with sharing class DiscountController {
         } catch (AuraHandledException e) {
             throw e;
         } catch (Exception e) {
+            ErrorLogger.log('DiscountController', e);
             throw new AuraHandledException(e.getMessage());
         }
     }
