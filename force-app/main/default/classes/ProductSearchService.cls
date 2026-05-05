@@ -38,21 +38,21 @@ public with sharing class ProductSearchService {
     }
 
     public static Id createOrder(Id opportunityId, List<OrderLineItem> items) {
-        Opportunity opp = [SELECT Id, AccountId, Pricebook2Id FROM Opportunity WHERE Id = :opportunityId];
+        Opportunity opportunity = [SELECT Id, AccountId, Pricebook2Id FROM Opportunity WHERE Id = :opportunityId];
 
-        Order ord = new Order(
-            AccountId = opp.AccountId,
+        Order order = new Order(
+            AccountId = opportunity.AccountId,
             OpportunityId = opportunityId,
             Pricebook2Id = getOpportunityPricebookId(opportunityId),
             Status = 'Draft',
             EffectiveDate = Date.today()
         );
-        insert ord;
+        insert order;
 
         List<OrderItem> orderItems = new List<OrderItem>();
         for (OrderLineItem item : items) {
             orderItems.add(new OrderItem(
-                OrderId = ord.Id,
+                OrderId = order.Id,
                 PricebookEntryId = item.pricebookEntryId,
                 Quantity = item.quantity,
                 UnitPrice = item.unitPrice
@@ -60,13 +60,13 @@ public with sharing class ProductSearchService {
         }
         insert orderItems;
 
-        return ord.Id;
+        return order.Id;
     }
 
     private static Id getOpportunityPricebookId(Id opportunityId) {
-        Opportunity opp = [SELECT Pricebook2Id FROM Opportunity WHERE Id = :opportunityId];
-        if (opp.Pricebook2Id != null) {
-            return opp.Pricebook2Id;
+        Opportunity opportunity = [SELECT Pricebook2Id FROM Opportunity WHERE Id = :opportunityId];
+        if (opportunity.Pricebook2Id != null) {
+            return opportunity.Pricebook2Id;
         }
         return [SELECT Id FROM Pricebook2 WHERE IsStandard = true LIMIT 1].Id;
     }

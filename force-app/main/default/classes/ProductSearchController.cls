@@ -7,6 +7,7 @@ public with sharing class ProductSearchController {
         } catch (AuraHandledException e) {
             throw e;
         } catch (Exception e) {
+            ErrorLogger.log('ProductSearchController', e);
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -18,6 +19,7 @@ public with sharing class ProductSearchController {
         } catch (AuraHandledException e) {
             throw e;
         } catch (Exception e) {
+            ErrorLogger.log('ProductSearchController', e);
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -29,6 +31,7 @@ public with sharing class ProductSearchController {
         } catch (AuraHandledException e) {
             throw e;
         } catch (Exception e) {
+            ErrorLogger.log('ProductSearchController', e);
             throw new AuraHandledException(e.getMessage());
         }
     }
