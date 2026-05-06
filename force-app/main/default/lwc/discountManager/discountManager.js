@@ -289,7 +289,7 @@ export default class DiscountManager extends LightningElement {
             this.showToast(LABEL_SUCCESS, LABEL_TOAST_SETTINGS_SAVED, 'success');
         })
         .catch(e => {
-            this.showToast(LABEL_ERROR, e.body.message, 'error');
+            this.showToast(LABEL_ERROR, e.body ? e.body.message : e.message, 'error');
         });
     }
 
@@ -317,6 +317,9 @@ export default class DiscountManager extends LightningElement {
             this.showToast(LABEL_SUCCESS, LABEL_TOAST_ACTIVATED, 'success');
             this.selectedIds = [];
             refreshApex(this.wiredDiscountsResult);
+        })
+        .catch(e => {
+            this.showToast(LABEL_ERROR, e.body ? e.body.message : e.message, 'error');
         });
     }
 
@@ -327,6 +330,9 @@ export default class DiscountManager extends LightningElement {
             this.showToast(LABEL_SUCCESS, LABEL_TOAST_DEACTIVATED, 'success');
             this.selectedIds = [];
             refreshApex(this.wiredDiscountsResult);
+        })
+        .catch(e => {
+            this.showToast(LABEL_ERROR, e.body ? e.body.message : e.message, 'error');
         });
     }
 
