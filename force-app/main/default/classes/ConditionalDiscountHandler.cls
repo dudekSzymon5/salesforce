@@ -4,7 +4,7 @@ public class ConditionalDiscountHandler extends DiscountTypeHandler {
         if (discount.Start_Date__c != null && today < discount.Start_Date__c) return false;
         if (discount.End_Date__c != null && today > discount.End_Date__c) return false;
 
-        if (discount.Condition_Type__c == DiscountUtils.CONDITION_MIN_ORDER_VALUE) {
+        if (discount.Condition_Type__c == Utils.DISCOUNT.CONDITION.MIN_ORDER_VALUE) {
             if (discount.Minimum_Order_Amount__c != null && amount < discount.Minimum_Order_Amount__c) return false;
         }
 

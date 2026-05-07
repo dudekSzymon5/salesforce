@@ -3,56 +3,56 @@ private class UtilsTest {
 
     @IsTest
     static void testDiscountTypeConstants() {
-        Assert.areEqual('Recurring', DiscountUtils.TYPE_RECURRING);
-        Assert.areEqual('Conditional', DiscountUtils.TYPE_CONDITIONAL);
-        Assert.areEqual('One-Time', DiscountUtils.TYPE_ONE_TIME);
+        Assert.areEqual('Recurring',   Utils.DISCOUNT.TYPE.RECURRING);
+        Assert.areEqual('Conditional', Utils.DISCOUNT.TYPE.CONDITIONAL);
+        Assert.areEqual('One-Time',    Utils.DISCOUNT.TYPE.ONE_TIME);
     }
 
     @IsTest
     static void testDiscountConditionConstants() {
-        Assert.areEqual('Minimum Order Value', DiscountUtils.CONDITION_MIN_ORDER_VALUE);
-        Assert.areEqual('Two For One', DiscountUtils.CONDITION_TWO_FOR_ONE);
+        Assert.areEqual('Minimum Order Value', Utils.DISCOUNT.CONDITION.MIN_ORDER_VALUE);
+        Assert.areEqual('Two For One',         Utils.DISCOUNT.CONDITION.TWO_FOR_ONE);
     }
 
     @IsTest
     static void testDiscountFormConstants() {
-        Assert.areEqual('Percentage', DiscountUtils.FORM_PERCENTAGE);
-        Assert.areEqual('Amount', DiscountUtils.FORM_AMOUNT);
+        Assert.areEqual('Percentage', Utils.DISCOUNT.FORM.PERCENTAGE);
+        Assert.areEqual('Amount',     Utils.DISCOUNT.FORM.AMOUNT);
     }
 
     @IsTest
     static void testRecurrencePatternConstants() {
-        Assert.areEqual('Every Monday', DiscountUtils.RECURRENCE_EVERY_MONDAY);
-        Assert.areEqual('Last Day of Month', DiscountUtils.RECURRENCE_LAST_DAY_OF_MONTH);
-        Assert.areEqual('Black Friday', DiscountUtils.RECURRENCE_BLACK_FRIDAY);
-        Assert.areEqual('Custom Date', DiscountUtils.RECURRENCE_CUSTOM_DATE);
+        Assert.areEqual('Every Monday',      Utils.DISCOUNT.RECURRENCE_PATTERN.EVERY_MONDAY);
+        Assert.areEqual('Last Day of Month', Utils.DISCOUNT.RECURRENCE_PATTERN.LAST_DAY_OF_MONTH);
+        Assert.areEqual('Black Friday',      Utils.DISCOUNT.RECURRENCE_PATTERN.BLACK_FRIDAY);
+        Assert.areEqual('Custom Date',       Utils.DISCOUNT.RECURRENCE_PATTERN.CUSTOM_DATE);
     }
 
     @IsTest
     static void testStrategyConstants() {
-        Assert.areEqual('Highest Discount', DiscountUtils.STRATEGY_HIGHEST);
-        Assert.areEqual('Lowest Discount', DiscountUtils.STRATEGY_LOWEST);
+        Assert.areEqual('Highest Discount', Utils.DISCOUNT.STRATEGY.HIGHEST);
+        Assert.areEqual('Lowest Discount',  Utils.DISCOUNT.STRATEGY.LOWEST);
     }
 
     @IsTest
     static void testTargetConstants() {
-        Assert.areEqual('All Products', DiscountUtils.TARGET_ALL);
-        Assert.areEqual('Specific Families', DiscountUtils.TARGET_FAMILIES);
-        Assert.areEqual('Specific Products', DiscountUtils.TARGET_PRODUCTS);
+        Assert.areEqual('All Products',       Utils.DISCOUNT.TARGET.ALL);
+        Assert.areEqual('Specific Families',  Utils.DISCOUNT.TARGET.FAMILIES);
+        Assert.areEqual('Specific Products',  Utils.DISCOUNT.TARGET.PRODUCTS);
     }
 
     @IsTest
     static void testErrorMessageConstants() {
-        Assert.isNotNull(DiscountUtils.ERROR_ALREADY_ASSIGNED);
-        Assert.isNotNull(DiscountUtils.ERROR_PERCENTAGE_RANGE);
+        Assert.isNotNull(Utils.DISCOUNT.ERROR.ALREADY_ASSIGNED);
+        Assert.isNotNull(Utils.DISCOUNT.ERROR.PERCENTAGE_RANGE);
     }
 
     @IsTest
     static void testDiscountSettingsConstants() {
-        Assert.areEqual('Discount_Settings__mdt.Default', DiscountSettingsUtils.FULL_NAME);
-        Assert.areEqual('Default', DiscountSettingsUtils.LABEL);
-        Assert.areEqual('Default', DiscountSettingsUtils.DEVELOPER_NAME);
-        Assert.areEqual('Discount_Strategy__c', DiscountSettingsUtils.FIELD_STRATEGY);
-        Assert.areEqual('Minimum_Discount_Percentage__c', DiscountSettingsUtils.FIELD_MIN_PCT);
+        Assert.areEqual('Discount_Settings__mdt.Default', Utils.DISCOUNT_SETTINGS.FULL_NAME);
+        Assert.areEqual('Default',                        Utils.DISCOUNT_SETTINGS.LABEL);
+        Assert.areEqual('Default',                        Utils.DISCOUNT_SETTINGS.DEVELOPER_NAME);
+        Assert.areEqual('Discount_Strategy__c',           Utils.DISCOUNT_SETTINGS.FIELD.STRATEGY);
+        Assert.areEqual('Minimum_Discount_Percentage__c', Utils.DISCOUNT_SETTINGS.FIELD.MIN_PCT);
     }
 }
