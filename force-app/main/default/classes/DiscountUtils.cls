@@ -1,27 +1,49 @@
 public class DiscountUtils {
 
-    public static final String TYPE_RECURRING   = 'Recurring';
-    public static final String TYPE_CONDITIONAL = 'Conditional';
-    public static final String TYPE_ONE_TIME    = 'One-Time';
+    public final TypeConst              TYPE               = new TypeConst();
+    public final ConditionConst         CONDITION          = new ConditionConst();
+    public final FormConst              FORM               = new FormConst();
+    public final RecurrencePatternConst RECURRENCE_PATTERN = new RecurrencePatternConst();
+    public final StrategyConst          STRATEGY           = new StrategyConst();
+    public final TargetConst            TARGET             = new TargetConst();
+    public final ErrorConst             ERROR              = new ErrorConst();
 
-    public static final String CONDITION_MIN_ORDER_VALUE = 'Minimum Order Value';
-    public static final String CONDITION_TWO_FOR_ONE     = 'Two For One';
+    public class TypeConst {
+        public String RECURRING   { get { return 'Recurring'; } }
+        public String CONDITIONAL { get { return 'Conditional'; } }
+        public String ONE_TIME    { get { return 'One-Time'; } }
+    }
 
-    public static final String FORM_PERCENTAGE = 'Percentage';
-    public static final String FORM_AMOUNT     = 'Amount';
+    public class ConditionConst {
+        public String MIN_ORDER_VALUE { get { return 'Minimum Order Value'; } }
+        public String TWO_FOR_ONE     { get { return 'Two For One'; } }
+    }
 
-    public static final String RECURRENCE_EVERY_MONDAY      = 'Every Monday';
-    public static final String RECURRENCE_LAST_DAY_OF_MONTH = 'Last Day of Month';
-    public static final String RECURRENCE_BLACK_FRIDAY      = 'Black Friday';
-    public static final String RECURRENCE_CUSTOM_DATE       = 'Custom Date';
+    public class FormConst {
+        public String PERCENTAGE { get { return 'Percentage'; } }
+        public String AMOUNT     { get { return 'Amount'; } }
+    }
 
-    public static final String STRATEGY_HIGHEST = 'Highest Discount';
-    public static final String STRATEGY_LOWEST  = 'Lowest Discount';
+    public class RecurrencePatternConst {
+        public String EVERY_MONDAY      { get { return 'Every Monday'; } }
+        public String LAST_DAY_OF_MONTH { get { return 'Last Day of Month'; } }
+        public String BLACK_FRIDAY      { get { return 'Black Friday'; } }
+        public String CUSTOM_DATE       { get { return 'Custom Date'; } }
+    }
 
-    public static final String TARGET_ALL      = 'All Products';
-    public static final String TARGET_FAMILIES = 'Specific Families';
-    public static final String TARGET_PRODUCTS = 'Specific Products';
+    public class StrategyConst {
+        public String HIGHEST { get { return 'Highest Discount'; } }
+        public String LOWEST  { get { return 'Lowest Discount'; } }
+    }
 
-    public static String ERROR_ALREADY_ASSIGNED { get { return Label.Discount_ErrorAlreadyAssigned; } }
-    public static String ERROR_PERCENTAGE_RANGE { get { return Label.Discount_ErrorPercentageRange; } }
+    public class TargetConst {
+        public String ALL      { get { return 'All Products'; } }
+        public String FAMILIES { get { return 'Specific Families'; } }
+        public String PRODUCTS { get { return 'Specific Products'; } }
+    }
+
+    public class ErrorConst {
+        public String ALREADY_ASSIGNED { get { return Label.Discount_ErrorAlreadyAssigned; } }
+        public String PERCENTAGE_RANGE { get { return Label.Discount_ErrorPercentageRange; } }
+    }
 }

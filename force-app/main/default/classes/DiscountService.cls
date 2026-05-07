@@ -24,7 +24,7 @@ public with sharing class DiscountService {
             ORDER BY CreatedDate DESC
         ];
     }
-    
+
     public static List<Id> getAssignedDiscountIds() {
         Set<Id> ids = new Set<Id>();
         for (Order_Discount__c orderDiscount : [SELECT Discount__c FROM Order_Discount__c WHERE Discount__c != null]) {
@@ -53,7 +53,7 @@ public with sharing class DiscountService {
         return result;
     }
 
-    public static List<Id> getDiscountProducts(Id discountId) { 
+    public static List<Id> getDiscountProducts(Id discountId) {
         List<Id> productIds = new List<Id>();
         for (Discount_Product__c discountProduct : [SELECT Product__c FROM Discount_Product__c WHERE Discount__c = :discountId]) {
             productIds.add(discountProduct.Product__c);
@@ -92,7 +92,7 @@ public with sharing class DiscountService {
         Discount_Settings__mdt settings = getSettings();
         List<Discount__c> globalApplicable = new List<Discount__c>();
         List<Discount__c> targetedApplicable = new List<Discount__c>();
-        partitionDiscounts( 
+        partitionDiscounts(
             fetchActiveDiscounts(), orderAmount, productAmounts.keySet(), productQuantities,
             productFamilies, discountToProducts, globalApplicable, targetedApplicable
         );
@@ -187,20 +187,20 @@ public with sharing class DiscountService {
         return previews;
     }
 
-    public static Discount__c saveDiscount(Discount__c discount) { 
+    public static Discount__c saveDiscount(Discount__c discount) {
         if (discount.Id != null) {
             List<Order_Discount__c> assigned = [
                 SELECT Id FROM Order_Discount__c WHERE Discount__c = :discount.Id LIMIT 1
             ];
             if (!assigned.isEmpty()) {
-                throw new AuraHandledException(DiscountUtils.ERROR_ALREADY_ASSIGNED);
+                throw new AuraHandledException(Utils.DISCOUNT.ERROR.ALREADY_ASSIGNED);
             }
         }
-        if (discount.Discount_Form__c == DiscountUtils.FORM_PERCENTAGE && (discount.Value__c < 0 || discount.Value__c > 100)) {
-            throw new AuraHandledException(DiscountUtils.ERROR_PERCENTAGE_RANGE);
+        if (discount.Discount_Form__c == Utils.DISCOUNT.FORM.PERCENTAGE && (discount.Value__c < 0 || discount.Value__c > 100)) {
+            throw new AuraHandledException(Utils.DISCOUNT.ERROR.PERCENTAGE_RANGE);
         }
 
-        if (discount.Condition_Type__c == DiscountUtils.CONDITION_TWO_FOR_ONE) {
+        if (discount.Condition_Type__c == Utils.DISCOUNT.CONDITION.TWO_FOR_ONE) {
             discount.Minimum_Quantity__c = 2;
         }
 
@@ -218,16 +218,16 @@ public with sharing class DiscountService {
 
     public static void saveDiscountSettings(String strategy, Decimal minPercentage) {
         Metadata.CustomMetadata customMetadata = new Metadata.CustomMetadata();
-        customMetadata.fullName = DiscountSettingsUtils.FULL_NAME;
-        customMetadata.label = DiscountSettingsUtils.LABEL;
+        customMetadata.fullName = Utils.DISCOUNT_SETTINGS.FULL_NAME;
+        customMetadata.label = Utils.DISCOUNT_SETTINGS.LABEL;
 
         Metadata.CustomMetadataValue strategyMetadataValue = new Metadata.CustomMetadataValue();
-        strategyMetadataValue.field = DiscountSettingsUtils.FIELD_STRATEGY;
+        strategyMetadataValue.field = Utils.DISCOUNT_SETTINGS.FIELD.STRATEGY;
         strategyMetadataValue.value = strategy;
         customMetadata.values.add(strategyMetadataValue);
 
         Metadata.CustomMetadataValue minPercentageMetadataValue = new Metadata.CustomMetadataValue();
-        minPercentageMetadataValue.field = DiscountSettingsUtils.FIELD_MIN_PCT;
+        minPercentageMetadataValue.field = Utils.DISCOUNT_SETTINGS.FIELD.MIN_PCT;
         minPercentageMetadataValue.value = minPercentage;
         customMetadata.values.add(minPercentageMetadataValue);
 
@@ -240,7 +240,7 @@ public with sharing class DiscountService {
         return [
             SELECT Discount_Strategy__c, Minimum_Discount_Percentage__c
             FROM Discount_Settings__mdt
-            WHERE DeveloperName = :DiscountSettingsUtils.DEVELOPER_NAME
+            WHERE DeveloperName = :Utils.DISCOUNT_SETTINGS.DEVELOPER_NAME
             LIMIT 1
         ];
     }
@@ -290,9 +290,9 @@ public with sharing class DiscountService {
                 discount, orderAmount, today, productIds, productQuantities, productFamilies, linkedProducts
             )) continue;
 
-            String targetApplication = discount.Target_Application__c != null ? discount.Target_Application__c : DiscountUtils.TARGET_ALL;
+            String targetApplication = discount.Target_Application__c != null ? discount.Target_Application__c : Utils.DISCOUNT.TARGET.ALL;
 
-            if (targetApplication == DiscountUtils.TARGET_ALL && (discount.Minimum_Quantity__c == null || discount.Minimum_Quantity__c <= 1)) {
+            if (targetApplication == Utils.DISCOUNT.TARGET.ALL && (discount.Minimum_Quantity__c == null || discount.Minimum_Quantity__c <= 1)) {
                 globalApplicable.add(discount);
             } else {
                 targetedApplicable.add(discount);
@@ -305,16 +305,16 @@ public with sharing class DiscountService {
         Map<Id, Set<Id>> discountToProducts, Map<Id, String> productFamilies,
         Map<Id, Decimal> productQuantities
     ) {
-        String targetApplication = discount.Target_Application__c != null ? discount.Target_Application__c : DiscountUtils.TARGET_ALL;
+        String targetApplication = discount.Target_Application__c != null ? discount.Target_Application__c : Utils.DISCOUNT.TARGET.ALL;
         Decimal total = 0;
 
-        if (targetApplication == DiscountUtils.TARGET_PRODUCTS) {
+        if (targetApplication == Utils.DISCOUNT.TARGET.PRODUCTS) {
             Set<Id> linkedProductIds = discountToProducts.get(discount.Id);
             if (linkedProductIds == null) return 0;
             for (Id productId : linkedProductIds) {
                 total += calculateEligibleAmount(discount, productId, productAmounts, productQuantities);
             }
-        } else if (targetApplication == DiscountUtils.TARGET_FAMILIES) {
+        } else if (targetApplication == Utils.DISCOUNT.TARGET.FAMILIES) {
             if (discount.Target_Families__c == null) return 0;
             Set<String> targetFamilyNames = new Set<String>();
             for (String family : discount.Target_Families__c.split(',')) targetFamilyNames.add(family.trim());
@@ -324,7 +324,7 @@ public with sharing class DiscountService {
                     total += calculateEligibleAmount(discount, productId, productAmounts, productQuantities);
                 }
             }
-        } else if (targetApplication == DiscountUtils.TARGET_ALL) {
+        } else if (targetApplication == Utils.DISCOUNT.TARGET.ALL) {
             for (Id productId : productAmounts.keySet()) {
                 total += calculateEligibleAmount(discount, productId, productAmounts, productQuantities);
             }
@@ -359,7 +359,7 @@ public with sharing class DiscountService {
 
     private static List<Discount__c> selectByStrategy(List<Discount__c> candidates, String strategy, Decimal remaining) {
         if (candidates.isEmpty()) return candidates;
-        if (strategy == DiscountUtils.STRATEGY_HIGHEST) {
+        if (strategy == Utils.DISCOUNT.STRATEGY.HIGHEST) {
             Discount__c best = candidates[0];
             Decimal bestDiscountValue = calculateDiscountAmount(best, remaining);
             for (Discount__c discount : candidates) {
@@ -368,7 +368,7 @@ public with sharing class DiscountService {
             }
             return new List<Discount__c>{ best };
         }
-        if (strategy == DiscountUtils.STRATEGY_LOWEST) {
+        if (strategy == Utils.DISCOUNT.STRATEGY.LOWEST) {
             Discount__c lowest = candidates[0];
             Decimal lowestDiscountValue = calculateDiscountAmount(lowest, remaining);
             for (Discount__c discount : candidates) {
@@ -382,12 +382,12 @@ public with sharing class DiscountService {
 
     private static Boolean meetsMinimumDiscountPercentage(Discount__c discount, Decimal applied, Decimal base, Decimal minimumPercentage) {
         if (minimumPercentage == null) return true;
-        Decimal effectivePercentage = discount.Discount_Form__c == DiscountUtils.FORM_PERCENTAGE ? discount.Value__c : (base > 0 ? (applied / base * 100) : 0);
+        Decimal effectivePercentage = discount.Discount_Form__c == Utils.DISCOUNT.FORM.PERCENTAGE ? discount.Value__c : (base > 0 ? (applied / base * 100) : 0);
         return effectivePercentage >= minimumPercentage;
     }
 
     private static Decimal calculateDiscountAmount(Discount__c discount, Decimal amount) {
-        if (discount.Discount_Form__c == DiscountUtils.FORM_PERCENTAGE) return (amount * discount.Value__c / 100).setScale(2);
+        if (discount.Discount_Form__c == Utils.DISCOUNT.FORM.PERCENTAGE) return (amount * discount.Value__c / 100).setScale(2);
         return discount.Value__c;
     }
 
