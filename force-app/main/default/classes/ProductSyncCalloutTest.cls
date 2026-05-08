@@ -1,24 +1,15 @@
 @IsTest
 private class ProductSyncCalloutTest {
 
-    @TestSetup
-    static void setup() {
-        TriggerBase.bypass('ProductTrigger');
-        Product2 p = new Product2(
-            Name = 'Test Product',
-            ProductCode = 'TEST-001',
-            Family = 'Software',
-            Is_External__c = false
-        );
-        insert p;
-        TriggerBase.clearBypass('ProductTrigger');
-    }
-
     @IsTest
     static void testSyncProductSuccess() {
-        Product2 p = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 LIMIT 1];
-        Test.setMock(HttpCalloutMock.class, new ProductSyncCalloutMock(200, '{"status":"success","productId":"001TEST"}'));
+        TriggerBase.bypass('ProductTrigger');
+        Product2 p = new Product2(Name = 'Test Product', ProductCode = 'TEST-001', Family = 'Software', Is_External__c = false);
+        insert p;
+        TriggerBase.clearBypass('ProductTrigger');
+        p = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 WHERE Id = :p.Id];
 
+        Test.setMock(HttpCalloutMock.class, new ProductSyncCalloutMock(200, '{"status":"success","productId":"001TEST"}'));
         Test.startTest();
         ProductSyncCallout.syncProduct(p);
         Test.stopTest();
@@ -28,9 +19,13 @@ private class ProductSyncCalloutTest {
 
     @IsTest
     static void testSyncProductFailure() {
-        Product2 p = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 LIMIT 1];
-        Test.setMock(HttpCalloutMock.class, new ProductSyncCalloutMock(500, '{"status":"error","message":"Internal Server Error"}'));
+        TriggerBase.bypass('ProductTrigger');
+        Product2 p = new Product2(Name = 'Test Product', ProductCode = 'TEST-001', Family = 'Software', Is_External__c = false);
+        insert p;
+        TriggerBase.clearBypass('ProductTrigger');
+        p = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 WHERE Id = :p.Id];
 
+        Test.setMock(HttpCalloutMock.class, new ProductSyncCalloutMock(500, '{"status":"error","message":"Internal Server Error"}'));
         Test.startTest();
         ProductSyncCallout.syncProduct(p);
         Test.stopTest();
@@ -44,7 +39,6 @@ private class ProductSyncCalloutTest {
     @IsTest
     static void testDeleteProductSuccess() {
         Test.setMock(HttpCalloutMock.class, new ProductSyncCalloutMock(200, '{"status":"success"}'));
-
         Test.startTest();
         ProductSyncCallout.deleteProduct('EXT-001');
         Test.stopTest();
@@ -55,7 +49,6 @@ private class ProductSyncCalloutTest {
     @IsTest
     static void testDeleteProductFailure() {
         Test.setMock(HttpCalloutMock.class, new ProductSyncCalloutMock(404, '{"errorCode":"NOT_FOUND"}'));
-
         Test.startTest();
         ProductSyncCallout.deleteProduct('EXT-001');
         Test.stopTest();

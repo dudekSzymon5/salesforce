@@ -1,21 +1,6 @@
 @IsTest
 private class ProductSyncEndpointTest {
 
-    @TestSetup
-    static void setup() {
-        TriggerBase.bypass('ProductTrigger');
-        Product2 p = new Product2(
-            Name = 'Test External Product',
-            ProductCode = 'TEST-001',
-            Family = 'Software',
-            Is_External__c = true,
-            External_Product_Id__c = 'EXT-001',
-            External_Org_Id__c = '00DTEST000000001'
-        );
-        insert p;
-        TriggerBase.clearBypass('ProductTrigger');
-    }
-
     @IsTest
     static void testUpsertProductInsert() {
         String body = JSON.serialize(new Map<String, Object>{
@@ -41,18 +26,25 @@ private class ProductSyncEndpointTest {
         Test.stopTest();
 
         System.assertEquals(200, res.statusCode);
-        Product2 created = [
-            SELECT Id, Name, Is_External__c
-            FROM Product2
-            WHERE External_Product_Id__c = 'EXT-NEW-001'
-            LIMIT 1
-        ];
+        Product2 created = [SELECT Id, Name, Is_External__c FROM Product2 WHERE External_Product_Id__c = 'EXT-NEW-001' LIMIT 1];
         System.assertEquals('New External Product', created.Name);
         System.assertEquals(true, created.Is_External__c);
     }
 
     @IsTest
     static void testUpsertProductUpdate() {
+        TriggerBase.bypass('ProductTrigger');
+        Product2 existing = new Product2(
+            Name = 'Test External Product',
+            ProductCode = 'TEST-001',
+            Family = 'Software',
+            Is_External__c = true,
+            External_Product_Id__c = 'EXT-001',
+            External_Org_Id__c = '00DTEST000000001'
+        );
+        insert existing;
+        TriggerBase.clearBypass('ProductTrigger');
+
         String body = JSON.serialize(new Map<String, Object>{
             'externalProductId' => 'EXT-001',
             'externalOrgId' => '00DTEST000000001',
@@ -76,16 +68,24 @@ private class ProductSyncEndpointTest {
         Test.stopTest();
 
         System.assertEquals(200, res.statusCode);
-        Product2 updated = [
-            SELECT Name FROM Product2
-            WHERE External_Product_Id__c = 'EXT-001'
-            LIMIT 1
-        ];
+        Product2 updated = [SELECT Name FROM Product2 WHERE External_Product_Id__c = 'EXT-001' LIMIT 1];
         System.assertEquals('Updated External Product', updated.Name);
     }
 
     @IsTest
     static void testSoftDeleteProduct() {
+        TriggerBase.bypass('ProductTrigger');
+        Product2 existing = new Product2(
+            Name = 'Test External Product',
+            ProductCode = 'TEST-001',
+            Family = 'Software',
+            Is_External__c = true,
+            External_Product_Id__c = 'EXT-001',
+            External_Org_Id__c = '00DTEST000000001'
+        );
+        insert existing;
+        TriggerBase.clearBypass('ProductTrigger');
+
         RestRequest req = new RestRequest();
         RestResponse res = new RestResponse();
         req.requestURI = '/services/apexrest/v1/products/EXT-001';
@@ -98,11 +98,7 @@ private class ProductSyncEndpointTest {
         Test.stopTest();
 
         System.assertEquals(200, res.statusCode);
-        Product2 deleted = [
-            SELECT Is_Deleted__c FROM Product2
-            WHERE External_Product_Id__c = 'EXT-001'
-            LIMIT 1
-        ];
+        Product2 deleted = [SELECT Is_Deleted__c FROM Product2 WHERE External_Product_Id__c = 'EXT-001' LIMIT 1];
         System.assertEquals(true, deleted.Is_Deleted__c);
     }
 
