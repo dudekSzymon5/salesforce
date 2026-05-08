@@ -4,8 +4,8 @@ private class ConditionalDiscountHandlerTest {
     static Discount__c makeConditional() {
         return new Discount__c(
             Name = 'Test Conditional',
-            Type__c = 'Conditional',
-            Discount_Form__c = 'Percentage',
+            Type__c = Utils.DISCOUNT.TYPE.CONDITIONAL,
+            Discount_Form__c = Utils.DISCOUNT.FORM.PERCENTAGE,
             Value__c = 10,
             Is_Active__c = true
         );
@@ -36,7 +36,7 @@ private class ConditionalDiscountHandlerTest {
     @IsTest
     static void testMinOrderValue_amountBelowMinimum_returnsFalse() {
         Discount__c d = makeConditional();
-        d.Condition_Type__c = 'Minimum Order Value';
+        d.Condition_Type__c = Utils.DISCOUNT.CONDITION.MIN_ORDER_VALUE;
         d.Minimum_Order_Amount__c = 200;
 
         ConditionalDiscountHandler handler = new ConditionalDiscountHandler();
@@ -48,7 +48,7 @@ private class ConditionalDiscountHandlerTest {
     @IsTest
     static void testMinOrderValue_amountMeetsMinimum_returnsTrue() {
         Discount__c d = makeConditional();
-        d.Condition_Type__c = 'Minimum Order Value';
+        d.Condition_Type__c = Utils.DISCOUNT.CONDITION.MIN_ORDER_VALUE;
         d.Minimum_Order_Amount__c = 50;
 
         ConditionalDiscountHandler handler = new ConditionalDiscountHandler();
