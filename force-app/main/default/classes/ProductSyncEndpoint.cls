@@ -15,8 +15,10 @@ global class ProductSyncEndpoint {
         try {
             ProductPayload payload = (ProductPayload) JSON.deserialize(body, ProductPayload.class);
 
+            // TUTAJ używamy payload.externalProductId
             List<Product2> existing = [
-                SELECT Id FROM Product2
+                SELECT Id, Sync_Count__c 
+                FROM Product2
                 WHERE External_Product_Id__c = :payload.externalProductId
                 AND Is_External__c = true
                 LIMIT 1
@@ -78,9 +80,10 @@ global class ProductSyncEndpoint {
         );
 
         try {
+            // TUTAJ używamy tylko externalProductId (bez payload!)
             List<Product2> products = [
                 SELECT Id, Sync_Count__c FROM Product2
-                WHERE External_Product_Id__c = :payload.externalProductId
+                WHERE External_Product_Id__c = :externalProductId
                 AND Is_External__c = true
                 LIMIT 1
             ];
