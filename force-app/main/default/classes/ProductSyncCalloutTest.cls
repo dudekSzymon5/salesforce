@@ -18,7 +18,6 @@ private class ProductSyncCalloutTest {
     }
 
     @IsTest
-    @IsTest
     static void testSyncProductFailure() {
         TriggerBase.bypass('ProductTrigger');
         Product2 p = new Product2(Name = 'Test Product', ProductCode = 'TEST-001', Family = 'Software', Is_External__c = false);
