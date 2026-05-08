@@ -11,7 +11,7 @@ public with sharing class ProductSearchService {
 
         String query = 'SELECT Id, Name, UnitPrice, Product2Id, Product2.Name, Product2.Family, Product2.ProductCode, Product2.Description, Product2.Single_Purchase_Only__c ' +
                        'FROM PricebookEntry ' +
-                       'WHERE Pricebook2Id = :pricebookId AND IsActive = true';
+                       'WHERE Pricebook2Id = :pricebookId AND IsActive = true AND Product2.Is_External__c = false AND Product2.Is_Deleted__c = false';
 
         if (String.isNotBlank(searchName)) {
             searchName = '%' + searchName + '%';

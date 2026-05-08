@@ -1,0 +1,86 @@
+@IsTest
+private class ProductSyncCalloutTest {
+
+    @TestSetup
+    static void setup() {
+        Product2 p = new Product2(
+            Name = 'Test Product',
+            ProductCode = 'TEST-001',
+            Family = 'Software',
+            Is_External__c = false
+        );
+        insert p;
+    }
+
+    @IsTest
+    static void testSyncProductSuccess() {
+        Product2 p = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 LIMIT 1];
+
+        Test.setMock(HttpCalloutMock.class, new ProductSyncCalloutMock(200, '{"status":"success","productId":"001TEST"}'));
+
+        Test.startTest();
+        ProductSyncCallout.syncProduct(p);
+        Test.stopTest();
+
+        List<Product_Sync_Queue__c> queue = [SELECT Id FROM Product_Sync_Queue__c];
+        System.assertEquals(0, queue.size(), 'Nie powinno być wpisów w kolejce przy sukcesie');
+    }
+
+    @IsTest
+    static void testSyncProductFailure() {
+        Product2 p = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 LIMIT 1];
+
+        Test.setMock(HttpCalloutMock.class, new ProductSyncCalloutMock(500, '{"status":"error","message":"Internal Server Error"}'));
+
+        Test.startTest();
+        ProductSyncCallout.syncProduct(p);
+        Test.stopTest();
+
+        List<Product_Sync_Queue__c> queue = [SELECT Id, Status__c, Attempt_Count__c FROM Product_Sync_Queue__c];
+        System.assertEquals(1, queue.size(), 'Powinien być wpis w kolejce przy błędzie');
+        System.assertEquals('Failed', queue[0].Status__c);
+        System.assertEquals(1, queue[0].Attempt_Count__c);
+    }
+
+    @IsTest
+    static void testDeleteProductSuccess() {
+        Test.setMock(HttpCalloutMock.class, new ProductSyncCalloutMock(200, '{"status":"success"}'));
+
+        Test.startTest();
+        ProductSyncCallout.deleteProduct('EXT-001');
+        Test.stopTest();
+
+        List<Product_Sync_Queue__c> queue = [SELECT Id FROM Product_Sync_Queue__c];
+        System.assertEquals(0, queue.size());
+    }
+
+    @IsTest
+    static void testDeleteProductFailure() {
+        Test.setMock(HttpCalloutMock.class, new ProductSyncCalloutMock(404, '{"errorCode":"NOT_FOUND"}'));
+
+        Test.startTest();
+        ProductSyncCallout.deleteProduct('EXT-001');
+        Test.stopTest();
+
+        List<Product_Sync_Queue__c> queue = [SELECT Id, Status__c FROM Product_Sync_Queue__c];
+        System.assertEquals(1, queue.size());
+        System.assertEquals('Failed', queue[0].Status__c);
+    }
+
+    private class ProductSyncCalloutMock implements HttpCalloutMock {
+        private Integer statusCode;
+        private String body;
+
+        public ProductSyncCalloutMock(Integer statusCode, String body) {
+            this.statusCode = statusCode;
+            this.body = body;
+        }
+
+        public HttpResponse respond(HttpRequest req) {
+            HttpResponse res = new HttpResponse();
+            res.setStatusCode(statusCode);
+            res.setBody(body);
+            return res;
+        }
+    }
+}
