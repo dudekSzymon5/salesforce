@@ -3,8 +3,7 @@ private class ProductSyncCalloutTest {
 
     @IsTest
     static void testSyncProductSuccess() {
-        TriggerBase.bypass('ProductTrigger');
-        Product2 p = new Product2(Name = 'Test Product', ProductCode = 'TEST-001', Family = 'Software', Is_External__c = false);
+        Product2 p = new Product2(Name = 'Test Product', ProductCode = 'TEST-001', Family = 'Software', Is_External__c = true);
         insert p;
         
         p = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 WHERE Id = :p.Id];
@@ -20,8 +19,7 @@ private class ProductSyncCalloutTest {
 
     @IsTest
     static void testSyncProductFailure() {
-        TriggerBase.bypass('ProductTrigger');
-        Product2 p = new Product2(Name = 'Test Product', ProductCode = 'TEST-001', Family = 'Software', Is_External__c = false);
+        Product2 p = new Product2(Name = 'Test Product', ProductCode = 'TEST-001', Family = 'Software', Is_External__c = true);
         insert p;
 
         p = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 WHERE Id = :p.Id];
