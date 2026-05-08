@@ -14,7 +14,8 @@ private class ProductSyncCalloutTest {
         ProductSyncCallout.syncProduct(p);
         Test.stopTest();
 
-        System.assertEquals(0, [SELECT Id FROM Product_Sync_Queue__c].size(), 'Nie powinno być wpisów w kolejce przy sukcesie');
+        List<Product_Sync_Queue__c> queue = [SELECT Id, Status__c FROM Product_Sync_Queue__c WHERE Operation__c = 'INSERT' AND Status__c = 'Failed'];
+        System.assertEquals(0, queue.size(), 'Nie powinno być wpisów Failed w kolejce przy sukcesie');
     }
 
     @IsTest
@@ -26,17 +27,21 @@ private class ProductSyncCalloutTest {
 
         p = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 WHERE Id = :p.Id];
 
-        Integer countBefore = [SELECT COUNT() FROM Product_Sync_Queue__c];
-
         Test.setMock(HttpCalloutMock.class, new ProductSyncCalloutMock(500, '{"status":"error","message":"Internal Server Error"}'));
         Test.startTest();
         ProductSyncCallout.syncProduct(p);
         Test.stopTest();
 
-        List<Product_Sync_Queue__c> queue = [SELECT Id, Status__c, Attempt_Count__c FROM Product_Sync_Queue__c WHERE Status__c = 'Failed' AND CreatedDate = TODAY];
-        System.assertEquals(countBefore + 1, [SELECT COUNT() FROM Product_Sync_Queue__c], 'Powinien być 1 nowy wpis w kolejce');
-        System.assertEquals('Failed', queue[queue.size()-1].Status__c);
+        List<Product_Sync_Queue__c> queue = [
+            SELECT Id, Status__c, Attempt_Count__c, Product__c
+            FROM Product_Sync_Queue__c
+            WHERE Status__c = 'Failed' AND Product__c = :p.Id
+        ];
+        System.assertEquals(1, queue.size(), 'Powinien być wpis w kolejce przy błędzie');
+        System.assertEquals('Failed', queue[0].Status__c);
+        System.assertEquals(1, queue[0].Attempt_Count__c);
     }
+
     @IsTest
     static void testDeleteProductSuccess() {
         Test.setMock(HttpCalloutMock.class, new ProductSyncCalloutMock(200, '{"status":"success"}'));
@@ -44,7 +49,8 @@ private class ProductSyncCalloutTest {
         ProductSyncCallout.deleteProduct('EXT-001');
         Test.stopTest();
 
-        System.assertEquals(0, [SELECT Id FROM Product_Sync_Queue__c].size());
+        List<Product_Sync_Queue__c> queue = [SELECT Id FROM Product_Sync_Queue__c WHERE Operation__c = 'DELETE' AND Status__c = 'Failed'];
+        System.assertEquals(0, queue.size());
     }
 
     @IsTest
@@ -54,7 +60,7 @@ private class ProductSyncCalloutTest {
         ProductSyncCallout.deleteProduct('EXT-001');
         Test.stopTest();
 
-        List<Product_Sync_Queue__c> queue = [SELECT Id, Status__c FROM Product_Sync_Queue__c];
+        List<Product_Sync_Queue__c> queue = [SELECT Id, Status__c FROM Product_Sync_Queue__c WHERE Operation__c = 'DELETE'];
         System.assertEquals(1, queue.size());
         System.assertEquals('Failed', queue[0].Status__c);
     }

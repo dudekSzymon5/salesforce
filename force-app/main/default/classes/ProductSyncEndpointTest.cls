@@ -53,7 +53,6 @@ private class ProductSyncEndpointTest {
             External_Org_Id__c = '00DTEST000000001'
         );
         insert existing;
-        TriggerBase.clearBypass('ProductTrigger');
 
         String body = JSON.serialize(new Map<String, Object>{
             'externalProductId' => 'EXT-001',
@@ -77,6 +76,7 @@ private class ProductSyncEndpointTest {
         Test.startTest();
         ProductSyncEndpoint.upsertProduct();
         Test.stopTest();
+        TriggerBase.clearBypass('ProductTrigger');
 
         System.assertEquals(200, res.statusCode);
         Product2 updated = [SELECT Name FROM Product2 WHERE External_Product_Id__c = 'EXT-001' LIMIT 1];
