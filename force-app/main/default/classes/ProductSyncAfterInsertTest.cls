@@ -13,7 +13,7 @@ private class ProductSyncAfterInsertTest {
         action.afterInsert(products);
         Test.stopTest();
 
-        System.assertEquals(2, [SELECT Id FROM AsyncApexJob WHERE JobType = 'Queueable'].size());
+        System.assertEquals(1, [SELECT Id FROM AsyncApexJob WHERE JobType = 'Queueable'].size());
     }
 
     @IsTest

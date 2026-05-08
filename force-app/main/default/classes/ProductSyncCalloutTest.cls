@@ -3,6 +3,7 @@ private class ProductSyncCalloutTest {
 
     @TestSetup
     static void setup() {
+        TriggerBase.bypass('ProductTrigger');
         Product2 p = new Product2(
             Name = 'Test Product',
             ProductCode = 'TEST-001',
@@ -10,26 +11,24 @@ private class ProductSyncCalloutTest {
             Is_External__c = false
         );
         insert p;
+        TriggerBase.clearBypass('ProductTrigger');
     }
 
     @IsTest
     static void testSyncProductSuccess() {
         Product2 p = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 LIMIT 1];
-
         Test.setMock(HttpCalloutMock.class, new ProductSyncCalloutMock(200, '{"status":"success","productId":"001TEST"}'));
 
         Test.startTest();
         ProductSyncCallout.syncProduct(p);
         Test.stopTest();
 
-        List<Product_Sync_Queue__c> queue = [SELECT Id FROM Product_Sync_Queue__c];
-        System.assertEquals(0, queue.size(), 'Nie powinno być wpisów w kolejce przy sukcesie');
+        System.assertEquals(0, [SELECT Id FROM Product_Sync_Queue__c].size(), 'Nie powinno być wpisów w kolejce przy sukcesie');
     }
 
     @IsTest
     static void testSyncProductFailure() {
         Product2 p = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 LIMIT 1];
-
         Test.setMock(HttpCalloutMock.class, new ProductSyncCalloutMock(500, '{"status":"error","message":"Internal Server Error"}'));
 
         Test.startTest();
@@ -50,8 +49,7 @@ private class ProductSyncCalloutTest {
         ProductSyncCallout.deleteProduct('EXT-001');
         Test.stopTest();
 
-        List<Product_Sync_Queue__c> queue = [SELECT Id FROM Product_Sync_Queue__c];
-        System.assertEquals(0, queue.size());
+        System.assertEquals(0, [SELECT Id FROM Product_Sync_Queue__c].size());
     }
 
     @IsTest
