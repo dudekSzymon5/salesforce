@@ -1,4 +1,3 @@
-// classes/ErrorLogger.cls
 public class ErrorLogger {
 
     public enum Severity { ERROR, WARNING, INFO }

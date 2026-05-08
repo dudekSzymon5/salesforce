@@ -4,8 +4,8 @@ private class RecurringDiscountHandlerTest {
     static Discount__c makeRecurring(String pattern) {
         return new Discount__c(
             Name = 'Test Recurring',
-            Type__c = 'Recurring',
-            Discount_Form__c = 'Percentage',
+            Type__c = Utils.DISCOUNT.TYPE.RECURRING,
+            Discount_Form__c = Utils.DISCOUNT.FORM.PERCENTAGE,
             Value__c = 10,
             Is_Active__c = true,
             Recurrence_Pattern__c = pattern
@@ -16,7 +16,7 @@ private class RecurringDiscountHandlerTest {
     static void testEveryMonday_onMonday_returnsTrue() {
         // May 5, 2025 is a Monday
         Date monday = Date.newInstance(2025, 5, 5);
-        Discount__c d = makeRecurring('Every Monday');
+        Discount__c d = makeRecurring(Utils.DISCOUNT.RECURRENCE_PATTERN.EVERY_MONDAY);
 
         RecurringDiscountHandler handler = new RecurringDiscountHandler();
         Boolean result = handler.isApplicable(d, 100, monday, new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
@@ -28,7 +28,7 @@ private class RecurringDiscountHandlerTest {
     static void testEveryMonday_onTuesday_returnsFalse() {
         // May 6, 2025 is a Tuesday
         Date tuesday = Date.newInstance(2025, 5, 6);
-        Discount__c d = makeRecurring('Every Monday');
+        Discount__c d = makeRecurring(Utils.DISCOUNT.RECURRENCE_PATTERN.EVERY_MONDAY);
 
         RecurringDiscountHandler handler = new RecurringDiscountHandler();
         Boolean result = handler.isApplicable(d, 100, tuesday, new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
@@ -40,7 +40,7 @@ private class RecurringDiscountHandlerTest {
     static void testLastDayOfMonth_onLastDay_returnsTrue() {
         // January 31 is always the last day of January
         Date lastDayJan = Date.newInstance(2025, 1, 31);
-        Discount__c d = makeRecurring('Last Day of Month');
+        Discount__c d = makeRecurring(Utils.DISCOUNT.RECURRENCE_PATTERN.LAST_DAY_OF_MONTH);
 
         RecurringDiscountHandler handler = new RecurringDiscountHandler();
         Boolean result = handler.isApplicable(d, 100, lastDayJan, new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
@@ -51,7 +51,7 @@ private class RecurringDiscountHandlerTest {
     @IsTest
     static void testLastDayOfMonth_notLastDay_returnsFalse() {
         Date mid = Date.newInstance(2025, 1, 15);
-        Discount__c d = makeRecurring('Last Day of Month');
+        Discount__c d = makeRecurring(Utils.DISCOUNT.RECURRENCE_PATTERN.LAST_DAY_OF_MONTH);
 
         RecurringDiscountHandler handler = new RecurringDiscountHandler();
         Boolean result = handler.isApplicable(d, 100, mid, new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
@@ -63,7 +63,7 @@ private class RecurringDiscountHandlerTest {
     static void testBlackFriday_onBlackFriday_returnsTrue() {
         // Nov 1, 2024 is Friday: 4th Friday = Nov 22, 2024
         Date blackFriday = Date.newInstance(2024, 11, 22);
-        Discount__c d = makeRecurring('Black Friday');
+        Discount__c d = makeRecurring(Utils.DISCOUNT.RECURRENCE_PATTERN.BLACK_FRIDAY);
 
         RecurringDiscountHandler handler = new RecurringDiscountHandler();
         Boolean result = handler.isApplicable(d, 100, blackFriday, new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
@@ -74,7 +74,7 @@ private class RecurringDiscountHandlerTest {
     @IsTest
     static void testBlackFriday_notInNovember_returnsFalse() {
         Date october = Date.newInstance(2025, 10, 15);
-        Discount__c d = makeRecurring('Black Friday');
+        Discount__c d = makeRecurring(Utils.DISCOUNT.RECURRENCE_PATTERN.BLACK_FRIDAY);
 
         RecurringDiscountHandler handler = new RecurringDiscountHandler();
         Boolean result = handler.isApplicable(d, 100, october, new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
@@ -86,7 +86,7 @@ private class RecurringDiscountHandlerTest {
     static void testBlackFriday_novemberButWrongDay_returnsFalse() {
         // Nov 15, 2024 is not Black Friday
         Date november15 = Date.newInstance(2024, 11, 15);
-        Discount__c d = makeRecurring('Black Friday');
+        Discount__c d = makeRecurring(Utils.DISCOUNT.RECURRENCE_PATTERN.BLACK_FRIDAY);
 
         RecurringDiscountHandler handler = new RecurringDiscountHandler();
         Boolean result = handler.isApplicable(d, 100, november15, new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
@@ -99,7 +99,7 @@ private class RecurringDiscountHandlerTest {
         // Start_Date__c defines the recurring day-of-year
         Date startDate = Date.newInstance(2020, 6, 15);
         Date testDate  = Date.newInstance(2025, 6, 15);
-        Discount__c d = makeRecurring('Custom Date');
+        Discount__c d = makeRecurring(Utils.DISCOUNT.RECURRENCE_PATTERN.CUSTOM_DATE);
         d.Start_Date__c = startDate;
 
         RecurringDiscountHandler handler = new RecurringDiscountHandler();
@@ -112,7 +112,7 @@ private class RecurringDiscountHandlerTest {
     static void testCustomDate_differentMonth_returnsFalse() {
         Date startDate = Date.newInstance(2020, 6, 15);
         Date testDate  = Date.newInstance(2025, 7, 15);
-        Discount__c d = makeRecurring('Custom Date');
+        Discount__c d = makeRecurring(Utils.DISCOUNT.RECURRENCE_PATTERN.CUSTOM_DATE);
         d.Start_Date__c = startDate;
 
         RecurringDiscountHandler handler = new RecurringDiscountHandler();
@@ -123,7 +123,7 @@ private class RecurringDiscountHandlerTest {
 
     @IsTest
     static void testCustomDate_nullStartDate_returnsFalse() {
-        Discount__c d = makeRecurring('Custom Date');
+        Discount__c d = makeRecurring(Utils.DISCOUNT.RECURRENCE_PATTERN.CUSTOM_DATE);
         d.Start_Date__c = null;
 
         RecurringDiscountHandler handler = new RecurringDiscountHandler();
@@ -134,7 +134,7 @@ private class RecurringDiscountHandlerTest {
 
     @IsTest
     static void testUnknownPattern_returnsFalse() {
-        Discount__c d = makeRecurring('Unknown Pattern');
+        Discount__c d = makeRecurring('UnknownPatternXyz');
 
         RecurringDiscountHandler handler = new RecurringDiscountHandler();
         Boolean result = handler.isApplicable(d, 100, Date.today(), new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
