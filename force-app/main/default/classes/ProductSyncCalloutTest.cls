@@ -23,6 +23,9 @@ private class ProductSyncCalloutTest {
         Product2 p = new Product2(Name = 'Test Product', ProductCode = 'TEST-001', Family = 'Software', Is_External__c = false);
         insert p;
         TriggerBase.clearBypass('ProductTrigger');
+
+        delete [SELECT Id FROM Product_Sync_Queue__c];
+
         p = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 WHERE Id = :p.Id];
 
         Test.setMock(HttpCalloutMock.class, new ProductSyncCalloutMock(500, '{"status":"error","message":"Internal Server Error"}'));

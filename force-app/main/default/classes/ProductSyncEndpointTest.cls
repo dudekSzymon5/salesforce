@@ -63,9 +63,11 @@ private class ProductSyncEndpointTest {
         RestContext.request = req;
         RestContext.response = res;
 
+        TriggerBase.bypass('ProductTrigger');
         Test.startTest();
         ProductSyncEndpoint.upsertProduct();
         Test.stopTest();
+        TriggerBase.clearBypass('ProductTrigger');
 
         System.assertEquals(200, res.statusCode);
         Product2 updated = [SELECT Name FROM Product2 WHERE External_Product_Id__c = 'EXT-001' LIMIT 1];
