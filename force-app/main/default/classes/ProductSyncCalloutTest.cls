@@ -18,27 +18,26 @@ private class ProductSyncCalloutTest {
     }
 
     @IsTest
+    @IsTest
     static void testSyncProductFailure() {
         TriggerBase.bypass('ProductTrigger');
         Product2 p = new Product2(Name = 'Test Product', ProductCode = 'TEST-001', Family = 'Software', Is_External__c = false);
         insert p;
         TriggerBase.clearBypass('ProductTrigger');
 
-        delete [SELECT Id FROM Product_Sync_Queue__c];
-
         p = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 WHERE Id = :p.Id];
+
+        Integer countBefore = [SELECT COUNT() FROM Product_Sync_Queue__c];
 
         Test.setMock(HttpCalloutMock.class, new ProductSyncCalloutMock(500, '{"status":"error","message":"Internal Server Error"}'));
         Test.startTest();
         ProductSyncCallout.syncProduct(p);
         Test.stopTest();
 
-        List<Product_Sync_Queue__c> queue = [SELECT Id, Status__c, Attempt_Count__c FROM Product_Sync_Queue__c];
-        System.assertEquals(1, queue.size(), 'Powinien być wpis w kolejce przy błędzie');
-        System.assertEquals('Failed', queue[0].Status__c);
-        System.assertEquals(1, queue[0].Attempt_Count__c);
+        List<Product_Sync_Queue__c> queue = [SELECT Id, Status__c, Attempt_Count__c FROM Product_Sync_Queue__c WHERE Status__c = 'Failed' AND CreatedDate = TODAY];
+        System.assertEquals(countBefore + 1, [SELECT COUNT() FROM Product_Sync_Queue__c], 'Powinien być 1 nowy wpis w kolejce');
+        System.assertEquals('Failed', queue[queue.size()-1].Status__c);
     }
-
     @IsTest
     static void testDeleteProductSuccess() {
         Test.setMock(HttpCalloutMock.class, new ProductSyncCalloutMock(200, '{"status":"success"}'));

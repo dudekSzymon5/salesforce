@@ -1,6 +1,15 @@
 @IsTest
 private class ProductSyncEndpointTest {
 
+    private class MockHttpSuccess implements HttpCalloutMock {
+        public HttpResponse respond(HttpRequest req) {
+            HttpResponse res = new HttpResponse();
+            res.setStatusCode(200);
+            res.setBody('{"status":"success"}');
+            return res;
+        }
+    }
+
     @IsTest
     static void testUpsertProductInsert() {
         String body = JSON.serialize(new Map<String, Object>{
@@ -21,6 +30,7 @@ private class ProductSyncEndpointTest {
         RestContext.request = req;
         RestContext.response = res;
 
+        Test.setMock(HttpCalloutMock.class, new MockHttpSuccess());
         Test.startTest();
         ProductSyncEndpoint.upsertProduct();
         Test.stopTest();
@@ -63,11 +73,10 @@ private class ProductSyncEndpointTest {
         RestContext.request = req;
         RestContext.response = res;
 
-        TriggerBase.bypass('ProductTrigger');
+        Test.setMock(HttpCalloutMock.class, new MockHttpSuccess());
         Test.startTest();
         ProductSyncEndpoint.upsertProduct();
         Test.stopTest();
-        TriggerBase.clearBypass('ProductTrigger');
 
         System.assertEquals(200, res.statusCode);
         Product2 updated = [SELECT Name FROM Product2 WHERE External_Product_Id__c = 'EXT-001' LIMIT 1];
@@ -95,6 +104,7 @@ private class ProductSyncEndpointTest {
         RestContext.request = req;
         RestContext.response = res;
 
+        Test.setMock(HttpCalloutMock.class, new MockHttpSuccess());
         Test.startTest();
         ProductSyncEndpoint.softDeleteProduct();
         Test.stopTest();
@@ -113,6 +123,7 @@ private class ProductSyncEndpointTest {
         RestContext.request = req;
         RestContext.response = res;
 
+        Test.setMock(HttpCalloutMock.class, new MockHttpSuccess());
         Test.startTest();
         ProductSyncEndpoint.softDeleteProduct();
         Test.stopTest();
