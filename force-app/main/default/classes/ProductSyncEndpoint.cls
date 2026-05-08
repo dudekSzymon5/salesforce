@@ -80,7 +80,7 @@ global class ProductSyncEndpoint {
         try {
             List<Product2> products = [
                 SELECT Id, Sync_Count__c FROM Product2
-                WHERE External_Product_Id__c = :externalProductId
+                WHERE External_Product_Id__c = :payload.externalProductId
                 AND Is_External__c = true
                 LIMIT 1
             ];

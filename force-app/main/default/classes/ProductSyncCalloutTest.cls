@@ -6,7 +6,7 @@ private class ProductSyncCalloutTest {
         TriggerBase.bypass('ProductTrigger');
         Product2 p = new Product2(Name = 'Test Product', ProductCode = 'TEST-001', Family = 'Software', Is_External__c = false);
         insert p;
-        TriggerBase.clearBypass('ProductTrigger');
+        
         p = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 WHERE Id = :p.Id];
 
         Test.setMock(HttpCalloutMock.class, new ProductSyncCalloutMock(200, '{"status":"success","productId":"001TEST"}'));
@@ -23,7 +23,6 @@ private class ProductSyncCalloutTest {
         TriggerBase.bypass('ProductTrigger');
         Product2 p = new Product2(Name = 'Test Product', ProductCode = 'TEST-001', Family = 'Software', Is_External__c = false);
         insert p;
-        TriggerBase.clearBypass('ProductTrigger');
 
         p = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 WHERE Id = :p.Id];
 
