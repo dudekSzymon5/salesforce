@@ -7,32 +7,34 @@ public class ProductSyncCallout {
             'ProductSyncCallout.syncProduct',
             'OUTBOUND POST | ProductId: ' + product.Id + ' | Payload: ' + payload
         );
-
+        // Budowanie JSON z danych produktu
+        // adres, metoda, nagłówek, tiemout
         try {
-            HttpRequest req = new HttpRequest();
-            req.setEndpoint(Utils.PRODUCT_SYNC.API.NAMED_CREDENTIAL + Utils.PRODUCT_SYNC.API.ENDPOINT);
-            req.setMethod('POST');
-            req.setHeader('Content-Type', 'application/json');
-            req.setBody(payload);
-            req.setTimeout(Utils.PRODUCT_SYNC.API.TIMEOUT);
+            HttpRequest httpRequest = new HttpRequest();
+            httpRequest.setEndpoint(Utils.PRODUCT_SYNC.API.NAMED_CREDENTIAL + Utils.PRODUCT_SYNC.API.ENDPOINT);
+            httpRequest.setMethod('POST');
+            httpRequest.setHeader('Content-Type', 'application/json');
+            httpRequest.setBody(payload);
+            httpRequest.setTimeout(Utils.PRODUCT_SYNC.API.TIMEOUT);
 
-            HttpResponse res = new Http().send(req);
+            HttpResponse httpResponse = new Http().send(httpRequest);
 
             ErrorLogger.logInfo(
                 'ProductSyncCallout.syncProduct',
-                'OUTBOUND POST RESPONSE | Status: ' + res.getStatusCode() + ' | Body: ' + res.getBody()
+                'OUTBOUND POST RESPONSE | Status: ' + httpResponse.getStatusCode() + ' | Body: ' + httpResponse.getBody()
             );
-
-            if (res.getStatusCode() != 200) {
-                addToRetryQueue(product.Id, 'INSERT', payload, res.getBody());
+            // Jeśli Org Konrada odpowiedział czymś innym niż 200 - to zapisuje do kolejki retry
+            if (httpResponse.getStatusCode() != 200) {
+                addToRetryQueue(product.Id, 'INSERT', payload, httpResponse.getBody());
             }
-
+            // Jeśli w ogóle się wyjebał - też do retry 
         } catch (Exception e) {
             ErrorLogger.log('ProductSyncCallout.syncProduct', e, product.Id);
             addToRetryQueue(product.Id, 'INSERT', payload, e.getMessage());
         }
     }
-
+    // Jest to praktycznie to samo co syncProduct, ale zamiast POST mam DELETE
+    // ID produktu jedzie w URL zamiast body
     public static void deleteProduct(String externalProductId) {
         ErrorLogger.logInfo(
             'ProductSyncCallout.deleteProduct',
@@ -40,20 +42,20 @@ public class ProductSyncCallout {
         );
 
         try {
-            HttpRequest req = new HttpRequest();
-            req.setEndpoint(Utils.PRODUCT_SYNC.API.NAMED_CREDENTIAL + Utils.PRODUCT_SYNC.API.ENDPOINT + externalProductId);
-            req.setMethod('DELETE');
-            req.setTimeout(Utils.PRODUCT_SYNC.API.TIMEOUT);
+            HttpRequest httpRequest = new HttpRequest();
+            httpRequest.setEndpoint(Utils.PRODUCT_SYNC.API.NAMED_CREDENTIAL + Utils.PRODUCT_SYNC.API.ENDPOINT + externalProductId);
+            httpRequest.setMethod('DELETE');
+            httpRequest.setTimeout(Utils.PRODUCT_SYNC.API.TIMEOUT);
 
-            HttpResponse res = new Http().send(req);
+            HttpResponse httpResponse = new Http().send(httpRequest);
 
             ErrorLogger.logInfo(
                 'ProductSyncCallout.deleteProduct',
-                'OUTBOUND DELETE RESPONSE | Status: ' + res.getStatusCode() + ' | Body: ' + res.getBody()
+                'OUTBOUND DELETE RESPONSE | Status: ' + httpResponse.getStatusCode() + ' | Body: ' + httpResponse.getBody()
             );
 
-            if (res.getStatusCode() != 200) {
-                addToRetryQueue(null, 'DELETE', externalProductId, res.getBody());
+            if (httpResponse.getStatusCode() != 200) {
+                addToRetryQueue(null, 'DELETE', externalProductId, httpResponse.getBody());
             }
 
         } catch (Exception e) {
@@ -61,20 +63,21 @@ public class ProductSyncCallout {
             addToRetryQueue(null, 'DELETE', externalProductId, e.getMessage());
         }
     }
-
-    private static String buildPayload(Product2 p) {
+    // Pakuje dane produktu do JSON
+    // externalOrgId to ID mojego orga (Szymon->Konrad)
+    private static String buildPayload(Product2 product) {
         Map<String, Object> payload = new Map<String, Object>{
-            'externalProductId' => p.Id,
+            'externalProductId' => product.Id,
             'externalOrgId' => UserInfo.getOrganizationId(),
-            'name' => p.Name,
-            'description' => p.Description,
-            'productCode' => p.ProductCode,
-            'family' => p.Family,
-            'language' => p.Language__c
+            'name' => product.Name,
+            'description' => product.Description,
+            'productCode' => product.ProductCode,
+            'family' => product.Family,
+            'language' => product.Language__c
         };
         return JSON.serialize(payload);
     }
-
+    // Tutaj zapisujemy informacje z wiadomością co się wyjebało.
     private static void addToRetryQueue(Id productId, String operation, String payload, String errorMessage) {
         Product_Sync_Queue__c queue = new Product_Sync_Queue__c(
             Product__c = productId,
