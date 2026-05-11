@@ -1,9 +1,9 @@
 public class ProductSyncAfterUpdate implements TriggerAction.AfterUpdate {
     public void afterUpdate(List<Product2> newList, List<Product2> oldList) {
         List<Product2> toSync = new List<Product2>();
-        for (Product2 p : newList) {
-            if (!p.Is_External__c) {
-                toSync.add(p);
+        for (Product2 product : newList) {
+            if (!product.Is_External__c) {
+                toSync.add(product);
             }
         }
         if (!toSync.isEmpty()) {

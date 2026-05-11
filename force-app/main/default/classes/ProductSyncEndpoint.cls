@@ -3,19 +3,20 @@ global class ProductSyncEndpoint {
 
     @HttpPost
     global static void upsertProduct() {
-        RestRequest req = RestContext.request;
-        RestResponse res = RestContext.response;
-        String body = req.requestBody.toString();
+        // Pobieram request który przyszedł z Callouta i wyciągam z niego informacje
+        RestRequest request = RestContext.request;
+        RestResponse response = RestContext.response;
+        String body = request.requestBody.toString();
 
         ErrorLogger.logInfo(
             'ProductSyncEndpoint.upsertProduct',
-            'INBOUND POST | URI: ' + req.requestURI + ' | Body: ' + body
+            'INBOUND POST | URI: ' + request.requestURI + ' | Body: ' + body
         );
 
         try {
+            // Zamieniam sobie JSON na obiekt APEX - żeby sobie normalnie działać
             ProductPayload payload = (ProductPayload) JSON.deserialize(body, ProductPayload.class);
 
-            // TUTAJ używamy payload.externalProductId
             List<Product2> existing = [
                 SELECT Id, Sync_Count__c 
                 FROM Product2
@@ -23,29 +24,30 @@ global class ProductSyncEndpoint {
                 AND Is_External__c = true
                 LIMIT 1
             ];
+            // Sprawdzam czy produkt istnieje u Konrada
+            // Jeśli nie istnieje to sobie utworze.
+            Product2 product = existing.isEmpty() ? new Product2() : existing[0];
+            product.Name = payload.name;
+            product.Description = payload.description;
+            product.ProductCode = payload.productCode;
+            product.Family = payload.family;
+            product.Language__c = payload.language;
+            product.Is_External__c = true;
+            product.Is_Deleted__c = false;
+            product.External_Product_Id__c = payload.externalProductId;
+            product.External_Org_Id__c = payload.externalOrgId;
+            product.Sync_Status__c = Utils.PRODUCT_SYNC.STATUS.SUCCESS;
+            product.Sync_Count__c = (product.Sync_Count__c == null ? 0 : product.Sync_Count__c) + 1;
 
-            Product2 p = existing.isEmpty() ? new Product2() : existing[0];
-            p.Name = payload.name;
-            p.Description = payload.description;
-            p.ProductCode = payload.productCode;
-            p.Family = payload.family;
-            p.Language__c = payload.language;
-            p.Is_External__c = true;
-            p.Is_Deleted__c = false;
-            p.External_Product_Id__c = payload.externalProductId;
-            p.External_Org_Id__c = payload.externalOrgId;
-            p.Sync_Status__c = Utils.PRODUCT_SYNC.STATUS.SUCCESS;
-            p.Sync_Count__c = (p.Sync_Count__c == null ? 0 : p.Sync_Count__c) + 1;
-
-            upsert p;
+            upsert product;
 
             String responseBody = JSON.serialize(new Map<String, String>{
                 'status' => 'success',
-                'productId' => p.Id
+                'productId' => product.Id
             });
 
-            res.statusCode = 200;
-            res.responseBody = Blob.valueOf(responseBody);
+            response.statusCode = 200;
+            response.responseBody = Blob.valueOf(responseBody);
 
             ErrorLogger.logInfo(
                 'ProductSyncEndpoint.upsertProduct',
@@ -58,20 +60,22 @@ global class ProductSyncEndpoint {
                 'message' => e.getMessage()
             });
 
-            res.statusCode = 500;
-            res.responseBody = Blob.valueOf(errorBody);
+            response.statusCode = 500;
+            response.responseBody = Blob.valueOf(errorBody);
 
             ErrorLogger.log('ProductSyncEndpoint.upsertProduct', e);
         }
     }
 
+    // Tak jak było powiedziane, rekord nie jest usuwan fizycznie
+    // Ustawiana jest flaga Is_Deleted__c = true.
     @HttpDelete
     global static void softDeleteProduct() {
-        RestRequest req = RestContext.request;
-        RestResponse res = RestContext.response;
+        RestRequest request = RestContext.request;
+        RestResponse response = RestContext.response;
 
-        String externalProductId = req.requestURI.substring(
-            req.requestURI.lastIndexOf('/') + 1
+        String externalProductId = request.requestURI.substring(
+            request.requestURI.lastIndexOf('/') + 1
         );
 
         ErrorLogger.logInfo(
@@ -80,7 +84,6 @@ global class ProductSyncEndpoint {
         );
 
         try {
-            // TUTAJ używamy tylko externalProductId (bez payload!)
             List<Product2> products = [
                 SELECT Id, Sync_Count__c FROM Product2
                 WHERE External_Product_Id__c = :externalProductId
@@ -99,8 +102,8 @@ global class ProductSyncEndpoint {
                 'status' => 'success'
             });
 
-            res.statusCode = 200;
-            res.responseBody = Blob.valueOf(responseBody);
+            response.statusCode = 200;
+            response.responseBody = Blob.valueOf(responseBody);
 
             ErrorLogger.logInfo(
                 'ProductSyncEndpoint.softDeleteProduct',
@@ -113,13 +116,13 @@ global class ProductSyncEndpoint {
                 'message' => e.getMessage()
             });
 
-            res.statusCode = 500;
-            res.responseBody = Blob.valueOf(errorBody);
+            response.statusCode = 500;
+            response.responseBody = Blob.valueOf(errorBody);
 
             ErrorLogger.log('ProductSyncEndpoint.softDeleteProduct', e);
         }
-    }
-
+    }   
+    // Rodzaj szablonu do ktorego Apex deserializuje przychodzący JSON.
     global class ProductPayload {
         public String externalProductId;
         public String externalOrgId;
