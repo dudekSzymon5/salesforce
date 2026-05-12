@@ -7,7 +7,7 @@ public class ProductSyncAfterUpdate implements TriggerAction.AfterUpdate {
             }
         }
         if (!toSync.isEmpty()) {
-            ProductSyncQueueable job = new ProductSyncQueueable(toSync, 'UPDATE');
+            ProductSyncQueueable job = new ProductSyncQueueable(toSync, Utils.PRODUCT_SYNC.OPERATION.UPDATE_OP);
             System.enqueueJob(job);
         }
     }

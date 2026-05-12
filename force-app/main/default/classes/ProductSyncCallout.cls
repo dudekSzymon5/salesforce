@@ -25,12 +25,12 @@ public class ProductSyncCallout {
             );
             // Jeśli Org Konrada odpowiedział czymś innym niż 200 - to zapisuje do kolejki retry
             if (httpResponse.getStatusCode() != 200) {
-                addToRetryQueue(product.Id, 'INSERT', payload, httpResponse.getBody());
+                addToRetryQueue(product.Id, Utils.PRODUCT_SYNC.OPERATION.INSERT_OP, payload, httpResponse.getBody());
             }
             // Jeśli w ogóle się wyjebał - też do retry 
         } catch (Exception e) {
             ErrorLogger.log('ProductSyncCallout.syncProduct', e, product.Id);
-            addToRetryQueue(product.Id, 'INSERT', payload, e.getMessage());
+            addToRetryQueue(product.Id, Utils.PRODUCT_SYNC.OPERATION.INSERT_OP, payload, e.getMessage());
         }
     }
     // Jest to praktycznie to samo co syncProduct, ale zamiast POST mam DELETE
@@ -55,12 +55,12 @@ public class ProductSyncCallout {
             );
 
             if (httpResponse.getStatusCode() != 200) {
-                addToRetryQueue(null, 'DELETE', externalProductId, httpResponse.getBody());
+                addToRetryQueue(null, Utils.PRODUCT_SYNC.OPERATION.DELETE_OP, externalProductId, httpResponse.getBody());
             }
 
         } catch (Exception e) {
             ErrorLogger.log('ProductSyncCallout.deleteProduct', e);
-            addToRetryQueue(null, 'DELETE', externalProductId, e.getMessage());
+            addToRetryQueue(null, Utils.PRODUCT_SYNC.OPERATION.DELETE_OP, externalProductId, e.getMessage());
         }
     }
     // Pakuje dane produktu do JSON

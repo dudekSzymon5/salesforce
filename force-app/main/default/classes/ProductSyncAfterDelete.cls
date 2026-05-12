@@ -7,7 +7,7 @@ public class ProductSyncAfterDelete implements TriggerAction.AfterDelete {
             }
         }
         if (!toSync.isEmpty()) {
-            ProductSyncQueueable job = new ProductSyncQueueable(toSync, 'DELETE');
+            ProductSyncQueueable job = new ProductSyncQueueable(toSync, Utils.PRODUCT_SYNC.OPERATION.DELETE_OP);
             System.enqueueJob(job);
         }
     }
