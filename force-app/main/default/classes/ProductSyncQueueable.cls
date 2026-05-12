@@ -11,7 +11,7 @@ public class ProductSyncQueueable implements Queueable, Database.AllowsCallouts 
     public void execute(QueueableContext context) {
         // Następuje przekierowanie do ProductSyncCallout
         for (Product2 product : products) {
-            if (operation == 'DELETE') {
+            if (operation == Utils.PRODUCT_SYNC.OPERATION.DELETE_OP) {
                 ProductSyncCallout.deleteProduct(product.Id);
             } else {
                 ProductSyncCallout.syncProduct(product);
