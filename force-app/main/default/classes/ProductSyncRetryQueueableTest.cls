@@ -40,7 +40,9 @@ private class ProductSyncRetryQueueableTest {
         Product2 product = TestDataFactory.aProduct().withCode('DEL-001').create();
         Product_Sync_Queue__c queueRecord = TestDataFactory.aQueueRecord().forProduct(product.Id).create();
 
+        TriggerBase.bypass('ProductTrigger');
         delete product;
+        TriggerBase.clearBypass('ProductTrigger');
 
         Test.startTest();
         System.enqueueJob(new ProductSyncRetryQueueable());
