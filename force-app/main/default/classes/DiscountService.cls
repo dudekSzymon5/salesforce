@@ -218,8 +218,8 @@ public with sharing class DiscountService {
 
     public static void saveDiscountSettings(String strategy, Decimal minPercentage) {
         Metadata.CustomMetadata customMetadata = new Metadata.CustomMetadata();
-        customMetadata.fullName = Utils.DISCOUNT_SETTINGS.FULL_NAME;
-        customMetadata.label = Utils.DISCOUNT_SETTINGS.LABEL;
+        customMetadata.fullName = Utils.DISCOUNT_SETTINGS.RECORD.FULL_NAME;
+        customMetadata.label = Utils.DISCOUNT_SETTINGS.RECORD.LABEL;
 
         Metadata.CustomMetadataValue strategyMetadataValue = new Metadata.CustomMetadataValue();
         strategyMetadataValue.field = Utils.DISCOUNT_SETTINGS.FIELD.STRATEGY;
@@ -240,7 +240,7 @@ public with sharing class DiscountService {
         return [
             SELECT Discount_Strategy__c, Minimum_Discount_Percentage__c
             FROM Discount_Settings__mdt
-            WHERE DeveloperName = :Utils.DISCOUNT_SETTINGS.DEVELOPER_NAME
+            WHERE DeveloperName = :Utils.DISCOUNT_SETTINGS.RECORD.DEVELOPER_NAME
             LIMIT 1
         ];
     }
