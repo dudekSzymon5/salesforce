@@ -14,6 +14,23 @@ public class ProductSyncRetryQueueable implements Queueable, Database.AllowsCall
 
         if (failedSyncs.isEmpty()) return;
 
+        // Zbieramy ID produktów do odświeżenia payloadu (tylko INSERT/UPDATE)
+        Set<Id> productIds = new Set<Id>();
+        for (Product_Sync_Queue__c record : failedSyncs) {
+            if (record.Operation__c != Utils.PRODUCT_SYNC.OPERATION.DELETE_OP && record.Product__c != null) {
+                productIds.add(record.Product__c);
+            }
+        }
+
+        Map<Id, Product2> productMap = new Map<Id, Product2>();
+        if (!productIds.isEmpty()) {
+            productMap = new Map<Id, Product2>([
+                SELECT Id, Name, Description, ProductCode, Family, Language__c
+                FROM Product2
+                WHERE Id IN :productIds
+            ]);
+        }
+
         List<Product_Sync_Queue__c> toUpdate = new List<Product_Sync_Queue__c>();
 
         for (Product_Sync_Queue__c record : failedSyncs) {
@@ -24,11 +41,24 @@ public class ProductSyncRetryQueueable implements Queueable, Database.AllowsCall
 
                 if (record.Operation__c == Utils.PRODUCT_SYNC.OPERATION.DELETE_OP) {
                     req.setMethod('DELETE');
-                    req.setEndpoint(Utils.PRODUCT_SYNC.API.NAMED_CREDENTIAL + Utils.PRODUCT_SYNC.API.ENDPOINT + record.Product__c);
+                    // Payload__c przechowuje externalProductId dla operacji DELETE
+                    req.setEndpoint(Utils.PRODUCT_SYNC.API.NAMED_CREDENTIAL + Utils.PRODUCT_SYNC.API.ENDPOINT + record.Payload__c);
                 } else {
+                    Product2 freshProduct = productMap.get(record.Product__c);
+                    if (freshProduct == null) {
+                        // Produkt został usunięty — INSERT/UPDATE bez sensu
+                        record.Status__c = Utils.PRODUCT_SYNC.STATUS.SUCCESS;
+                        record.Error_Message__c = 'Product deleted - retry skipped';
+                        record.Attempt_Count__c = (record.Attempt_Count__c == null ? 0 : record.Attempt_Count__c) + 1;
+                        record.Last_Attempt__c = DateTime.now();
+                        toUpdate.add(record);
+                        continue;
+                    }
+                    String freshPayload = ProductSyncCallout.buildPayload(freshProduct);
+                    record.Payload__c = freshPayload;
                     req.setMethod('POST');
                     req.setEndpoint(Utils.PRODUCT_SYNC.API.NAMED_CREDENTIAL + Utils.PRODUCT_SYNC.API.ENDPOINT);
-                    req.setBody(record.Payload__c);
+                    req.setBody(freshPayload);
                 }
 
                 HttpResponse res = new Http().send(req);

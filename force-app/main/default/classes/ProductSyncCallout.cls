@@ -64,7 +64,7 @@ public class ProductSyncCallout {
     }
     // Pakuje dane produktu do JSON stringa
     // externalOrgId to ID mojego orga (Szymon->Konrad)
-    private static String buildPayload(Product2 product) {
+    public static String buildPayload(Product2 product) {
         Map<String, Object> payload = new Map<String, Object>{
             'externalProductId' => product.Id,
             'externalOrgId' => UserInfo.getOrganizationId(),
