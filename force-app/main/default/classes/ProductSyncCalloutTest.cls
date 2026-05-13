@@ -2,80 +2,81 @@
 private class ProductSyncCalloutTest {
 
     @IsTest
-    static void testSyncProductSuccess() {
-        Product2 p = new Product2(Name = 'Test Product', ProductCode = 'TEST-001', Family = 'Software', Is_External__c = true);
-        insert p;
-        
-        p = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 WHERE Id = :p.Id];
+    static void testSyncProduct_success_noQueueEntry() {
+        Product2 product = TestDataFactory.aProduct().withCode('TEST-001').create();
+        product = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 WHERE Id = :product.Id];
 
-        Test.setMock(HttpCalloutMock.class, new ProductSyncCalloutMock(200, '{"status":"success","productId":"001TEST"}'));
+        Test.setMock(HttpCalloutMock.class, TestDataFactory.httpSuccess('{"status":"success","productId":"001TEST"}'));
         Test.startTest();
-        ProductSyncCallout.syncProduct(p);
+        ProductSyncCallout.syncProduct(product);
         Test.stopTest();
 
-        List<Product_Sync_Queue__c> queue = [SELECT Id, Status__c FROM Product_Sync_Queue__c WHERE Operation__c = 'INSERT' AND Status__c = 'Failed'];
-        System.assertEquals(0, queue.size(), 'Nie powinno być wpisów Failed w kolejce przy sukcesie');
+        Assert.areEqual(0, [SELECT Id FROM Product_Sync_Queue__c WHERE Status__c = 'Failed'].size());
     }
 
     @IsTest
-    static void testSyncProductFailure() {
-        Product2 p = new Product2(Name = 'Test Product', ProductCode = 'TEST-001', Family = 'Software', Is_External__c = true);
-        insert p;
+    static void testSyncProduct_serverError_addsToQueue() {
+        Product2 product = TestDataFactory.aProduct().withCode('TEST-002').create();
+        product = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 WHERE Id = :product.Id];
 
-        p = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 WHERE Id = :p.Id];
-
-        Test.setMock(HttpCalloutMock.class, new ProductSyncCalloutMock(500, '{"status":"error","message":"Internal Server Error"}'));
+        Test.setMock(HttpCalloutMock.class, TestDataFactory.httpError());
         Test.startTest();
-        ProductSyncCallout.syncProduct(p);
+        ProductSyncCallout.syncProduct(product);
         Test.stopTest();
 
         List<Product_Sync_Queue__c> queue = [
-            SELECT Id, Status__c, Attempt_Count__c, Product__c
-            FROM Product_Sync_Queue__c
-            WHERE Status__c = 'Failed' AND Product__c = :p.Id
+            SELECT Status__c, Attempt_Count__c FROM Product_Sync_Queue__c WHERE Product__c = :product.Id
         ];
-        System.assertEquals(1, queue.size(), 'Powinien być wpis w kolejce przy błędzie');
-        System.assertEquals('Failed', queue[0].Status__c);
-        System.assertEquals(1, queue[0].Attempt_Count__c);
+        Assert.areEqual(1, queue.size(), 'Queue entry should be created on HTTP 500');
+        Assert.areEqual('Failed', queue[0].Status__c);
+        Assert.areEqual(1, queue[0].Attempt_Count__c);
     }
 
     @IsTest
-    static void testDeleteProductSuccess() {
-        Test.setMock(HttpCalloutMock.class, new ProductSyncCalloutMock(200, '{"status":"success"}'));
+    static void testDeleteProduct_success_noQueueEntry() {
+        Test.setMock(HttpCalloutMock.class, TestDataFactory.httpSuccess());
         Test.startTest();
         ProductSyncCallout.deleteProduct('EXT-001');
         Test.stopTest();
 
-        List<Product_Sync_Queue__c> queue = [SELECT Id FROM Product_Sync_Queue__c WHERE Operation__c = 'DELETE' AND Status__c = 'Failed'];
-        System.assertEquals(0, queue.size());
+        Assert.areEqual(
+            0,
+            [SELECT Id FROM Product_Sync_Queue__c WHERE Operation__c = 'DELETE' AND Status__c = 'Failed'].size()
+        );
     }
 
     @IsTest
-    static void testDeleteProductFailure() {
-        Test.setMock(HttpCalloutMock.class, new ProductSyncCalloutMock(404, '{"errorCode":"NOT_FOUND"}'));
+    static void testDeleteProduct_notFound_addsToQueue() {
+        Test.setMock(HttpCalloutMock.class, TestDataFactory.httpError(404, '{"errorCode":"NOT_FOUND"}'));
         Test.startTest();
         ProductSyncCallout.deleteProduct('EXT-001');
         Test.stopTest();
 
-        List<Product_Sync_Queue__c> queue = [SELECT Id, Status__c FROM Product_Sync_Queue__c WHERE Operation__c = 'DELETE'];
-        System.assertEquals(1, queue.size());
-        System.assertEquals('Failed', queue[0].Status__c);
+        List<Product_Sync_Queue__c> queue = [SELECT Status__c FROM Product_Sync_Queue__c WHERE Operation__c = 'DELETE'];
+        Assert.areEqual(1, queue.size());
+        Assert.areEqual('Failed', queue[0].Status__c);
     }
 
-    private class ProductSyncCalloutMock implements HttpCalloutMock {
-        private Integer statusCode;
-        private String body;
+    @IsTest
+    static void testBuildPayload_containsAllFields() {
+        Product2 product = TestDataFactory.aProduct()
+            .withName('My Product')
+            .withCode('MP-001')
+            .withFamily('Electronics')
+            .withDescription('Test Desc')
+            .withLanguage('Polish')
+            .create();
+        product = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 WHERE Id = :product.Id];
 
-        public ProductSyncCalloutMock(Integer statusCode, String body) {
-            this.statusCode = statusCode;
-            this.body = body;
-        }
+        String payload = ProductSyncCallout.buildPayload(product);
+        Map<String, Object> parsed = (Map<String, Object>) JSON.deserializeUntyped(payload);
 
-        public HttpResponse respond(HttpRequest req) {
-            HttpResponse res = new HttpResponse();
-            res.setStatusCode(statusCode);
-            res.setBody(body);
-            return res;
-        }
+        Assert.areEqual(product.Id, parsed.get('externalProductId'), 'externalProductId must equal product Id');
+        Assert.areEqual('My Product', parsed.get('name'));
+        Assert.areEqual('MP-001', parsed.get('productCode'));
+        Assert.areEqual('Electronics', parsed.get('family'));
+        Assert.areEqual('Test Desc', parsed.get('description'));
+        Assert.areEqual('Polish', parsed.get('language'));
+        Assert.isNotNull(parsed.get('externalOrgId'));
     }
 }

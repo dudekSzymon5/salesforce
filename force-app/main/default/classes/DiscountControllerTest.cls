@@ -3,38 +3,17 @@ private class DiscountControllerTest {
 
     @TestSetup
     static void setupData() {
-        Discount__c discount = new Discount__c(
-            Name='Test Discount',
-            Type__c='Conditional',
-            Discount_Form__c='Percentage',
-            Value__c=10,
-            Is_Active__c=true,
-            Minimum_Order_Amount__c=100,
-            Condition_Type__c='Minimum Order Value'
-        );
-        insert discount;
+        TestDataFactory.aDiscount()
+            .conditional('Minimum Order Value')
+            .withMinOrder(100)
+            .create();
 
-        Account acc = new Account(Name='Test Account');
-        insert acc;
-
-        Contract con = new Contract(
-            AccountId=acc.Id,
-            StartDate=Date.today(),
-            ContractTerm=12,
-            Status='Draft'
-        );
-        insert con;
-        con.Status = 'Activated';
-        update con;
-
-        Order ord = new Order(
-            AccountId=acc.Id,
-            ContractId=con.Id,
-            Status='Draft',
-            EffectiveDate=Date.today(),
-            Pricebook2Id=Test.getStandardPricebookId()
-        );
-        insert ord;
+        Account account = TestDataFactory.createAccount();
+        Contract contract = TestDataFactory.createContract(account.Id);
+        TestDataFactory.anOrder()
+            .forAccount(account.Id)
+            .withContract(contract.Id)
+            .create();
     }
 
     @IsTest
@@ -57,14 +36,8 @@ private class DiscountControllerTest {
     }
 
     @IsTest
-    static void testSaveDiscount() {
-        Discount__c discount = new Discount__c(
-            Name='New Discount',
-            Type__c='One-Time',
-            Discount_Form__c='Amount',
-            Value__c=50,
-            Is_Active__c=true
-        );
+    static void testSaveDiscount_newRecord_returnsWithId() {
+        Discount__c discount = TestDataFactory.aDiscount().oneTime().asAmount().withValue(50).build();
 
         Test.startTest();
         Discount__c saved = DiscountController.saveDiscount(discount);
@@ -74,61 +47,54 @@ private class DiscountControllerTest {
     }
 
     @IsTest
-    static void testSaveDiscountAssigned() {
+    static void testSaveDiscount_alreadyAssigned_throwsException() {
         Discount__c discount = [SELECT Id FROM Discount__c LIMIT 1];
-        Order ord = [SELECT Id FROM Order LIMIT 1];
-
-        Order_Discount__c od = new Order_Discount__c(
-            Order__c=ord.Id,
-            Discount__c=discount.Id,
-            Applied_Value__c=10,
-            Original_Price__c=100,
-            Discounted_Price__c=90
+        Order order = [SELECT Id FROM Order LIMIT 1];
+        insert new Order_Discount__c(
+            Order__c = order.Id, Discount__c = discount.Id,
+            Applied_Value__c = 10, Original_Price__c = 100, Discounted_Price__c = 90
         );
-        insert od;
 
         Test.startTest();
         try {
             DiscountController.saveDiscount(discount);
-            Assert.fail('Should have thrown exception');
-        } catch (AuraHandledException e) {
-            Assert.isNotNull(e.getMessage());
+            Assert.fail('Expected AuraHandledException for already assigned discount');
+        } catch (AuraHandledException caughtException) {
+            Assert.isNotNull(caughtException.getMessage());
         }
         Test.stopTest();
     }
 
     @IsTest
-    static void testGetAssignedDiscountIds_empty() {
+    static void testSaveDiscount_twoForOne_setsMinimuQuantity() {
+        Discount__c discount = TestDataFactory.aDiscount()
+            .conditional('Two For One')
+            .withValue(50)
+            .build();
+
         Test.startTest();
-        List<Id> ids = DiscountController.getAssignedDiscountIds();
+        Discount__c saved = DiscountController.saveDiscount(discount);
         Test.stopTest();
 
-        Assert.isNotNull(ids);
-        Assert.isTrue(ids.isEmpty());
+        Assert.areEqual(2, saved.Minimum_Quantity__c);
     }
 
     @IsTest
-    static void testGetAssignedDiscountIds_withAssignment() {
-        Discount__c discount = [SELECT Id FROM Discount__c LIMIT 1];
-        Order ord = [SELECT Id FROM Order LIMIT 1];
-
-        insert new Order_Discount__c(
-            Order__c=ord.Id,
-            Discount__c=discount.Id,
-            Applied_Value__c=10,
-            Original_Price__c=100,
-            Discounted_Price__c=90
-        );
+    static void testSaveDiscount_percentageOver100_throwsException() {
+        Discount__c discount = TestDataFactory.aDiscount().oneTime().withValue(150).build();
 
         Test.startTest();
-        List<Id> ids = DiscountController.getAssignedDiscountIds();
+        try {
+            DiscountController.saveDiscount(discount);
+            Assert.fail('Expected AuraHandledException for percentage value over 100');
+        } catch (AuraHandledException caughtException) {
+            Assert.isNotNull(caughtException.getMessage());
+        }
         Test.stopTest();
-
-        Assert.isTrue(ids.contains(discount.Id));
     }
 
     @IsTest
-    static void testToggleDiscounts() {
+    static void testToggleDiscounts_deactivates() {
         Discount__c discount = [SELECT Id FROM Discount__c LIMIT 1];
 
         Test.startTest();
@@ -140,56 +106,40 @@ private class DiscountControllerTest {
     }
 
     @IsTest
-    static void testApplyDiscountsToOrder() {
-        Order ord = [SELECT Id FROM Order LIMIT 1];
-
+    static void testGetAssignedDiscountIds_empty() {
         Test.startTest();
-        List<Order_Discount__c> applied = DiscountController.applyDiscountsToOrder(ord.Id, 500);
+        List<Id> assignedIds = DiscountController.getAssignedDiscountIds();
         Test.stopTest();
 
-        Assert.isNotNull(applied);
+        Assert.isNotNull(assignedIds);
+        Assert.isTrue(assignedIds.isEmpty());
     }
 
     @IsTest
-    static void testPreviewDiscountsWithApplicable() {
+    static void testGetAssignedDiscountIds_withAssignment() {
+        Discount__c discount = [SELECT Id FROM Discount__c LIMIT 1];
+        Order order = [SELECT Id FROM Order LIMIT 1];
+        insert new Order_Discount__c(
+            Order__c = order.Id, Discount__c = discount.Id,
+            Applied_Value__c = 10, Original_Price__c = 100, Discounted_Price__c = 90
+        );
+
         Test.startTest();
-        List<DiscountService.DiscountPreview> previews = DiscountController.previewDiscounts(500, new List<DiscountService.ItemInput>());
+        List<Id> assignedIds = DiscountController.getAssignedDiscountIds();
         Test.stopTest();
 
-        Assert.isNotNull(previews);
-        Assert.isTrue(previews.size() > 0);
-        Assert.isNotNull(previews[0].discountName);
-        Assert.isNotNull(previews[0].appliedValue);
-        Assert.isNotNull(previews[0].originalPrice);
-        Assert.isNotNull(previews[0].discountedPrice);
-    }
-
-    @IsTest
-    static void testPreviewDiscountsNoApplicable() {
-        Test.startTest();
-        List<DiscountService.DiscountPreview> previews = DiscountController.previewDiscounts(50, new List<DiscountService.ItemInput>());
-        Test.stopTest();
-
-        Assert.isNotNull(previews);
-        Assert.isTrue(previews.isEmpty());
+        Assert.isTrue(assignedIds.contains(discount.Id));
     }
 
     @IsTest
     static void testGetProductOptions() {
-        Product2 prod = new Product2(Name='Option Product', IsActive=true);
-        insert prod;
-        insert new PricebookEntry(
-            Pricebook2Id=Test.getStandardPricebookId(),
-            Product2Id=prod.Id,
-            UnitPrice=100,
-            IsActive=true
-        );
+        Product2 product = TestDataFactory.aProduct().withName('Option Product').create();
+        TestDataFactory.addToPricebook(product.Id, 100);
 
         Test.startTest();
         List<Product2> products = DiscountController.getProductOptions();
         Test.stopTest();
 
-        Assert.isNotNull(products);
         Assert.isTrue(products.size() > 0);
     }
 
@@ -205,54 +155,50 @@ private class DiscountControllerTest {
     @IsTest
     static void testGetDiscountProducts() {
         Discount__c discount = [SELECT Id FROM Discount__c LIMIT 1];
-        Product2 prod = new Product2(Name='Linked Product', IsActive=true);
-        insert prod;
-        insert new Discount_Product__c(Discount__c=discount.Id, Product__c=prod.Id);
+        Product2 product = TestDataFactory.aProduct().withName('Linked Product').create();
+        insert new Discount_Product__c(Discount__c = discount.Id, Product__c = product.Id);
 
         Test.startTest();
         List<Id> productIds = DiscountController.getDiscountProducts(discount.Id);
         Test.stopTest();
 
-        Assert.isNotNull(productIds);
         Assert.isTrue(productIds.size() > 0);
     }
 
     @IsTest
-    static void testSaveDiscountProducts() {
+    static void testSaveDiscountProducts_addsLinks() {
         Discount__c discount = [SELECT Id FROM Discount__c LIMIT 1];
-        Product2 prod = new Product2(Name='Save Product', IsActive=true);
-        insert prod;
+        Product2 product = TestDataFactory.aProduct().withName('Save Product').create();
 
         Test.startTest();
-        DiscountController.saveDiscountProducts(discount.Id, new List<Id>{ prod.Id });
+        DiscountController.saveDiscountProducts(discount.Id, new List<Id>{ product.Id });
         Test.stopTest();
 
-        List<Discount_Product__c> dps = [SELECT Id FROM Discount_Product__c WHERE Discount__c = :discount.Id];
-        Assert.isTrue(dps.size() > 0);
+        List<Discount_Product__c> discountProducts = [SELECT Id FROM Discount_Product__c WHERE Discount__c = :discount.Id];
+        Assert.isTrue(discountProducts.size() > 0);
     }
 
     @IsTest
-    static void testSaveDiscountProductsEmpty() {
+    static void testSaveDiscountProducts_emptyList_removesAll() {
         Discount__c discount = [SELECT Id FROM Discount__c LIMIT 1];
-        Product2 prod = new Product2(Name='Del Product', IsActive=true);
-        insert prod;
-        insert new Discount_Product__c(Discount__c=discount.Id, Product__c=prod.Id);
+        Product2 product = TestDataFactory.aProduct().withName('Del Product').create();
+        insert new Discount_Product__c(Discount__c = discount.Id, Product__c = product.Id);
 
         Test.startTest();
         DiscountController.saveDiscountProducts(discount.Id, new List<Id>());
         Test.stopTest();
 
-        List<Discount_Product__c> dps = [SELECT Id FROM Discount_Product__c WHERE Discount__c = :discount.Id];
-        Assert.isTrue(dps.isEmpty());
+        List<Discount_Product__c> discountProducts = [SELECT Id FROM Discount_Product__c WHERE Discount__c = :discount.Id];
+        Assert.isTrue(discountProducts.isEmpty());
     }
 
     @IsTest
-    static void testSaveDiscountSettings() {
+    static void testSaveDiscountSettings_doesNotThrow() {
         Test.startTest();
         try {
             DiscountController.saveDiscountSettings('Highest Discount', 0);
-        } catch (AuraHandledException e) {
-            Assert.isNotNull(e.getMessage());
+        } catch (AuraHandledException caughtException) {
+            Assert.isNotNull(caughtException.getMessage());
         }
         Test.stopTest();
 
@@ -260,141 +206,115 @@ private class DiscountControllerTest {
     }
 
     @IsTest
-    static void testSaveDiscountWithTwoForOne() {
-        Discount__c discount = new Discount__c(
-            Name='Two For One',
-            Type__c='Conditional',
-            Discount_Form__c='Percentage',
-            Value__c=50,
-            Is_Active__c=true,
-            Condition_Type__c='Two For One'
-        );
+    static void testApplyDiscountsToOrder_returnsResult() {
+        Order order = [SELECT Id FROM Order LIMIT 1];
 
         Test.startTest();
-        Discount__c saved = DiscountController.saveDiscount(discount);
+        List<Order_Discount__c> applied = DiscountController.applyDiscountsToOrder(order.Id, 500);
         Test.stopTest();
 
-        Assert.areEqual(2, saved.Minimum_Quantity__c);
+        Assert.isNotNull(applied);
     }
 
     @IsTest
-    static void testSaveDiscountPercentageRangeError() {
-        Discount__c discount = new Discount__c(
-            Name='Bad Percentage',
-            Type__c='One-Time',
-            Discount_Form__c='Percentage',
-            Value__c=150,
-            Is_Active__c=true
-        );
-
+    static void testPreviewDiscounts_aboveMinOrder_returnsPreview() {
         Test.startTest();
-        try {
-            DiscountController.saveDiscount(discount);
-            Assert.fail('Expected AuraHandledException');
-        } catch (AuraHandledException e) {
-            Assert.isNotNull(e.getMessage());
-        }
+        List<DiscountService.DiscountPreview> previews = DiscountController.previewDiscounts(
+            500, new List<DiscountService.ItemInput>()
+        );
         Test.stopTest();
+
+        Assert.isTrue(previews.size() > 0);
+        Assert.isNotNull(previews[0].discountName);
+        Assert.isNotNull(previews[0].appliedValue);
     }
 
     @IsTest
-    static void testPreviewWithTargetedProductDiscount() {
-        Product2 prod = new Product2(Name='Targeted Product', IsActive=true);
-        insert prod;
-
-        Discount__c d = new Discount__c(
-            Name='Product Discount',
-            Type__c='One-Time',
-            Discount_Form__c='Percentage',
-            Value__c=10,
-            Is_Active__c=true,
-            Target_Application__c='Specific Products'
+    static void testPreviewDiscounts_belowMinOrder_returnsEmpty() {
+        Test.startTest();
+        List<DiscountService.DiscountPreview> previews = DiscountController.previewDiscounts(
+            50, new List<DiscountService.ItemInput>()
         );
-        insert d;
-        insert new Discount_Product__c(Discount__c=d.Id, Product__c=prod.Id);
+        Test.stopTest();
+
+        Assert.isTrue(previews.isEmpty());
+    }
+
+    @IsTest
+    static void testPreviewDiscounts_specificProduct_targeted() {
+        Product2 product = TestDataFactory.aProduct().withName('Targeted Product').create();
+        Discount__c discount = TestDataFactory.aDiscount().oneTime().forProducts().create();
+        insert new Discount_Product__c(Discount__c = discount.Id, Product__c = product.Id);
 
         DiscountService.ItemInput item = new DiscountService.ItemInput();
-        item.product2Id = prod.Id;
+        item.product2Id = product.Id;
         item.amount = 200;
         item.quantity = 1;
 
         Test.startTest();
-        List<DiscountService.DiscountPreview> previews = DiscountController.previewDiscounts(200, new List<DiscountService.ItemInput>{ item });
+        List<DiscountService.DiscountPreview> previews = DiscountController.previewDiscounts(
+            200, new List<DiscountService.ItemInput>{ item }
+        );
         Test.stopTest();
 
         Assert.isNotNull(previews);
     }
 
     @IsTest
-    static void testPreviewWithTargetedFamilyDiscount() {
-        Product2 prod = new Product2(Name='Family Product', IsActive=true, Family='Electronics');
-        insert prod;
-
-        Discount__c d = new Discount__c(
-            Name='Family Discount',
-            Type__c='One-Time',
-            Discount_Form__c='Percentage',
-            Value__c=10,
-            Is_Active__c=true,
-            Target_Application__c='Specific Families',
-            Target_Families__c='Electronics'
-        );
-        insert d;
+    static void testPreviewDiscounts_specificFamily_targeted() {
+        Product2 product = TestDataFactory.aProduct().withName('Family Product').withFamily('Electronics').create();
+        Discount__c discount = TestDataFactory.aDiscount().oneTime().forFamilies('Electronics').create();
 
         DiscountService.ItemInput item = new DiscountService.ItemInput();
-        item.product2Id = prod.Id;
+        item.product2Id = product.Id;
         item.amount = 200;
         item.quantity = 1;
 
         Test.startTest();
-        List<DiscountService.DiscountPreview> previews = DiscountController.previewDiscounts(200, new List<DiscountService.ItemInput>{ item });
+        List<DiscountService.DiscountPreview> previews = DiscountController.previewDiscounts(
+            200, new List<DiscountService.ItemInput>{ item }
+        );
         Test.stopTest();
 
         Assert.isNotNull(previews);
     }
 
     @IsTest
-    static void testPreviewWithTwoForOneDiscount() {
-        Product2 prod = new Product2(Name='TwoForOne Product', IsActive=true);
-        insert prod;
-
-        Discount__c d = new Discount__c(
-            Name='Two For One Preview',
-            Type__c='Conditional',
-            Discount_Form__c='Percentage',
-            Value__c=50,
-            Is_Active__c=true,
-            Condition_Type__c='Two For One',
-            Minimum_Quantity__c=2
-        );
-        insert d;
+    static void testPreviewDiscounts_twoForOne() {
+        Product2 product = TestDataFactory.aProduct().withName('TwoForOne Product').create();
+        TestDataFactory.aDiscount()
+            .conditional('Two For One')
+            .withValue(50)
+            .withMinQuantity(2)
+            .create();
 
         DiscountService.ItemInput item = new DiscountService.ItemInput();
-        item.product2Id = prod.Id;
+        item.product2Id = product.Id;
         item.amount = 200;
         item.quantity = 4;
 
         Test.startTest();
-        List<DiscountService.DiscountPreview> previews = DiscountController.previewDiscounts(200, new List<DiscountService.ItemInput>{ item });
+        List<DiscountService.DiscountPreview> previews = DiscountController.previewDiscounts(
+            200, new List<DiscountService.ItemInput>{ item }
+        );
         Test.stopTest();
 
         Assert.isNotNull(previews);
     }
 
     @IsTest
-    static void testPreviewWithAmountFormDiscount() {
-        Discount__c d = new Discount__c(
-            Name='Amount Discount',
-            Type__c='Conditional',
-            Discount_Form__c='Amount',
-            Value__c=20,
-            Is_Active__c=true,
-            Minimum_Order_Amount__c=100
-        );
-        insert d;
+    static void testPreviewDiscounts_amountForm() {
+        TestDataFactory.aDiscount()
+            .conditional('Minimum Order Value')
+            .asAmount()
+            .withValue(20)
+            .withMinOrder(100)
+            .create();
 
         Test.startTest();
-        List<DiscountService.DiscountPreview> previews = DiscountController.previewDiscounts(500, new List<DiscountService.ItemInput>());
+        List<DiscountService.DiscountPreview> previews = DiscountController.previewDiscounts(
+            500, new List<DiscountService.ItemInput>()
+        );
         Test.stopTest();
 
         Assert.isNotNull(previews);

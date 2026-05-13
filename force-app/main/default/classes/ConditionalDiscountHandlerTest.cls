@@ -1,81 +1,66 @@
 @IsTest
 private class ConditionalDiscountHandlerTest {
 
-    static Discount__c makeConditional() {
-        return new Discount__c(
-            Name = 'Test Conditional',
-            Type__c = Utils.DISCOUNT.TYPE.CONDITIONAL,
-            Discount_Form__c = Utils.DISCOUNT.FORM.PERCENTAGE,
-            Value__c = 10,
-            Is_Active__c = true
-        );
-    }
+    private static final ConditionalDiscountHandler HANDLER = new ConditionalDiscountHandler();
+    private static final Set<Id> NO_PRODUCTS = new Set<Id>();
+    private static final Map<Id, Decimal> NO_QUANTITIES = new Map<Id, Decimal>();
+    private static final Map<Id, String> NO_FAMILIES = new Map<Id, String>();
 
     @IsTest
     static void testBeforeStartDate_returnsFalse() {
-        Discount__c d = makeConditional();
-        d.Start_Date__c = Date.today().addDays(5);
+        Discount__c discount = TestDataFactory.aDiscount()
+            .conditional(null)
+            .validFrom(Date.today().addDays(5))
+            .build();
 
-        ConditionalDiscountHandler handler = new ConditionalDiscountHandler();
-        Boolean result = handler.isApplicable(d, 100, Date.today(), new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
-
-        Assert.isFalse(result);
+        Assert.isFalse(HANDLER.isApplicable(discount, 100, Date.today(), NO_PRODUCTS, NO_QUANTITIES, NO_FAMILIES, null));
     }
 
     @IsTest
     static void testAfterEndDate_returnsFalse() {
-        Discount__c d = makeConditional();
-        d.End_Date__c = Date.today().addDays(-5);
+        Discount__c discount = TestDataFactory.aDiscount()
+            .conditional(null)
+            .validUntil(Date.today().addDays(-5))
+            .build();
 
-        ConditionalDiscountHandler handler = new ConditionalDiscountHandler();
-        Boolean result = handler.isApplicable(d, 100, Date.today(), new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
-
-        Assert.isFalse(result);
-    }
-
-    @IsTest
-    static void testMinOrderValue_amountBelowMinimum_returnsFalse() {
-        Discount__c d = makeConditional();
-        d.Condition_Type__c = Utils.DISCOUNT.CONDITION.MIN_ORDER_VALUE;
-        d.Minimum_Order_Amount__c = 200;
-
-        ConditionalDiscountHandler handler = new ConditionalDiscountHandler();
-        Boolean result = handler.isApplicable(d, 100, Date.today(), new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
-
-        Assert.isFalse(result);
-    }
-
-    @IsTest
-    static void testMinOrderValue_amountMeetsMinimum_returnsTrue() {
-        Discount__c d = makeConditional();
-        d.Condition_Type__c = Utils.DISCOUNT.CONDITION.MIN_ORDER_VALUE;
-        d.Minimum_Order_Amount__c = 50;
-
-        ConditionalDiscountHandler handler = new ConditionalDiscountHandler();
-        Boolean result = handler.isApplicable(d, 100, Date.today(), new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
-
-        Assert.isTrue(result);
+        Assert.isFalse(HANDLER.isApplicable(discount, 100, Date.today(), NO_PRODUCTS, NO_QUANTITIES, NO_FAMILIES, null));
     }
 
     @IsTest
     static void testWithinDateRange_noCondition_returnsTrue() {
-        Discount__c d = makeConditional();
-        d.Start_Date__c = Date.today().addDays(-5);
-        d.End_Date__c = Date.today().addDays(5);
+        Discount__c discount = TestDataFactory.aDiscount()
+            .conditional(null)
+            .validFrom(Date.today().addDays(-5))
+            .validUntil(Date.today().addDays(5))
+            .build();
 
-        ConditionalDiscountHandler handler = new ConditionalDiscountHandler();
-        Boolean result = handler.isApplicable(d, 100, Date.today(), new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
-
-        Assert.isTrue(result);
+        Assert.isTrue(HANDLER.isApplicable(discount, 100, Date.today(), NO_PRODUCTS, NO_QUANTITIES, NO_FAMILIES, null));
     }
 
     @IsTest
     static void testNoDates_noCondition_returnsTrue() {
-        Discount__c d = makeConditional();
+        Discount__c discount = TestDataFactory.aDiscount().conditional(null).build();
 
-        ConditionalDiscountHandler handler = new ConditionalDiscountHandler();
-        Boolean result = handler.isApplicable(d, 100, Date.today(), new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
+        Assert.isTrue(HANDLER.isApplicable(discount, 100, Date.today(), NO_PRODUCTS, NO_QUANTITIES, NO_FAMILIES, null));
+    }
 
-        Assert.isTrue(result);
+    @IsTest
+    static void testMinOrderValue_amountBelowMinimum_returnsFalse() {
+        Discount__c discount = TestDataFactory.aDiscount()
+            .conditional(Utils.DISCOUNT.CONDITION.MIN_ORDER_VALUE)
+            .withMinOrder(200)
+            .build();
+
+        Assert.isFalse(HANDLER.isApplicable(discount, 100, Date.today(), NO_PRODUCTS, NO_QUANTITIES, NO_FAMILIES, null));
+    }
+
+    @IsTest
+    static void testMinOrderValue_amountMeetsMinimum_returnsTrue() {
+        Discount__c discount = TestDataFactory.aDiscount()
+            .conditional(Utils.DISCOUNT.CONDITION.MIN_ORDER_VALUE)
+            .withMinOrder(50)
+            .build();
+
+        Assert.isTrue(HANDLER.isApplicable(discount, 100, Date.today(), NO_PRODUCTS, NO_QUANTITIES, NO_FAMILIES, null));
     }
 }
