@@ -24,6 +24,7 @@ private class ProductSyncCalloutTest {
         Test.setMock(HttpCalloutMock.class, TestDataFactory.httpError());
         Test.startTest();
         ProductSyncCallout.syncProduct(product);
+        Test.setMock(HttpCalloutMock.class, TestDataFactory.httpSuccess());
         Test.stopTest();
 
         List<Product_Sync_Queue__c> queue = [
