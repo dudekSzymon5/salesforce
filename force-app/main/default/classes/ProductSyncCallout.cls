@@ -7,8 +7,7 @@ public class ProductSyncCallout {
             'ProductSyncCallout.syncProduct',
             'OUTBOUND POST | ProductId: ' + product.Id + ' | Payload: ' + payload
         );
-        // Budowanie JSON z danych produktu
-        // adres, metoda, nagłówek, tiemout
+        // Budowanie requestu z danych produktu i wyjebanie(wysłanie) go do ORG'a B
         try {
             HttpRequest httpRequest = new HttpRequest();
             httpRequest.setEndpoint(Utils.PRODUCT_SYNC.API.NAMED_CREDENTIAL + Utils.PRODUCT_SYNC.API.ENDPOINT);
@@ -63,7 +62,7 @@ public class ProductSyncCallout {
             addToRetryQueue(null, Utils.PRODUCT_SYNC.OPERATION.DELETE_OP, externalProductId, e.getMessage());
         }
     }
-    // Pakuje dane produktu do JSON
+    // Pakuje dane produktu do JSON stringa
     // externalOrgId to ID mojego orga (Szymon->Konrad)
     private static String buildPayload(Product2 product) {
         Map<String, Object> payload = new Map<String, Object>{

@@ -49,9 +49,9 @@ private class UtilsTest {
 
     @IsTest
     static void testDiscountSettingsConstants() {
-        Assert.areEqual('Discount_Settings__mdt.Default', Utils.DISCOUNT_SETTINGS.FULL_NAME);
-        Assert.areEqual('Default',                        Utils.DISCOUNT_SETTINGS.LABEL);
-        Assert.areEqual('Default',                        Utils.DISCOUNT_SETTINGS.DEVELOPER_NAME);
+        Assert.areEqual('Discount_Settings__mdt.Default', Utils.DISCOUNT_SETTINGS.RECORD.FULL_NAME);
+        Assert.areEqual('Default',                        Utils.DISCOUNT_SETTINGS.RECORD.LABEL);
+        Assert.areEqual('Default',                        Utils.DISCOUNT_SETTINGS.RECORD.DEVELOPER_NAME);
         Assert.areEqual('Discount_Strategy__c',           Utils.DISCOUNT_SETTINGS.FIELD.STRATEGY);
         Assert.areEqual('Minimum_Discount_Percentage__c', Utils.DISCOUNT_SETTINGS.FIELD.MIN_PCT);
     }
