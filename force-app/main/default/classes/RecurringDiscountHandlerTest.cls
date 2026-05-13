@@ -1,144 +1,124 @@
 @IsTest
 private class RecurringDiscountHandlerTest {
 
-    static Discount__c makeRecurring(String pattern) {
-        return new Discount__c(
-            Name = 'Test Recurring',
-            Type__c = Utils.DISCOUNT.TYPE.RECURRING,
-            Discount_Form__c = Utils.DISCOUNT.FORM.PERCENTAGE,
-            Value__c = 10,
-            Is_Active__c = true,
-            Recurrence_Pattern__c = pattern
-        );
-    }
+    private static final RecurringDiscountHandler HANDLER = new RecurringDiscountHandler();
+    private static final Set<Id> NO_PRODUCTS = new Set<Id>();
+    private static final Map<Id, Decimal> NO_QUANTITIES = new Map<Id, Decimal>();
+    private static final Map<Id, String> NO_FAMILIES = new Map<Id, String>();
 
     @IsTest
     static void testEveryMonday_onMonday_returnsTrue() {
-        // May 5, 2025 is a Monday
         Date monday = Date.newInstance(2025, 5, 5);
-        Discount__c d = makeRecurring(Utils.DISCOUNT.RECURRENCE_PATTERN.EVERY_MONDAY);
+        Discount__c discount = TestDataFactory.aDiscount()
+            .recurring(Utils.DISCOUNT.RECURRENCE_PATTERN.EVERY_MONDAY)
+            .build();
 
-        RecurringDiscountHandler handler = new RecurringDiscountHandler();
-        Boolean result = handler.isApplicable(d, 100, monday, new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
-
-        Assert.isTrue(result);
+        Assert.isTrue(HANDLER.isApplicable(discount, 100, monday, NO_PRODUCTS, NO_QUANTITIES, NO_FAMILIES, null));
     }
 
     @IsTest
     static void testEveryMonday_onTuesday_returnsFalse() {
-        // May 6, 2025 is a Tuesday
         Date tuesday = Date.newInstance(2025, 5, 6);
-        Discount__c d = makeRecurring(Utils.DISCOUNT.RECURRENCE_PATTERN.EVERY_MONDAY);
+        Discount__c discount = TestDataFactory.aDiscount()
+            .recurring(Utils.DISCOUNT.RECURRENCE_PATTERN.EVERY_MONDAY)
+            .build();
 
-        RecurringDiscountHandler handler = new RecurringDiscountHandler();
-        Boolean result = handler.isApplicable(d, 100, tuesday, new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
-
-        Assert.isFalse(result);
+        Assert.isFalse(HANDLER.isApplicable(discount, 100, tuesday, NO_PRODUCTS, NO_QUANTITIES, NO_FAMILIES, null));
     }
 
     @IsTest
     static void testLastDayOfMonth_onLastDay_returnsTrue() {
-        // January 31 is always the last day of January
-        Date lastDayJan = Date.newInstance(2025, 1, 31);
-        Discount__c d = makeRecurring(Utils.DISCOUNT.RECURRENCE_PATTERN.LAST_DAY_OF_MONTH);
+        Date lastJan = Date.newInstance(2025, 1, 31);
+        Discount__c discount = TestDataFactory.aDiscount()
+            .recurring(Utils.DISCOUNT.RECURRENCE_PATTERN.LAST_DAY_OF_MONTH)
+            .build();
 
-        RecurringDiscountHandler handler = new RecurringDiscountHandler();
-        Boolean result = handler.isApplicable(d, 100, lastDayJan, new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
-
-        Assert.isTrue(result);
+        Assert.isTrue(HANDLER.isApplicable(discount, 100, lastJan, NO_PRODUCTS, NO_QUANTITIES, NO_FAMILIES, null));
     }
 
     @IsTest
     static void testLastDayOfMonth_notLastDay_returnsFalse() {
-        Date mid = Date.newInstance(2025, 1, 15);
-        Discount__c d = makeRecurring(Utils.DISCOUNT.RECURRENCE_PATTERN.LAST_DAY_OF_MONTH);
+        Date midJanuary = Date.newInstance(2025, 1, 15);
+        Discount__c discount = TestDataFactory.aDiscount()
+            .recurring(Utils.DISCOUNT.RECURRENCE_PATTERN.LAST_DAY_OF_MONTH)
+            .build();
 
-        RecurringDiscountHandler handler = new RecurringDiscountHandler();
-        Boolean result = handler.isApplicable(d, 100, mid, new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
-
-        Assert.isFalse(result);
+        Assert.isFalse(HANDLER.isApplicable(discount, 100, midJanuary, NO_PRODUCTS, NO_QUANTITIES, NO_FAMILIES, null));
     }
 
     @IsTest
-    static void testBlackFriday_onBlackFriday_returnsTrue() {
-        // Nov 1, 2024 is Friday: 4th Friday = Nov 22, 2024
+    static void testBlackFriday_onBlackFriday2024_returnsTrue() {
         Date blackFriday = Date.newInstance(2024, 11, 22);
-        Discount__c d = makeRecurring(Utils.DISCOUNT.RECURRENCE_PATTERN.BLACK_FRIDAY);
+        Discount__c discount = TestDataFactory.aDiscount()
+            .recurring(Utils.DISCOUNT.RECURRENCE_PATTERN.BLACK_FRIDAY)
+            .build();
 
-        RecurringDiscountHandler handler = new RecurringDiscountHandler();
-        Boolean result = handler.isApplicable(d, 100, blackFriday, new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
-
-        Assert.isTrue(result);
+        Assert.isTrue(HANDLER.isApplicable(discount, 100, blackFriday, NO_PRODUCTS, NO_QUANTITIES, NO_FAMILIES, null));
     }
 
     @IsTest
     static void testBlackFriday_notInNovember_returnsFalse() {
         Date october = Date.newInstance(2025, 10, 15);
-        Discount__c d = makeRecurring(Utils.DISCOUNT.RECURRENCE_PATTERN.BLACK_FRIDAY);
+        Discount__c discount = TestDataFactory.aDiscount()
+            .recurring(Utils.DISCOUNT.RECURRENCE_PATTERN.BLACK_FRIDAY)
+            .build();
 
-        RecurringDiscountHandler handler = new RecurringDiscountHandler();
-        Boolean result = handler.isApplicable(d, 100, october, new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
-
-        Assert.isFalse(result);
+        Assert.isFalse(HANDLER.isApplicable(discount, 100, october, NO_PRODUCTS, NO_QUANTITIES, NO_FAMILIES, null));
     }
 
     @IsTest
-    static void testBlackFriday_novemberButWrongDay_returnsFalse() {
-        // Nov 15, 2024 is not Black Friday
-        Date november15 = Date.newInstance(2024, 11, 15);
-        Discount__c d = makeRecurring(Utils.DISCOUNT.RECURRENCE_PATTERN.BLACK_FRIDAY);
+    static void testBlackFriday_novemberWrongDay_returnsFalse() {
+        Date nov15 = Date.newInstance(2024, 11, 15);
+        Discount__c discount = TestDataFactory.aDiscount()
+            .recurring(Utils.DISCOUNT.RECURRENCE_PATTERN.BLACK_FRIDAY)
+            .build();
 
-        RecurringDiscountHandler handler = new RecurringDiscountHandler();
-        Boolean result = handler.isApplicable(d, 100, november15, new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
-
-        Assert.isFalse(result);
+        Assert.isFalse(HANDLER.isApplicable(discount, 100, nov15, NO_PRODUCTS, NO_QUANTITIES, NO_FAMILIES, null));
     }
 
     @IsTest
     static void testCustomDate_sameMonthAndDay_returnsTrue() {
-        // Start_Date__c defines the recurring day-of-year
-        Date startDate = Date.newInstance(2020, 6, 15);
-        Date testDate  = Date.newInstance(2025, 6, 15);
-        Discount__c d = makeRecurring(Utils.DISCOUNT.RECURRENCE_PATTERN.CUSTOM_DATE);
-        d.Start_Date__c = startDate;
+        Discount__c discount = TestDataFactory.aDiscount()
+            .recurring(Utils.DISCOUNT.RECURRENCE_PATTERN.CUSTOM_DATE)
+            .validFrom(Date.newInstance(2020, 6, 15))
+            .build();
 
-        RecurringDiscountHandler handler = new RecurringDiscountHandler();
-        Boolean result = handler.isApplicable(d, 100, testDate, new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
-
-        Assert.isTrue(result);
+        Assert.isTrue(HANDLER.isApplicable(
+            discount, 100, Date.newInstance(2025, 6, 15), NO_PRODUCTS, NO_QUANTITIES, NO_FAMILIES, null
+        ));
     }
 
     @IsTest
     static void testCustomDate_differentMonth_returnsFalse() {
-        Date startDate = Date.newInstance(2020, 6, 15);
-        Date testDate  = Date.newInstance(2025, 7, 15);
-        Discount__c d = makeRecurring(Utils.DISCOUNT.RECURRENCE_PATTERN.CUSTOM_DATE);
-        d.Start_Date__c = startDate;
+        Discount__c discount = TestDataFactory.aDiscount()
+            .recurring(Utils.DISCOUNT.RECURRENCE_PATTERN.CUSTOM_DATE)
+            .validFrom(Date.newInstance(2020, 6, 15))
+            .build();
 
-        RecurringDiscountHandler handler = new RecurringDiscountHandler();
-        Boolean result = handler.isApplicable(d, 100, testDate, new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
-
-        Assert.isFalse(result);
+        Assert.isFalse(HANDLER.isApplicable(
+            discount, 100, Date.newInstance(2025, 7, 15), NO_PRODUCTS, NO_QUANTITIES, NO_FAMILIES, null
+        ));
     }
 
     @IsTest
     static void testCustomDate_nullStartDate_returnsFalse() {
-        Discount__c d = makeRecurring(Utils.DISCOUNT.RECURRENCE_PATTERN.CUSTOM_DATE);
-        d.Start_Date__c = null;
+        Discount__c discount = TestDataFactory.aDiscount()
+            .recurring(Utils.DISCOUNT.RECURRENCE_PATTERN.CUSTOM_DATE)
+            .build();
 
-        RecurringDiscountHandler handler = new RecurringDiscountHandler();
-        Boolean result = handler.isApplicable(d, 100, Date.today(), new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
-
-        Assert.isFalse(result);
+        Assert.isFalse(HANDLER.isApplicable(
+            discount, 100, Date.today(), NO_PRODUCTS, NO_QUANTITIES, NO_FAMILIES, null
+        ));
     }
 
     @IsTest
     static void testUnknownPattern_returnsFalse() {
-        Discount__c d = makeRecurring('UnknownPatternXyz');
+        Discount__c discount = TestDataFactory.aDiscount()
+            .recurring('UnknownPatternXyz')
+            .build();
 
-        RecurringDiscountHandler handler = new RecurringDiscountHandler();
-        Boolean result = handler.isApplicable(d, 100, Date.today(), new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null);
-
-        Assert.isFalse(result);
+        Assert.isFalse(HANDLER.isApplicable(
+            discount, 100, Date.today(), NO_PRODUCTS, NO_QUANTITIES, NO_FAMILIES, null
+        ));
     }
 }

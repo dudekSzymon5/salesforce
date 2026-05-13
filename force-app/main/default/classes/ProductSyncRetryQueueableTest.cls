@@ -2,145 +2,102 @@
 private class ProductSyncRetryQueueableTest {
 
     @IsTest
-    static void testRetryInsertSuccess() {
-        Product2 p = new Product2(Name = 'Retry Product', ProductCode = 'RET-001', Family = 'Software', Is_External__c = true);
-        insert p;
-        p = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 WHERE Id = :p.Id];
+    static void testRetryInsert_success_marksSuccessAndRefreshesPayload() {
+        Product2 product = TestDataFactory.aProduct().withCode('RET-001').create();
+        Product_Sync_Queue__c queueRecord = TestDataFactory.aQueueRecord()
+            .forProduct(product.Id)
+            .withPayload('{"old":"payload"}')
+            .create();
 
-        Product_Sync_Queue__c queueRecord = new Product_Sync_Queue__c(
-            Product__c = p.Id,
-            Operation__c = Utils.PRODUCT_SYNC.OPERATION.INSERT_OP,
-            Payload__c = '{"old":"payload"}',
-            Status__c = Utils.PRODUCT_SYNC.STATUS.FAILED,
-            Attempt_Count__c = 1,
-            Last_Attempt__c = DateTime.now().addHours(-1)
-        );
-        insert queueRecord;
-
-        Test.setMock(HttpCalloutMock.class, new RetryMock(200, '{"status":"success"}'));
+        Test.setMock(HttpCalloutMock.class, TestDataFactory.httpSuccess());
         Test.startTest();
         System.enqueueJob(new ProductSyncRetryQueueable());
         Test.stopTest();
 
-        Product_Sync_Queue__c updated = [SELECT Status__c, Attempt_Count__c, Payload__c FROM Product_Sync_Queue__c WHERE Id = :queueRecord.Id];
-        System.assertEquals(Utils.PRODUCT_SYNC.STATUS.SUCCESS, updated.Status__c, 'Status powinien być Success');
-        System.assertEquals(2, updated.Attempt_Count__c, 'Attempt_Count powinien wzrosnąć');
-        System.assertNotEquals('{"old":"payload"}', updated.Payload__c, 'Payload powinien być odświeżony');
+        Product_Sync_Queue__c result = [SELECT Status__c, Attempt_Count__c, Payload__c FROM Product_Sync_Queue__c WHERE Id = :queueRecord.Id];
+        Assert.areEqual(Utils.PRODUCT_SYNC.STATUS.SUCCESS, result.Status__c);
+        Assert.areEqual(2, result.Attempt_Count__c, 'Attempt_Count should increment by 1');
+        Assert.areNotEqual('{"old":"payload"}', result.Payload__c, 'Payload should be refreshed with current product data');
     }
 
     @IsTest
-    static void testRetryInsertFailure() {
-        Product2 p = new Product2(Name = 'Retry Product', ProductCode = 'RET-002', Family = 'Software', Is_External__c = true);
-        insert p;
+    static void testRetryInsert_serverError_remainsFailed() {
+        Product2 product = TestDataFactory.aProduct().withCode('RET-002').create();
+        Product_Sync_Queue__c queueRecord = TestDataFactory.aQueueRecord().forProduct(product.Id).create();
 
-        Product_Sync_Queue__c queueRecord = new Product_Sync_Queue__c(
-            Product__c = p.Id,
-            Operation__c = Utils.PRODUCT_SYNC.OPERATION.INSERT_OP,
-            Payload__c = '{"old":"payload"}',
-            Status__c = Utils.PRODUCT_SYNC.STATUS.FAILED,
-            Attempt_Count__c = 1,
-            Last_Attempt__c = DateTime.now().addHours(-1)
-        );
-        insert queueRecord;
-
-        Test.setMock(HttpCalloutMock.class, new RetryMock(500, 'Internal Server Error'));
+        Test.setMock(HttpCalloutMock.class, TestDataFactory.httpError());
         Test.startTest();
         System.enqueueJob(new ProductSyncRetryQueueable());
         Test.stopTest();
 
-        Product_Sync_Queue__c updated = [SELECT Status__c, Attempt_Count__c FROM Product_Sync_Queue__c WHERE Id = :queueRecord.Id];
-        System.assertEquals(Utils.PRODUCT_SYNC.STATUS.FAILED, updated.Status__c, 'Status powinien zostać Failed');
-        System.assertEquals(2, updated.Attempt_Count__c);
+        Product_Sync_Queue__c result = [SELECT Status__c, Attempt_Count__c FROM Product_Sync_Queue__c WHERE Id = :queueRecord.Id];
+        Assert.areEqual(Utils.PRODUCT_SYNC.STATUS.FAILED, result.Status__c);
+        Assert.areEqual(2, result.Attempt_Count__c);
     }
 
     @IsTest
-    static void testRetryInsertProductDeleted() {
-        Product2 p = new Product2(Name = 'Deleted Product', ProductCode = 'DEL-001', Family = 'Software', Is_External__c = true);
-        insert p;
+    static void testRetryInsert_productDeleted_skipsCalloutAndMarksSuccess() {
+        TriggerBase.bypass('ProductTrigger');
+        Product2 product = TestDataFactory.aProduct().withCode('DEL-001').create();
+        TriggerBase.clearBypass('ProductTrigger');
+        Product_Sync_Queue__c queueRecord = TestDataFactory.aQueueRecord().forProduct(product.Id).create();
 
-        Product_Sync_Queue__c queueRecord = new Product_Sync_Queue__c(
-            Product__c = p.Id,
-            Operation__c = Utils.PRODUCT_SYNC.OPERATION.INSERT_OP,
-            Payload__c = '{"old":"payload"}',
-            Status__c = Utils.PRODUCT_SYNC.STATUS.FAILED,
-            Attempt_Count__c = 1,
-            Last_Attempt__c = DateTime.now().addHours(-1)
-        );
-        insert queueRecord;
+        TriggerBase.bypass('ProductTrigger');
+        delete product;
+        TriggerBase.clearBypass('ProductTrigger');
 
-        // Usuwamy produkt — teraz go nie ma, retry powinien pominąć callout
-        delete p;
-
+        Test.setMock(HttpCalloutMock.class, TestDataFactory.httpSuccess());
         Test.startTest();
         System.enqueueJob(new ProductSyncRetryQueueable());
         Test.stopTest();
 
-        Product_Sync_Queue__c updated = [SELECT Status__c FROM Product_Sync_Queue__c WHERE Id = :queueRecord.Id];
-        System.assertEquals(Utils.PRODUCT_SYNC.STATUS.SUCCESS, updated.Status__c, 'Usunięty produkt powinien być oznaczony jako Success');
+        Product_Sync_Queue__c result = [SELECT Status__c FROM Product_Sync_Queue__c WHERE Id = :queueRecord.Id];
+        Assert.areEqual(
+            Utils.PRODUCT_SYNC.STATUS.SUCCESS, result.Status__c,
+            'Deleted product should skip callout and be marked Success'
+        );
     }
 
     @IsTest
-    static void testRetryDeleteSuccess() {
-        Product_Sync_Queue__c queueRecord = new Product_Sync_Queue__c(
-            Product__c = null,
-            Operation__c = Utils.PRODUCT_SYNC.OPERATION.DELETE_OP,
-            Payload__c = 'EXT-PROD-001',
-            Status__c = Utils.PRODUCT_SYNC.STATUS.FAILED,
-            Attempt_Count__c = 1,
-            Last_Attempt__c = DateTime.now().addHours(-1)
-        );
-        insert queueRecord;
+    static void testRetryDelete_success_marksSuccess() {
+        Product_Sync_Queue__c queueRecord = TestDataFactory.aQueueRecord()
+            .asDelete('EXT-PROD-001')
+            .create();
 
-        Test.setMock(HttpCalloutMock.class, new RetryMock(200, '{"status":"deleted"}'));
+        Test.setMock(HttpCalloutMock.class, TestDataFactory.httpSuccess('{"status":"deleted"}'));
         Test.startTest();
         System.enqueueJob(new ProductSyncRetryQueueable());
         Test.stopTest();
 
-        Product_Sync_Queue__c updated = [SELECT Status__c, Attempt_Count__c FROM Product_Sync_Queue__c WHERE Id = :queueRecord.Id];
-        System.assertEquals(Utils.PRODUCT_SYNC.STATUS.SUCCESS, updated.Status__c);
-        System.assertEquals(2, updated.Attempt_Count__c);
+        Product_Sync_Queue__c result = [SELECT Status__c, Attempt_Count__c FROM Product_Sync_Queue__c WHERE Id = :queueRecord.Id];
+        Assert.areEqual(Utils.PRODUCT_SYNC.STATUS.SUCCESS, result.Status__c);
+        Assert.areEqual(2, result.Attempt_Count__c);
     }
 
     @IsTest
-    static void testMaxAttemptsReached() {
-        Product2 p = new Product2(Name = 'Max Retry', ProductCode = 'RET-MAX', Family = 'Software', Is_External__c = true);
-        insert p;
+    static void testRetry_maxAttemptsReached_recordNotProcessed() {
+        Product2 product = TestDataFactory.aProduct().withCode('RET-MAX').create();
+        Product_Sync_Queue__c queueRecord = TestDataFactory.aQueueRecord()
+            .forProduct(product.Id)
+            .withAttempts(3)
+            .create();
 
-        Product_Sync_Queue__c queueRecord = new Product_Sync_Queue__c(
-            Product__c = p.Id,
-            Operation__c = Utils.PRODUCT_SYNC.OPERATION.INSERT_OP,
-            Payload__c = '{"payload":"x"}',
-            Status__c = Utils.PRODUCT_SYNC.STATUS.FAILED,
-            Attempt_Count__c = 3,
-            Last_Attempt__c = DateTime.now().addHours(-1)
-        );
-        insert queueRecord;
-
-        Test.setMock(HttpCalloutMock.class, new RetryMock(200, '{"status":"success"}'));
+        Test.setMock(HttpCalloutMock.class, TestDataFactory.httpSuccess());
         Test.startTest();
         System.enqueueJob(new ProductSyncRetryQueueable());
         Test.stopTest();
 
-        // Rekord z Attempt_Count__c = 3 nie powinien być przetworzony
-        Product_Sync_Queue__c updated = [SELECT Status__c, Attempt_Count__c FROM Product_Sync_Queue__c WHERE Id = :queueRecord.Id];
-        System.assertEquals(Utils.PRODUCT_SYNC.STATUS.FAILED, updated.Status__c, 'Rekord po MAX_ATTEMPTS nie powinien być retryowany');
-        System.assertEquals(3, updated.Attempt_Count__c);
+        Product_Sync_Queue__c result = [SELECT Status__c, Attempt_Count__c FROM Product_Sync_Queue__c WHERE Id = :queueRecord.Id];
+        Assert.areEqual(Utils.PRODUCT_SYNC.STATUS.FAILED, result.Status__c, 'Record at MAX_ATTEMPTS should not be retried');
+        Assert.areEqual(3, result.Attempt_Count__c, 'Attempt_Count should not change');
     }
 
-    private class RetryMock implements HttpCalloutMock {
-        private Integer statusCode;
-        private String body;
+    @IsTest
+    static void testRetry_emptyQueue_completesWithoutError() {
+        Test.startTest();
+        System.enqueueJob(new ProductSyncRetryQueueable());
+        Test.stopTest();
 
-        public RetryMock(Integer statusCode, String body) {
-            this.statusCode = statusCode;
-            this.body = body;
-        }
-
-        public HttpResponse respond(HttpRequest req) {
-            HttpResponse res = new HttpResponse();
-            res.setStatusCode(statusCode);
-            res.setBody(body);
-            return res;
-        }
+        Assert.areEqual(0, [SELECT Id FROM Product_Sync_Queue__c].size());
     }
 }

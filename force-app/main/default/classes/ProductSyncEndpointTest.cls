@@ -1,133 +1,108 @@
 @IsTest
 private class ProductSyncEndpointTest {
 
-    private class MockHttpSuccess implements HttpCalloutMock {
-        public HttpResponse respond(HttpRequest req) {
-            HttpResponse res = new HttpResponse();
-            res.setStatusCode(200);
-            res.setBody('{"status":"success"}');
-            return res;
-        }
-    }
-
     @IsTest
-    static void testUpsertProductInsert() {
-        String body = JSON.serialize(new Map<String, Object>{
-            'externalProductId' => 'EXT-NEW-001',
-            'externalOrgId' => '00DTEST000000001',
-            'name' => 'New External Product',
-            'description' => 'Test description',
-            'productCode' => 'EXT-PC-001',
-            'family' => 'Software',
-            'language' => 'English'
-        });
-
-        RestRequest req = new RestRequest();
-        RestResponse res = new RestResponse();
-        req.requestURI = '/services/apexrest/v1/products/';
-        req.httpMethod = 'POST';
-        req.requestBody = Blob.valueOf(body);
-        RestContext.request = req;
-        RestContext.response = res;
-
-        Test.setMock(HttpCalloutMock.class, new MockHttpSuccess());
-        Test.startTest();
-        ProductSyncEndpoint.upsertProduct();
-        Test.stopTest();
-
-        System.assertEquals(200, res.statusCode);
-        Product2 created = [SELECT Id, Name, Is_External__c FROM Product2 WHERE External_Product_Id__c = 'EXT-NEW-001' LIMIT 1];
-        System.assertEquals('New External Product', created.Name);
-        System.assertEquals(true, created.Is_External__c);
-    }
-
-    @IsTest
-    static void testUpsertProductUpdate() {
-        TriggerBase.bypass('ProductTrigger');
-        Product2 existing = new Product2(
-            Name = 'Test External Product',
-            ProductCode = 'TEST-001',
-            Family = 'Software',
-            Is_External__c = true,
-            External_Product_Id__c = 'EXT-001',
-            External_Org_Id__c = '00DTEST000000001'
+    static void testUpsertProduct_insert_createsProduct() {
+        String externalId = 'EXT-NEW-001';
+        TestDataFactory.setupRestPost(
+            '/services/apexrest/v1/products/',
+            TestDataFactory.buildProductPayload(externalId, '00DTEST000000001', 'New External Product')
         );
-        insert existing;
 
-        String body = JSON.serialize(new Map<String, Object>{
-            'externalProductId' => 'EXT-001',
-            'externalOrgId' => '00DTEST000000001',
-            'name' => 'Updated External Product',
-            'description' => 'Updated description',
-            'productCode' => 'TEST-001',
-            'family' => 'Software',
-            'language' => 'Polish'
-        });
-
-        RestRequest req = new RestRequest();
-        RestResponse res = new RestResponse();
-        req.requestURI = '/services/apexrest/v1/products/';
-        req.httpMethod = 'POST';
-        req.requestBody = Blob.valueOf(body);
-        RestContext.request = req;
-        RestContext.response = res;
-
-        Test.setMock(HttpCalloutMock.class, new MockHttpSuccess());
         Test.startTest();
         ProductSyncEndpoint.upsertProduct();
         Test.stopTest();
+
+        Assert.areEqual(200, RestContext.response.statusCode);
+
+        Product2 created = [SELECT Name, Is_External__c, Sync_Count__c FROM Product2 WHERE External_Product_Id__c = :externalId LIMIT 1];
+        Assert.areEqual('New External Product', created.Name);
+        Assert.isTrue(created.Is_External__c);
+        Assert.areEqual(1, created.Sync_Count__c, 'Sync_Count should be 1 after first sync');
+    }
+
+    @IsTest
+    static void testUpsertProduct_update_modifiesExistingProduct() {
+        TriggerBase.bypass('ProductTrigger');
+        TestDataFactory.aProduct()
+            .withCode('EXT-PC-001')
+            .external('EXT-001', '00DTEST000000001')
+            .create();
         TriggerBase.clearBypass('ProductTrigger');
 
-        System.assertEquals(200, res.statusCode);
+        TestDataFactory.setupRestPost(
+            '/services/apexrest/v1/products/',
+            TestDataFactory.buildProductPayload('EXT-001', '00DTEST000000001', 'Updated Product')
+        );
+
+        Test.startTest();
+        ProductSyncEndpoint.upsertProduct();
+        Test.stopTest();
+
+        Assert.areEqual(200, RestContext.response.statusCode);
         Product2 updated = [SELECT Name FROM Product2 WHERE External_Product_Id__c = 'EXT-001' LIMIT 1];
-        System.assertEquals('Updated External Product', updated.Name);
+        Assert.areEqual('Updated Product', updated.Name);
     }
 
     @IsTest
-    static void testSoftDeleteProduct() {
+    static void testUpsertProduct_invalidJson_returns500() {
+        TestDataFactory.setupRestPost('/services/apexrest/v1/products/', 'NOT_VALID_JSON{{{{');
+
+        Test.startTest();
+        ProductSyncEndpoint.upsertProduct();
+        Test.stopTest();
+
+        Assert.areEqual(500, RestContext.response.statusCode);
+        Assert.isTrue(RestContext.response.responseBody.toString().contains('error'));
+    }
+
+    @IsTest
+    static void testSoftDelete_found_marksProductDeleted() {
         TriggerBase.bypass('ProductTrigger');
-        Product2 existing = new Product2(
-            Name = 'Test External Product',
-            ProductCode = 'TEST-001',
-            Family = 'Software',
-            Is_External__c = true,
-            External_Product_Id__c = 'EXT-001',
-            External_Org_Id__c = '00DTEST000000001'
-        );
-        insert existing;
+        TestDataFactory.aProduct()
+            .withCode('EXT-PC-DEL')
+            .external('EXT-DEL-001', '00DTEST000000001')
+            .create();
         TriggerBase.clearBypass('ProductTrigger');
 
-        RestRequest req = new RestRequest();
-        RestResponse res = new RestResponse();
-        req.requestURI = '/services/apexrest/v1/products/EXT-001';
-        req.httpMethod = 'DELETE';
-        RestContext.request = req;
-        RestContext.response = res;
+        TestDataFactory.setupRestDelete('/services/apexrest/v1/products/EXT-DEL-001');
 
-        Test.setMock(HttpCalloutMock.class, new MockHttpSuccess());
         Test.startTest();
         ProductSyncEndpoint.softDeleteProduct();
         Test.stopTest();
 
-        System.assertEquals(200, res.statusCode);
-        Product2 deleted = [SELECT Is_Deleted__c FROM Product2 WHERE External_Product_Id__c = 'EXT-001' LIMIT 1];
-        System.assertEquals(true, deleted.Is_Deleted__c);
+        Assert.areEqual(200, RestContext.response.statusCode);
+        Product2 deleted = [SELECT Is_Deleted__c FROM Product2 WHERE External_Product_Id__c = 'EXT-DEL-001' LIMIT 1];
+        Assert.isTrue(deleted.Is_Deleted__c);
     }
 
     @IsTest
-    static void testSoftDeleteProductNotFound() {
-        RestRequest req = new RestRequest();
-        RestResponse res = new RestResponse();
-        req.requestURI = '/services/apexrest/v1/products/NON-EXISTENT';
-        req.httpMethod = 'DELETE';
-        RestContext.request = req;
-        RestContext.response = res;
+    static void testSoftDelete_notFound_returns200Gracefully() {
+        TestDataFactory.setupRestDelete('/services/apexrest/v1/products/NON-EXISTENT-XYZ');
 
-        Test.setMock(HttpCalloutMock.class, new MockHttpSuccess());
         Test.startTest();
         ProductSyncEndpoint.softDeleteProduct();
         Test.stopTest();
 
-        System.assertEquals(200, res.statusCode);
+        Assert.areEqual(200, RestContext.response.statusCode);
+    }
+
+    @IsTest
+    static void testSoftDelete_incrementsSyncCount() {
+        TriggerBase.bypass('ProductTrigger');
+        Product2 product = TestDataFactory.aProduct()
+            .withCode('EXT-PC-CNT')
+            .external('EXT-COUNT-001', '00DTEST000000001')
+            .create();
+        TriggerBase.clearBypass('ProductTrigger');
+
+        TestDataFactory.setupRestDelete('/services/apexrest/v1/products/EXT-COUNT-001');
+
+        Test.startTest();
+        ProductSyncEndpoint.softDeleteProduct();
+        Test.stopTest();
+
+        Product2 updated = [SELECT Sync_Count__c FROM Product2 WHERE Id = :product.Id];
+        Assert.areEqual(1, updated.Sync_Count__c, 'Sync_Count should increment after DELETE');
     }
 }
