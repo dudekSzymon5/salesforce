@@ -15,7 +15,7 @@ private class ProductSyncAfterUpdateTest {
         new ProductSyncAfterUpdate().afterUpdate(products, products);
         Test.stopTest();
 
-        Assert.areEqual(1, [SELECT Id FROM AsyncApexJob WHERE JobType = 'Queueable' AND ApexClass.Name = 'ProductSyncQueueable'].size());
+        Assert.areEqual(1, [SELECT Id FROM AsyncApexJob WHERE JobType = 'Queueable' AND ApexClass.Name = 'ProductSyncQueueable' AND CreatedDate = TODAY].size());
         Assert.areEqual(0, [SELECT Id FROM Product_Sync_Queue__c WHERE Status__c = :Utils.PRODUCT_SYNC.STATUS.FAILED].size());
     }
 
@@ -52,6 +52,6 @@ private class ProductSyncAfterUpdateTest {
         new ProductSyncAfterUpdate().afterUpdate(products, products);
         Test.stopTest();
 
-        Assert.areEqual(0, [SELECT Id FROM AsyncApexJob WHERE JobType = 'Queueable' AND ApexClass.Name = 'ProductSyncQueueable'].size());
+        Assert.areEqual(0, [SELECT Id FROM AsyncApexJob WHERE JobType = 'Queueable' AND ApexClass.Name = 'ProductSyncQueueable' AND CreatedDate = TODAY].size());
     }
 }
