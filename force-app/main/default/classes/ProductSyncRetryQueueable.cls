@@ -14,7 +14,8 @@ public class ProductSyncRetryQueueable implements Queueable, Database.AllowsCall
 
         if (failedSyncs.isEmpty()) return;
 
-        // Zbieramy ID produktów do odświeżenia payloadu (tylko INSERT/UPDATE)
+        // Z: Przed retry pobieramy świeże dane produktów jednym SOQL 
+        // zamiast używać starego Payload__c który mógł mieć dane sprzed godzin/dni).
         Set<Id> productIds = new Set<Id>();
         for (Product_Sync_Queue__c record : failedSyncs) {
             if (record.Operation__c != Utils.PRODUCT_SYNC.OPERATION.DELETE_OP && record.Product__c != null) {
@@ -35,18 +36,16 @@ public class ProductSyncRetryQueueable implements Queueable, Database.AllowsCall
 
         for (Product_Sync_Queue__c record : failedSyncs) {
             try {
-                HttpRequest req = new HttpRequest();
-                req.setTimeout(Utils.PRODUCT_SYNC.API.TIMEOUT);
-                req.setHeader('Content-Type', 'application/json');
+                HttpRequest httpRequest = new HttpRequest();
+                httpRequest.setTimeout(Utils.PRODUCT_SYNC.API.TIMEOUT);
+                httpRequest.setHeader('Content-Type', 'application/json');
 
                 if (record.Operation__c == Utils.PRODUCT_SYNC.OPERATION.DELETE_OP) {
-                    req.setMethod('DELETE');
-                    // Payload__c przechowuje externalProductId dla operacji DELETE
-                    req.setEndpoint(Utils.PRODUCT_SYNC.API.NAMED_CREDENTIAL + Utils.PRODUCT_SYNC.API.ENDPOINT + record.Payload__c);
+                    httpRequest.setMethod('DELETE');
+                    httpRequest.setEndpoint(Utils.PRODUCT_SYNC.API.NAMED_CREDENTIAL + Utils.PRODUCT_SYNC.API.ENDPOINT + record.Payload__c);
                 } else {
-                    Product2 freshProduct = productMap.get(record.Product__c);
-                    if (freshProduct == null) {
-                        // Produkt został usunięty — INSERT/UPDATE bez sensu
+                    Product2 currentProduct = productMap.get(record.Product__c);
+                    if (currentProduct == null) {
                         record.Status__c = Utils.PRODUCT_SYNC.STATUS.SUCCESS;
                         record.Error_Message__c = 'Product deleted - retry skipped';
                         record.Attempt_Count__c = (record.Attempt_Count__c == null ? 0 : record.Attempt_Count__c) + 1;
@@ -54,25 +53,27 @@ public class ProductSyncRetryQueueable implements Queueable, Database.AllowsCall
                         toUpdate.add(record);
                         continue;
                     }
-                    String freshPayload = ProductSyncCallout.buildPayload(freshProduct);
-                    record.Payload__c = freshPayload;
-                    req.setMethod('POST');
-                    req.setEndpoint(Utils.PRODUCT_SYNC.API.NAMED_CREDENTIAL + Utils.PRODUCT_SYNC.API.ENDPOINT);
-                    req.setBody(freshPayload);
+                    // Z: Odbudowujemy payload ze świeżych danych zamiast używać record.Payload__c
+                    // Zamiast wysłać to co było zapisane przy błędzie, pobieramy aktualne dane produktu z bazy i wysyłam je
+                    String currentPayload = ProductSyncCallout.buildPayload(currentProduct);
+                    record.Payload__c = currentPayload;
+                    httpRequest.setMethod('POST');
+                    httpRequest.setEndpoint(Utils.PRODUCT_SYNC.API.NAMED_CREDENTIAL + Utils.PRODUCT_SYNC.API.ENDPOINT);
+                    httpRequest.setBody(currentPayload);
                 }
 
-                HttpResponse res = new Http().send(req);
+                HttpResponse httpResponse = new Http().send(httpRequest);
 
                 ErrorLogger.logInfo(
                     'ProductSyncRetryQueueable',
-                    'RETRY ' + record.Operation__c + ' | QueueId: ' + record.Id + ' | Status: ' + res.getStatusCode()
+                    'RETRY ' + record.Operation__c + ' | QueueId: ' + record.Id + ' | Status: ' + httpResponse.getStatusCode()
                 );
 
-                if (res.getStatusCode() == 200) {
+                if (httpResponse.getStatusCode() == 200) {
                     record.Status__c = Utils.PRODUCT_SYNC.STATUS.SUCCESS;
                 } else {
                     record.Status__c = Utils.PRODUCT_SYNC.STATUS.FAILED;
-                    record.Error_Message__c = res.getBody();
+                    record.Error_Message__c = httpResponse.getBody();
                 }
 
             } catch (Exception e) {

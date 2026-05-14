@@ -1,7 +1,10 @@
 @IsTest
 public class TestDataFactory {
 
+    // Buduje produkt testowy.
+    // Użycie: TestDataFactory.aProduct().withName('APEX').inactive().create();
     public class ProductBuilder {
+        // Domyślne wartości — nie musisz ich podawać w każdym teście
         private String name = Utils.TEST.PRODUCT.DEFAULT_NAME;
         private String code = Utils.TEST.PRODUCT.DEFAULT_CODE;
         private String family = Utils.TEST.PRODUCT.DEFAULT_FAMILY;
@@ -13,6 +16,7 @@ public class TestDataFactory {
         private String description;
         private String language;
 
+        // Każda metoda zmienia jedno pole  — dzięki temu można łatwo łączyć: .withName('X').inactive()
         public ProductBuilder withName(String productName) { name = productName; return this; }
         public ProductBuilder withCode(String productCode) { code = productCode; return this; }
         public ProductBuilder withFamily(String productFamily) { family = productFamily; return this; }
@@ -25,6 +29,7 @@ public class TestDataFactory {
             return this;
         }
 
+        // Wersja z ID — gdy chce produkt zewnętrzny z konkretnym ID
         public ProductBuilder external(String newExternalId, String orgId) {
             isExternal = true;
             externalId = newExternalId;
@@ -38,6 +43,7 @@ public class TestDataFactory {
             return this;
         }
 
+        // Tworzy obiekt Product2 ale NIE zapisuje do bazy - używam gdy test nie potrzebuje ID
         public Product2 build() {
             return new Product2(
                 Name = name,
@@ -53,6 +59,7 @@ public class TestDataFactory {
             );
         }
 
+        // Tworzy obiekt i zapisuje do bazy (insert)
         public Product2 create() {
             Product2 product = build();
             insert product;
@@ -60,6 +67,8 @@ public class TestDataFactory {
         }
     }
 
+    // Zniżka testowa
+    // Użycie: TestDataFactory.aDiscount().conditional('Minimum Order Value').withMinOrder(100).create();
     public class DiscountBuilder {
         private String name = Utils.TEST.DISCOUNT.DEFAULT_NAME;
         private String type = Utils.DISCOUNT.TYPE.ONE_TIME;
@@ -86,24 +95,28 @@ public class TestDataFactory {
         public DiscountBuilder validFrom(Date startDate) { this.startDate = startDate; return this; }
         public DiscountBuilder validUntil(Date endDate) { this.endDate = endDate; return this; }
 
+        // Zmiena typu zniżki na Recurring i ustawienie kiedy powtórzyć
         public DiscountBuilder recurring(String recurrencePattern) {
             type = Utils.DISCOUNT.TYPE.RECURRING;
             pattern = recurrencePattern;
             return this;
         }
 
+        // Zmiana typ zniżki na Conditional i ustawia warunek
         public DiscountBuilder conditional(String conditionType) {
             type = Utils.DISCOUNT.TYPE.CONDITIONAL;
             this.conditionType = conditionType;
             return this;
         }
 
+        // Zniżka tylko dla produktów z podanych rodzin
         public DiscountBuilder forFamilies(String familyList) {
             target = Utils.DISCOUNT.TARGET.FAMILIES;
             families = familyList;
             return this;
         }
 
+        // Tworzy obiekt bez zapisu do bazy
         public Discount__c build() {
             return new Discount__c(
                 Name = name,
@@ -122,6 +135,7 @@ public class TestDataFactory {
             );
         }
 
+        // Tworzy obiekt i zapisuje do bazy
         public Discount__c create() {
             Discount__c discount = build();
             insert discount;
@@ -129,6 +143,7 @@ public class TestDataFactory {
         }
     }
 
+    // Product_Sync_Queue__c.
     public class QueueBuilder {
         private Id productId;
         private String operation = Utils.PRODUCT_SYNC.OPERATION.INSERT_OP;
@@ -140,6 +155,7 @@ public class TestDataFactory {
         public QueueBuilder withAttempts(Integer attemptCount) { attempts = attemptCount; return this; }
         public QueueBuilder withPayload(String queuePayload) { payload = queuePayload; return this; }
 
+        // Zmienia operację na DELETE — payload to externalId produktu do usunięcia
         public QueueBuilder asDelete(String externalId) {
             operation = Utils.PRODUCT_SYNC.OPERATION.DELETE_OP;
             productId = null;
@@ -166,6 +182,7 @@ public class TestDataFactory {
         }
     }
 
+    // Zamówienie testowe. Order wymaga Account i Contract dostaje je przez forAccount() i withContract().
     public class OrderBuilder {
         private Id accountId;
         private Id contractId;
@@ -193,6 +210,8 @@ public class TestDataFactory {
         }
     }
 
+    // Odpowiedź HTTP — Salesforce zwraca to co tu ustawisz.
+    // Użycie: Test.setMock(HttpCalloutMock.class, TestDataFactory.httpSuccess());
     public class HttpMock implements HttpCalloutMock {
         private Integer statusCode;
         private String body;
@@ -202,6 +221,7 @@ public class TestDataFactory {
             this.body = body;
         }
 
+        // Wywoływana automatycznie przez Salesforce zamiast prawdziwego HTTP
         public HttpResponse respond(HttpRequest request) {
             HttpResponse response = new HttpResponse();
             response.setStatusCode(statusCode);
@@ -210,16 +230,19 @@ public class TestDataFactory {
         }
     }
 
+    // Punkty wejścia — zamiast pisać "new ProductBuilder()" piszesz "aProduct()"
     public static ProductBuilder aProduct() { return new ProductBuilder(); }
     public static DiscountBuilder aDiscount() { return new DiscountBuilder(); }
     public static QueueBuilder aQueueRecord() { return new QueueBuilder(); }
     public static OrderBuilder anOrder() { return new OrderBuilder(); }
 
+    // mocki HTTP
     public static HttpMock httpSuccess() { return new HttpMock(200, '{"status":"success"}'); }
     public static HttpMock httpSuccess(String body) { return new HttpMock(200, body); }
     public static HttpMock httpError() { return new HttpMock(500, '{"status":"error","message":"Internal Server Error"}'); }
     public static HttpMock httpError(Integer statusCode, String body) { return new HttpMock(statusCode, body); }
 
+    // Metody tworzące rekordy które są wymagane przez inne rekordy np. Order potrzebuje Account
     public static Account createAccount() {
         Account account = new Account(Name = 'Test Account');
         insert account;
@@ -251,6 +274,7 @@ public class TestDataFactory {
         return contract;
     }
 
+    // Dodaje produkt do cennika — jest to wymagane zanim produkt może być użyty w zamówieniu
     public static PricebookEntry addToPricebook(Id productId, Decimal price) {
         PricebookEntry pricebookEntry = new PricebookEntry(
             Pricebook2Id = Test.getStandardPricebookId(),
@@ -262,6 +286,7 @@ public class TestDataFactory {
         return pricebookEntry;
     }
 
+    // Ustawia RestContext przed testem endpointu @RestResource — Salesforce wymaga tego do testowania REST API
     public static void setupRestPost(String uri, String jsonBody) {
         RestContext.request = new RestRequest();
         RestContext.response = new RestResponse();
@@ -270,6 +295,7 @@ public class TestDataFactory {
         RestContext.request.requestBody = Blob.valueOf(jsonBody);
     }
 
+    // nie ma body — wystarczy URI i metoda
     public static void setupRestDelete(String uri) {
         RestContext.request = new RestRequest();
         RestContext.response = new RestResponse();
@@ -277,6 +303,7 @@ public class TestDataFactory {
         RestContext.request.httpMethod = 'DELETE';
     }
 
+    // Budowanie JSON który wysyłamy do endpointu — wersja z ręcznymi parametrami
     public static String buildProductPayload(String externalProductId, String externalOrgId, String productName) {
         return JSON.serialize(new Map<String, Object>{
             'externalProductId' => externalProductId,
@@ -289,6 +316,7 @@ public class TestDataFactory {
         });
     }
 
+    // Buduje JSON z istniejącego obiektu Product2 — jeśli nie ma External_Product_Id__c, używa Salesforce Id
     public static String buildProductPayload(Product2 product) {
         String extId = String.isNotBlank(product.External_Product_Id__c) ? product.External_Product_Id__c : product.Id;
         return JSON.serialize(new Map<String, Object>{

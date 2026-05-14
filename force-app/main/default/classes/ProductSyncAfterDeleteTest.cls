@@ -17,7 +17,7 @@ private class ProductSyncAfterDeleteTest {
     }
 
     @IsTest
-    static void testAfterDeleteSyncsNonExternalProducts_serverError_addsToQueue() {
+    static void testAfterDeleteSyncsNonExternalProductsServerErrorAddsToQueue() {
         TriggerBase.bypass('Product2');
         Product2 product = TestDataFactory.aProduct().withCode('TP-001').create();
         TriggerBase.clearBypass('Product2');
