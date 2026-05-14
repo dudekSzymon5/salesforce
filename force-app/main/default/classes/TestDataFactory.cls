@@ -2,9 +2,9 @@
 public class TestDataFactory {
 
     public class ProductBuilder {
-        private String name = 'Test Product';
-        private String code = 'PROD-001';
-        private String family = 'Software';
+        private String name = Utils.TEST.PRODUCT.DEFAULT_NAME;
+        private String code = Utils.TEST.PRODUCT.DEFAULT_CODE;
+        private String family = Utils.TEST.PRODUCT.DEFAULT_FAMILY;
         private Boolean isActive = true;
         private Boolean isExternal = false;
         private Boolean isDeleted = false;
@@ -61,10 +61,10 @@ public class TestDataFactory {
     }
 
     public class DiscountBuilder {
-        private String name = 'Test Discount';
+        private String name = Utils.TEST.DISCOUNT.DEFAULT_NAME;
         private String type = Utils.DISCOUNT.TYPE.ONE_TIME;
         private String form = Utils.DISCOUNT.FORM.PERCENTAGE;
-        private Decimal value = 10;
+        private Decimal value = Utils.TEST.DISCOUNT.DEFAULT_VALUE;
         private Boolean active = true;
         private String conditionType;
         private String pattern;
@@ -132,7 +132,7 @@ public class TestDataFactory {
     public class QueueBuilder {
         private Id productId;
         private String operation = Utils.PRODUCT_SYNC.OPERATION.INSERT_OP;
-        private String payload = '{"test":"payload"}';
+        private String payload = Utils.TEST.QUEUE.DEFAULT_PAYLOAD;
         private String status = Utils.PRODUCT_SYNC.STATUS.FAILED;
         private Integer attempts = 1;
 
@@ -283,9 +283,22 @@ public class TestDataFactory {
             'externalOrgId' => externalOrgId,
             'name' => productName,
             'description' => 'Test Description',
-            'productCode' => 'TEST-001',
-            'family' => 'Software',
+            'productCode' => Utils.TEST.PRODUCT.DEFAULT_CODE,
+            'family' => Utils.TEST.PRODUCT.DEFAULT_FAMILY,
             'language' => 'English'
+        });
+    }
+
+    public static String buildProductPayload(Product2 product) {
+        String extId = String.isNotBlank(product.External_Product_Id__c) ? product.External_Product_Id__c : product.Id;
+        return JSON.serialize(new Map<String, Object>{
+            'externalProductId' => extId,
+            'externalOrgId' => product.External_Org_Id__c,
+            'name' => product.Name,
+            'description' => product.Description,
+            'productCode' => product.ProductCode,
+            'family' => product.Family,
+            'language' => product.Language__c
         });
     }
 }

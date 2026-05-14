@@ -6,7 +6,7 @@ private class ProductSyncEndpointTest {
         String externalId = 'EXT-NEW-001';
         TestDataFactory.setupRestPost(
             '/services/apexrest/v1/products/',
-            TestDataFactory.buildProductPayload(externalId, '00DTEST000000001', 'New External Product')
+            TestDataFactory.buildProductPayload(externalId, Utils.TEST.PRODUCT.DEFAULT_ORG_ID, 'New External Product')
         );
 
         Test.startTest();
@@ -26,13 +26,13 @@ private class ProductSyncEndpointTest {
         TriggerBase.bypass('Product2');
         TestDataFactory.aProduct()
             .withCode('EXT-PC-001')
-            .external('EXT-001', '00DTEST000000001')
+            .external('EXT-001', Utils.TEST.PRODUCT.DEFAULT_ORG_ID)
             .create();
         TriggerBase.clearBypass('Product2');
 
         TestDataFactory.setupRestPost(
             '/services/apexrest/v1/products/',
-            TestDataFactory.buildProductPayload('EXT-001', '00DTEST000000001', 'Updated Product')
+            TestDataFactory.buildProductPayload('EXT-001', Utils.TEST.PRODUCT.DEFAULT_ORG_ID, 'Updated Product')
         );
 
         Test.startTest();
@@ -61,7 +61,7 @@ private class ProductSyncEndpointTest {
         TriggerBase.bypass('Product2');
         TestDataFactory.aProduct()
             .withCode('EXT-PC-DEL')
-            .external('EXT-DEL-001', '00DTEST000000001')
+            .external('EXT-DEL-001', Utils.TEST.PRODUCT.DEFAULT_ORG_ID)
             .create();
         TriggerBase.clearBypass('Product2');
 
@@ -92,7 +92,7 @@ private class ProductSyncEndpointTest {
         TriggerBase.bypass('Product2');
         Product2 product = TestDataFactory.aProduct()
             .withCode('EXT-PC-CNT')
-            .external('EXT-COUNT-001', '00DTEST000000001')
+            .external('EXT-COUNT-001', Utils.TEST.PRODUCT.DEFAULT_ORG_ID)
             .create();
         TriggerBase.clearBypass('Product2');
 
