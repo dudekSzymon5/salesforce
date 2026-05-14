@@ -1,9 +1,11 @@
 public class ProductSyncCallout {
-
     public static void syncProduct(Product2 product) {
         syncProduct(product, Utils.PRODUCT_SYNC.OPERATION.INSERT_OP);
     }
 
+    // Z: SyncProduct tearz przyjmuje operation (insert i update)
+    // potrzebny żeby ProductSyncQueueable mógł przekazać dobrą operację
+    // i żeby retry queue zapisał poprawny typ zamiast zawsze INSERT.
     public static void syncProduct(Product2 product, String operation) {
         String payload = buildPayload(product);
 
@@ -11,7 +13,7 @@ public class ProductSyncCallout {
             'ProductSyncCallout.syncProduct',
             'OUTBOUND POST | ProductId: ' + product.Id + ' | Payload: ' + payload
         );
-        // Budowanie requestu z danych produktu i wyjebanie(wysłanie) go do ORG'a B
+        // Budowanie requestu z danych produktu i wysłanie go do Konrada
         try {
             HttpRequest httpRequest = new HttpRequest();
             httpRequest.setEndpoint(Utils.PRODUCT_SYNC.API.NAMED_CREDENTIAL + Utils.PRODUCT_SYNC.API.ENDPOINT);
@@ -67,7 +69,8 @@ public class ProductSyncCallout {
         }
     }
     // Pakuje dane produktu do JSON stringa
-    // externalOrgId to ID mojego orga (Szymon->Konrad)
+    // Z: Wcześniej private — zmienione na PUBLIC żeby ProductSyncRetryQueueable
+    // mógł odbudować payload ze świeżych danych bez duplikowania tej logiki.
     public static String buildPayload(Product2 product) {
         Map<String, Object> payload = new Map<String, Object>{
             'externalProductId' => product.Id,
@@ -81,6 +84,7 @@ public class ProductSyncCallout {
         return JSON.serialize(payload);
     }
     // Tutaj zapisujemy informacje z wiadomością co się wyjebało.
+    // Wcześniej addToRetryQueue miał hardcodowane INSERT_OP — teraz zapisuje to co faktycznie przyszło z triggera.
     private static void addToRetryQueue(Id productId, String operation, String payload, String errorMessage) {
         Product_Sync_Queue__c queue = new Product_Sync_Queue__c(
             Product__c = productId,

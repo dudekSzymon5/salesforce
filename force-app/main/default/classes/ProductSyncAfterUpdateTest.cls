@@ -20,7 +20,7 @@ private class ProductSyncAfterUpdateTest {
     }
 
     @IsTest
-    static void testAfterUpdateSyncsNonExternalProducts_serverError_addsToQueue() {
+    static void testAfterUpdateSyncsNonExternalProductsServerErrorAddsToQueue() {
         TriggerBase.bypass('Product2');
         List<Product2> products = new List<Product2>{
             TestDataFactory.aProduct().withCode('TP-001').build()
