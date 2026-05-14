@@ -1,6 +1,10 @@
 public class ProductSyncCallout {
 
     public static void syncProduct(Product2 product) {
+        syncProduct(product, Utils.PRODUCT_SYNC.OPERATION.INSERT_OP);
+    }
+
+    public static void syncProduct(Product2 product, String operation) {
         String payload = buildPayload(product);
 
         ErrorLogger.logInfo(
@@ -24,12 +28,12 @@ public class ProductSyncCallout {
             );
             // Jeśli Org Konrada odpowiedział czymś innym niż 200 - to zapisuje do kolejki retry
             if (httpResponse.getStatusCode() != 200) {
-                addToRetryQueue(product.Id, Utils.PRODUCT_SYNC.OPERATION.INSERT_OP, payload, httpResponse.getBody());
+                addToRetryQueue(product.Id, operation, payload, httpResponse.getBody());
             }
-            // Jeśli w ogóle się wyjebał - też do retry 
+            // Jeśli w ogóle się wyjebał - też do retry
         } catch (Exception e) {
             ErrorLogger.log('ProductSyncCallout.syncProduct', e, product.Id);
-            addToRetryQueue(product.Id, Utils.PRODUCT_SYNC.OPERATION.INSERT_OP, payload, e.getMessage());
+            addToRetryQueue(product.Id, operation, payload, e.getMessage());
         }
     }
     // Jest to praktycznie to samo co syncProduct, ale zamiast POST mam DELETE

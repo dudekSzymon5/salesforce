@@ -14,7 +14,7 @@ public class ProductSyncQueueable implements Queueable, Database.AllowsCallouts 
             if (operation == Utils.PRODUCT_SYNC.OPERATION.DELETE_OP) {
                 ProductSyncCallout.deleteProduct(product.Id);
             } else {
-                ProductSyncCallout.syncProduct(product);
+                ProductSyncCallout.syncProduct(product, operation);
             }
         }
     }
