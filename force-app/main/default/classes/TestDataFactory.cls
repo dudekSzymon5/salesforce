@@ -62,8 +62,8 @@ public class TestDataFactory {
 
     public class DiscountBuilder {
         private String name = 'Test Discount';
-        private String type = 'One-Time';
-        private String form = 'Percentage';
+        private String type = Utils.DISCOUNT.TYPE.ONE_TIME;
+        private String form = Utils.DISCOUNT.FORM.PERCENTAGE;
         private Decimal value = 10;
         private Boolean active = true;
         private String conditionType;
@@ -77,29 +77,29 @@ public class TestDataFactory {
 
         public DiscountBuilder withName(String discountName) { name = discountName; return this; }
         public DiscountBuilder withValue(Decimal discountValue) { value = discountValue; return this; }
-        public DiscountBuilder asAmount() { form = 'Amount'; return this; }
+        public DiscountBuilder asAmount() { form = Utils.DISCOUNT.FORM.AMOUNT; return this; }
         public DiscountBuilder inactive() { active = false; return this; }
-        public DiscountBuilder oneTime() { type = 'One-Time'; return this; }
+        public DiscountBuilder oneTime() { type = Utils.DISCOUNT.TYPE.ONE_TIME; return this; }
         public DiscountBuilder withMinOrder(Decimal minimumAmount) { minOrder = minimumAmount; return this; }
         public DiscountBuilder withMinQuantity(Decimal minimumQuantity) { minQty = minimumQuantity; return this; }
-        public DiscountBuilder forProducts() { target = 'Specific Products'; return this; }
+        public DiscountBuilder forProducts() { target = Utils.DISCOUNT.TARGET.PRODUCTS; return this; }
         public DiscountBuilder validFrom(Date startDate) { this.startDate = startDate; return this; }
         public DiscountBuilder validUntil(Date endDate) { this.endDate = endDate; return this; }
 
         public DiscountBuilder recurring(String recurrencePattern) {
-            type = 'Recurring';
+            type = Utils.DISCOUNT.TYPE.RECURRING;
             pattern = recurrencePattern;
             return this;
         }
 
         public DiscountBuilder conditional(String conditionType) {
-            type = 'Conditional';
+            type = Utils.DISCOUNT.TYPE.CONDITIONAL;
             this.conditionType = conditionType;
             return this;
         }
 
         public DiscountBuilder forFamilies(String familyList) {
-            target = 'Specific Families';
+            target = Utils.DISCOUNT.TARGET.FAMILIES;
             families = familyList;
             return this;
         }

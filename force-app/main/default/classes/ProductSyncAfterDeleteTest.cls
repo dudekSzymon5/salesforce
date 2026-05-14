@@ -3,29 +3,46 @@ private class ProductSyncAfterDeleteTest {
 
     @IsTest
     static void testAfterDeleteSyncsNonExternalProducts() {
-        List<Product2> products = new List<Product2>{
-            new Product2(Name = 'Test Product', ProductCode = 'TP-001', Is_External__c = false)
-        };
+        TriggerBase.bypass('ProductTrigger');
+        Product2 product = TestDataFactory.aProduct().withCode('TP-001').create();
+        TriggerBase.clearBypass('ProductTrigger');
 
+        Test.setMock(HttpCalloutMock.class, TestDataFactory.httpSuccess());
         Test.startTest();
-        ProductSyncAfterDelete action = new ProductSyncAfterDelete();
-        action.afterDelete(products);
+        new ProductSyncAfterDelete().afterDelete(new List<Product2>{ product });
         Test.stopTest();
 
-        System.assertEquals(1, [SELECT Id FROM AsyncApexJob WHERE JobType = 'Queueable'].size());
+        Assert.areEqual(1, [SELECT Id FROM AsyncApexJob WHERE JobType = 'Queueable' AND ApexClass.Name = 'ProductSyncQueueable'].size());
+        Assert.areEqual(0, [SELECT Id FROM Product_Sync_Queue__c WHERE Status__c = :Utils.PRODUCT_SYNC.STATUS.FAILED].size());
+    }
+
+    @IsTest
+    static void testAfterDeleteSyncsNonExternalProducts_serverError_addsToQueue() {
+        TriggerBase.bypass('ProductTrigger');
+        Product2 product = TestDataFactory.aProduct().withCode('TP-001').create();
+        TriggerBase.clearBypass('ProductTrigger');
+
+        Test.setMock(HttpCalloutMock.class, TestDataFactory.httpError());
+        Test.startTest();
+        new ProductSyncAfterDelete().afterDelete(new List<Product2>{ product });
+        Test.stopTest();
+
+        List<Product_Sync_Queue__c> queue = [SELECT Status__c, Operation__c FROM Product_Sync_Queue__c];
+        Assert.areEqual(1, queue.size());
+        Assert.areEqual(Utils.PRODUCT_SYNC.STATUS.FAILED, queue[0].Status__c);
+        Assert.areEqual(Utils.PRODUCT_SYNC.OPERATION.DELETE_OP, queue[0].Operation__c);
     }
 
     @IsTest
     static void testAfterDeleteSkipsExternalProducts() {
-        List<Product2> products = new List<Product2>{
-            new Product2(Name = 'External Product', ProductCode = 'EP-001', Is_External__c = true)
-        };
+        TriggerBase.bypass('ProductTrigger');
+        Product2 product = TestDataFactory.aProduct().withCode('EP-001').external().create();
+        TriggerBase.clearBypass('ProductTrigger');
 
         Test.startTest();
-        ProductSyncAfterDelete action = new ProductSyncAfterDelete();
-        action.afterDelete(products);
+        new ProductSyncAfterDelete().afterDelete(new List<Product2>{ product });
         Test.stopTest();
 
-        System.assertEquals(0, [SELECT Id FROM AsyncApexJob WHERE JobType = 'Queueable'].size());
+        Assert.areEqual(0, [SELECT Id FROM AsyncApexJob WHERE JobType = 'Queueable' AND ApexClass.Name = 'ProductSyncQueueable'].size());
     }
 }
