@@ -16,9 +16,9 @@ private class ProductSyncCalloutTest {
 
     @IsTest
     static void testSyncProduct_serverError_addsToQueue() {
-        TriggerBase.bypass('ProductTrigger');
+        TriggerBase.bypass('Product2');
         Product2 product = TestDataFactory.aProduct().withCode('TEST-002').create();
-        TriggerBase.clearBypass('ProductTrigger');
+        TriggerBase.clearBypass('Product2');
         product = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 WHERE Id = :product.Id];
 
         Test.setMock(HttpCalloutMock.class, TestDataFactory.httpError());

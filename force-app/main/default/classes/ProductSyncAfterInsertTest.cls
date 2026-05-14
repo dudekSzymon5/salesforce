@@ -3,30 +3,56 @@ private class ProductSyncAfterInsertTest {
 
     @IsTest
     static void testAfterInsertSyncsNonExternalProducts() {
+        TriggerBase.bypass('Product2');
         List<Product2> products = new List<Product2>{
-            new Product2(Name = 'Test Product 1', ProductCode = 'TP-001', Is_External__c = false),
-            new Product2(Name = 'Test Product 2', ProductCode = 'TP-002', Is_External__c = false)
+            TestDataFactory.aProduct().withCode('TP-001').build(),
+            TestDataFactory.aProduct().withCode('TP-002').build()
         };
+        insert products;
+        TriggerBase.clearBypass('Product2');
 
+        Test.setMock(HttpCalloutMock.class, TestDataFactory.httpSuccess());
         Test.startTest();
-        ProductSyncAfterInsert action = new ProductSyncAfterInsert();
-        action.afterInsert(products);
+        new ProductSyncAfterInsert().afterInsert(products);
         Test.stopTest();
 
-        System.assertEquals(1, [SELECT Id FROM AsyncApexJob WHERE JobType = 'Queueable'].size());
+        Assert.areEqual(1, [SELECT Id FROM AsyncApexJob WHERE JobType = 'Queueable' AND ApexClass.Name = 'ProductSyncQueueable' AND CreatedDate = TODAY].size());
+        Assert.areEqual(0, [SELECT Id FROM Product_Sync_Queue__c WHERE Status__c = :Utils.PRODUCT_SYNC.STATUS.FAILED].size());
+    }
+
+    @IsTest
+    static void testAfterInsertSyncsNonExternalProducts_serverError_addsToQueue() {
+        TriggerBase.bypass('Product2');
+        List<Product2> products = new List<Product2>{
+            TestDataFactory.aProduct().withCode('TP-001').build()
+        };
+        insert products;
+        TriggerBase.clearBypass('Product2');
+
+        Test.setMock(HttpCalloutMock.class, TestDataFactory.httpError());
+        Test.startTest();
+        new ProductSyncAfterInsert().afterInsert(products);
+        Test.stopTest();
+
+        List<Product_Sync_Queue__c> queue = [SELECT Status__c, Operation__c FROM Product_Sync_Queue__c];
+        Assert.areEqual(1, queue.size());
+        Assert.areEqual(Utils.PRODUCT_SYNC.STATUS.FAILED, queue[0].Status__c);
+        Assert.areEqual(Utils.PRODUCT_SYNC.OPERATION.INSERT_OP, queue[0].Operation__c);
     }
 
     @IsTest
     static void testAfterInsertSkipsExternalProducts() {
+        TriggerBase.bypass('Product2');
         List<Product2> products = new List<Product2>{
-            new Product2(Name = 'External Product', ProductCode = 'EP-001', Is_External__c = true)
+            TestDataFactory.aProduct().withCode('EP-001').external().build()
         };
+        insert products;
+        TriggerBase.clearBypass('Product2');
 
         Test.startTest();
-        ProductSyncAfterInsert action = new ProductSyncAfterInsert();
-        action.afterInsert(products);
+        new ProductSyncAfterInsert().afterInsert(products);
         Test.stopTest();
 
-        System.assertEquals(0, [SELECT Id FROM AsyncApexJob WHERE JobType = 'Queueable'].size());
+        Assert.areEqual(0, [SELECT Id FROM AsyncApexJob WHERE JobType = 'Queueable' AND ApexClass.Name = 'ProductSyncQueueable' AND CreatedDate = TODAY].size());
     }
 }
