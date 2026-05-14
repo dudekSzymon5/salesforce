@@ -19,9 +19,9 @@ private class ProductSyncRetrySchedulerTest {
 
     @IsTest
     static void testSchedulerExecuteDirectly_withQueuedRecords() {
-        TriggerBase.bypass('ProductTrigger');
+        TriggerBase.bypass('Product2');
         Product2 product = TestDataFactory.aProduct().create();
-        TriggerBase.clearBypass('ProductTrigger');
+        TriggerBase.clearBypass('Product2');
         TestDataFactory.aQueueRecord().forProduct(product.Id).create();
 
         Test.startTest();

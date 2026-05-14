@@ -3,9 +3,9 @@ private class ProductSyncAfterDeleteTest {
 
     @IsTest
     static void testAfterDeleteSyncsNonExternalProducts() {
-        TriggerBase.bypass('ProductTrigger');
+        TriggerBase.bypass('Product2');
         Product2 product = TestDataFactory.aProduct().withCode('TP-001').create();
-        TriggerBase.clearBypass('ProductTrigger');
+        TriggerBase.clearBypass('Product2');
 
         Test.setMock(HttpCalloutMock.class, TestDataFactory.httpSuccess());
         Test.startTest();
@@ -18,9 +18,9 @@ private class ProductSyncAfterDeleteTest {
 
     @IsTest
     static void testAfterDeleteSyncsNonExternalProducts_serverError_addsToQueue() {
-        TriggerBase.bypass('ProductTrigger');
+        TriggerBase.bypass('Product2');
         Product2 product = TestDataFactory.aProduct().withCode('TP-001').create();
-        TriggerBase.clearBypass('ProductTrigger');
+        TriggerBase.clearBypass('Product2');
 
         Test.setMock(HttpCalloutMock.class, TestDataFactory.httpError());
         Test.startTest();
@@ -35,9 +35,9 @@ private class ProductSyncAfterDeleteTest {
 
     @IsTest
     static void testAfterDeleteSkipsExternalProducts() {
-        TriggerBase.bypass('ProductTrigger');
+        TriggerBase.bypass('Product2');
         Product2 product = TestDataFactory.aProduct().withCode('EP-001').external().create();
-        TriggerBase.clearBypass('ProductTrigger');
+        TriggerBase.clearBypass('Product2');
 
         Test.startTest();
         new ProductSyncAfterDelete().afterDelete(new List<Product2>{ product });

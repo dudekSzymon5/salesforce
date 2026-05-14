@@ -3,13 +3,13 @@ private class ProductSyncAfterInsertTest {
 
     @IsTest
     static void testAfterInsertSyncsNonExternalProducts() {
-        TriggerBase.bypass('ProductTrigger');
+        TriggerBase.bypass('Product2');
         List<Product2> products = new List<Product2>{
             TestDataFactory.aProduct().withCode('TP-001').build(),
             TestDataFactory.aProduct().withCode('TP-002').build()
         };
         insert products;
-        TriggerBase.clearBypass('ProductTrigger');
+        TriggerBase.clearBypass('Product2');
 
         Test.setMock(HttpCalloutMock.class, TestDataFactory.httpSuccess());
         Test.startTest();
@@ -22,12 +22,12 @@ private class ProductSyncAfterInsertTest {
 
     @IsTest
     static void testAfterInsertSyncsNonExternalProducts_serverError_addsToQueue() {
-        TriggerBase.bypass('ProductTrigger');
+        TriggerBase.bypass('Product2');
         List<Product2> products = new List<Product2>{
             TestDataFactory.aProduct().withCode('TP-001').build()
         };
         insert products;
-        TriggerBase.clearBypass('ProductTrigger');
+        TriggerBase.clearBypass('Product2');
 
         Test.setMock(HttpCalloutMock.class, TestDataFactory.httpError());
         Test.startTest();
@@ -42,12 +42,12 @@ private class ProductSyncAfterInsertTest {
 
     @IsTest
     static void testAfterInsertSkipsExternalProducts() {
-        TriggerBase.bypass('ProductTrigger');
+        TriggerBase.bypass('Product2');
         List<Product2> products = new List<Product2>{
             TestDataFactory.aProduct().withCode('EP-001').external().build()
         };
         insert products;
-        TriggerBase.clearBypass('ProductTrigger');
+        TriggerBase.clearBypass('Product2');
 
         Test.startTest();
         new ProductSyncAfterInsert().afterInsert(products);

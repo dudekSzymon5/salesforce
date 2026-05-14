@@ -3,9 +3,9 @@ private class ProductSyncQueueableTest {
 
     @IsTest
     static void testExecuteInsert_success_noQueueEntry() {
-        TriggerBase.bypass('ProductTrigger');
+        TriggerBase.bypass('Product2');
         Product2 product = TestDataFactory.aProduct().withCode('TP-001').create();
-        TriggerBase.clearBypass('ProductTrigger');
+        TriggerBase.clearBypass('Product2');
         product = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 WHERE Id = :product.Id];
 
         Test.setMock(HttpCalloutMock.class, TestDataFactory.httpSuccess());
@@ -18,9 +18,9 @@ private class ProductSyncQueueableTest {
 
     @IsTest
     static void testExecuteInsert_serverError_addsToQueue() {
-        TriggerBase.bypass('ProductTrigger');
+        TriggerBase.bypass('Product2');
         Product2 product = TestDataFactory.aProduct().withCode('TP-002').create();
-        TriggerBase.clearBypass('ProductTrigger');
+        TriggerBase.clearBypass('Product2');
         product = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 WHERE Id = :product.Id];
 
         Test.setMock(HttpCalloutMock.class, TestDataFactory.httpError());
@@ -36,9 +36,9 @@ private class ProductSyncQueueableTest {
 
     @IsTest
     static void testExecuteDelete_success_noQueueEntry() {
-        TriggerBase.bypass('ProductTrigger');
+        TriggerBase.bypass('Product2');
         Product2 product = TestDataFactory.aProduct().withCode('TP-003').create();
-        TriggerBase.clearBypass('ProductTrigger');
+        TriggerBase.clearBypass('Product2');
 
         Test.setMock(HttpCalloutMock.class, TestDataFactory.httpSuccess());
         Test.startTest();
@@ -50,9 +50,9 @@ private class ProductSyncQueueableTest {
 
     @IsTest
     static void testExecuteDelete_serverError_addsToQueue() {
-        TriggerBase.bypass('ProductTrigger');
+        TriggerBase.bypass('Product2');
         Product2 product = TestDataFactory.aProduct().withCode('TP-004').create();
-        TriggerBase.clearBypass('ProductTrigger');
+        TriggerBase.clearBypass('Product2');
 
         Test.setMock(HttpCalloutMock.class, TestDataFactory.httpError());
         Test.startTest();

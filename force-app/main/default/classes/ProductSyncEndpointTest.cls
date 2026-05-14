@@ -23,12 +23,12 @@ private class ProductSyncEndpointTest {
 
     @IsTest
     static void testUpsertProduct_update_modifiesExistingProduct() {
-        TriggerBase.bypass('ProductTrigger');
+        TriggerBase.bypass('Product2');
         TestDataFactory.aProduct()
             .withCode('EXT-PC-001')
             .external('EXT-001', '00DTEST000000001')
             .create();
-        TriggerBase.clearBypass('ProductTrigger');
+        TriggerBase.clearBypass('Product2');
 
         TestDataFactory.setupRestPost(
             '/services/apexrest/v1/products/',
@@ -58,12 +58,12 @@ private class ProductSyncEndpointTest {
 
     @IsTest
     static void testSoftDelete_found_marksProductDeleted() {
-        TriggerBase.bypass('ProductTrigger');
+        TriggerBase.bypass('Product2');
         TestDataFactory.aProduct()
             .withCode('EXT-PC-DEL')
             .external('EXT-DEL-001', '00DTEST000000001')
             .create();
-        TriggerBase.clearBypass('ProductTrigger');
+        TriggerBase.clearBypass('Product2');
 
         TestDataFactory.setupRestDelete('/services/apexrest/v1/products/EXT-DEL-001');
 
@@ -89,12 +89,12 @@ private class ProductSyncEndpointTest {
 
     @IsTest
     static void testSoftDelete_incrementsSyncCount() {
-        TriggerBase.bypass('ProductTrigger');
+        TriggerBase.bypass('Product2');
         Product2 product = TestDataFactory.aProduct()
             .withCode('EXT-PC-CNT')
             .external('EXT-COUNT-001', '00DTEST000000001')
             .create();
-        TriggerBase.clearBypass('ProductTrigger');
+        TriggerBase.clearBypass('Product2');
 
         TestDataFactory.setupRestDelete('/services/apexrest/v1/products/EXT-COUNT-001');
 

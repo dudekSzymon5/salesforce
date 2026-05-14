@@ -37,14 +37,14 @@ private class ProductSyncRetryQueueableTest {
 
     @IsTest
     static void testRetryInsert_productDeleted_skipsCalloutAndMarksSuccess() {
-        TriggerBase.bypass('ProductTrigger');
+        TriggerBase.bypass('Product2');
         Product2 product = TestDataFactory.aProduct().withCode('DEL-001').create();
-        TriggerBase.clearBypass('ProductTrigger');
+        TriggerBase.clearBypass('Product2');
         Product_Sync_Queue__c queueRecord = TestDataFactory.aQueueRecord().forProduct(product.Id).create();
 
-        TriggerBase.bypass('ProductTrigger');
+        TriggerBase.bypass('Product2');
         delete product;
-        TriggerBase.clearBypass('ProductTrigger');
+        TriggerBase.clearBypass('Product2');
 
         Test.setMock(HttpCalloutMock.class, TestDataFactory.httpSuccess());
         Test.startTest();
