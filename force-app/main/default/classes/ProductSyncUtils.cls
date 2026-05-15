@@ -13,6 +13,7 @@ public class ProductSyncUtils {
     public class Status {
         public String SUCCESS { get { return 'Success'; } }
         public String FAILED { get { return 'Failed'; } }
+        public String PENDING { get { return 'Pending'; } }
     }
 
     public class Operation {
