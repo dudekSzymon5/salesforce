@@ -7,8 +7,8 @@ private class ProductSyncAfterInsertTest {
         // Tworzę dwa produkty wewnątrz, a nie zewnątrz bo potrzebuje produktów żeby je
         // przekazać do afterInsert(products).create() tworzy jeden rekord na raz build()
         List<Product2> products = new List<Product2>{
-            TestDataFactory.aProduct().withCode('TP-001').build(),
-            TestDataFactory.aProduct().withCode('TP-002').build()
+            TestDataFactory.product().withCode('TP-001').build(),
+            TestDataFactory.product().withCode('TP-002').build()
         };
         insert products;
         TriggerBase.clearBypass('Product2');
@@ -26,7 +26,7 @@ private class ProductSyncAfterInsertTest {
     static void testAfterInsertSyncsNonExternalProductsServerErrorAddsToQueue() {
         TriggerBase.bypass('Product2');
         List<Product2> products = new List<Product2>{
-            TestDataFactory.aProduct().withCode('TP-001').build()
+            TestDataFactory.product().withCode('TP-001').build()
         };
         insert products;
         TriggerBase.clearBypass('Product2');
@@ -48,7 +48,7 @@ private class ProductSyncAfterInsertTest {
         // Produkt zewnętrzny — przyszedł z innego systemu, nie wysyłamy go z powrotem
         TriggerBase.bypass('Product2');
         List<Product2> products = new List<Product2>{
-            TestDataFactory.aProduct().withCode('EP-001').external().build()
+            TestDataFactory.product().withCode('EP-001').external().build()
         };
         insert products;
         TriggerBase.clearBypass('Product2');

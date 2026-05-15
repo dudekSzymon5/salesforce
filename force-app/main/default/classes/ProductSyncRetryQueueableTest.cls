@@ -5,8 +5,8 @@ private class ProductSyncRetryQueueableTest {
     static void testRetryInsertSuccessMarksSuccessAndRefreshesPayload() {
         // Retry się udał, payload odświezony
         // Tworzę produkt i rekord w kolejce ze starym paylodem
-        Product2 product = TestDataFactory.aProduct().withCode('RET-001').create();
-        Product_Sync_Queue__c queueRecord = TestDataFactory.aQueueRecord()
+        Product2 product = TestDataFactory.product().withCode('RET-001').create();
+        Product_Sync_Queue__c queueRecord = TestDataFactory.queueRecord()
             .forProduct(product.Id)
             .withPayload('{"old":"payload"}')
             .create();
@@ -26,8 +26,8 @@ private class ProductSyncRetryQueueableTest {
     @IsTest
     static void testRetryInsertServerErrorRemainsFailed() {
         // Retry się wyjebał
-        Product2 product = TestDataFactory.aProduct().withCode('RET-002').create();
-        Product_Sync_Queue__c queueRecord = TestDataFactory.aQueueRecord().forProduct(product.Id).create();
+        Product2 product = TestDataFactory.product().withCode('RET-002').create();
+        Product_Sync_Queue__c queueRecord = TestDataFactory.queueRecord().forProduct(product.Id).create();
 
         Test.setMock(HttpCalloutMock.class, TestDataFactory.httpError());
         Test.startTest();
@@ -45,9 +45,9 @@ private class ProductSyncRetryQueueableTest {
         // Produkt usunięty z bazy, pomijany callout
         // Tworzę produkt, rekord w kolejce, potem usuwam produkt
         TriggerBase.bypass('Product2');
-        Product2 product = TestDataFactory.aProduct().withCode('DEL-001').create();
+        Product2 product = TestDataFactory.product().withCode('DEL-001').create();
         TriggerBase.clearBypass('Product2');
-        Product_Sync_Queue__c queueRecord = TestDataFactory.aQueueRecord().forProduct(product.Id).create();
+        Product_Sync_Queue__c queueRecord = TestDataFactory.queueRecord().forProduct(product.Id).create();
 
         TriggerBase.bypass('Product2');
         delete product;
@@ -69,7 +69,7 @@ private class ProductSyncRetryQueueableTest {
     @IsTest
     static void testRetryDeleteSuccessMarksSuccess() {
         //Rekord w kolejce to operacja DELETE (bez produktu w bazie)
-        Product_Sync_Queue__c queueRecord = TestDataFactory.aQueueRecord()
+        Product_Sync_Queue__c queueRecord = TestDataFactory.queueRecord()
             .asDelete('EXT-PROD-001')
             .create();
 
@@ -88,8 +88,8 @@ private class ProductSyncRetryQueueableTest {
     static void testRetryMaxAttemptsReachedRecordNotProcessed() {
         // Maksymalna liczba prób
         // Rekord ma 3 proby - nie powinien być przetworzony
-        Product2 product = TestDataFactory.aProduct().withCode('RET-MAX').create();
-        Product_Sync_Queue__c queueRecord = TestDataFactory.aQueueRecord()
+        Product2 product = TestDataFactory.product().withCode('RET-MAX').create();
+        Product_Sync_Queue__c queueRecord = TestDataFactory.queueRecord()
             .forProduct(product.Id)
             .withAttempts(3)
             .create();

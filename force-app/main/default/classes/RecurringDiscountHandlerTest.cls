@@ -7,9 +7,10 @@ private class RecurringDiscountHandlerTest {
     private static final Map<Id, String> NO_FAMILIES = new Map<Id, String>();
 
     @IsTest
-    static void testEveryMonday_onMonday_returnsTrue() {
+    static void testEveryMondayOnMondayReturnsTrue() {
+        // Zniżka co poniedziałek — sprawdzam że aktywuje się dokładnie w poniedziałek
         Date monday = Date.newInstance(2025, 5, 5);
-        Discount__c discount = TestDataFactory.aDiscount()
+        Discount__c discount = TestDataFactory.discount()
             .recurring(Utils.DISCOUNT.RECURRENCE_PATTERN.EVERY_MONDAY)
             .build();
 
@@ -17,9 +18,10 @@ private class RecurringDiscountHandlerTest {
     }
 
     @IsTest
-    static void testEveryMonday_onTuesday_returnsFalse() {
+    static void testEveryMondayOnTuesdayReturnsFalse() {
+        // Zniżka co poniedziałek — we wtorek nie powinna się aktywować
         Date tuesday = Date.newInstance(2025, 5, 6);
-        Discount__c discount = TestDataFactory.aDiscount()
+        Discount__c discount = TestDataFactory.discount()
             .recurring(Utils.DISCOUNT.RECURRENCE_PATTERN.EVERY_MONDAY)
             .build();
 
@@ -27,9 +29,10 @@ private class RecurringDiscountHandlerTest {
     }
 
     @IsTest
-    static void testLastDayOfMonth_onLastDay_returnsTrue() {
+    static void testLastDayOfMonthOnLastDayReturnsTrue() {
+        // Zniżka ostatniego dnia miesiąca — 31 stycznia to ostatni dzień stycznia
         Date lastJan = Date.newInstance(2025, 1, 31);
-        Discount__c discount = TestDataFactory.aDiscount()
+        Discount__c discount = TestDataFactory.discount()
             .recurring(Utils.DISCOUNT.RECURRENCE_PATTERN.LAST_DAY_OF_MONTH)
             .build();
 
@@ -37,9 +40,10 @@ private class RecurringDiscountHandlerTest {
     }
 
     @IsTest
-    static void testLastDayOfMonth_notLastDay_returnsFalse() {
+    static void testLastDayOfMonthNotLastDayReturnsFalse() {
+        // Zniżka ostatniego dnia miesiąca — w połowie miesiąca nie powinna się aktywować
         Date midJanuary = Date.newInstance(2025, 1, 15);
-        Discount__c discount = TestDataFactory.aDiscount()
+        Discount__c discount = TestDataFactory.discount()
             .recurring(Utils.DISCOUNT.RECURRENCE_PATTERN.LAST_DAY_OF_MONTH)
             .build();
 
@@ -47,9 +51,10 @@ private class RecurringDiscountHandlerTest {
     }
 
     @IsTest
-    static void testBlackFriday_onBlackFriday2024_returnsTrue() {
+    static void testBlackFridayOnBlackFriday2024ReturnsTrue() {
+        // Black Friday 2024 to 22 listopada — czwarty piątek listopada
         Date blackFriday = Date.newInstance(2024, 11, 22);
-        Discount__c discount = TestDataFactory.aDiscount()
+        Discount__c discount = TestDataFactory.discount()
             .recurring(Utils.DISCOUNT.RECURRENCE_PATTERN.BLACK_FRIDAY)
             .build();
 
@@ -57,9 +62,10 @@ private class RecurringDiscountHandlerTest {
     }
 
     @IsTest
-    static void testBlackFriday_notInNovember_returnsFalse() {
+    static void testBlackFridayNotInNovemberReturnsFalse() {
+        // Black Friday jest tylko w listopadzie — październik wypierdala
         Date october = Date.newInstance(2025, 10, 15);
-        Discount__c discount = TestDataFactory.aDiscount()
+        Discount__c discount = TestDataFactory.discount()
             .recurring(Utils.DISCOUNT.RECURRENCE_PATTERN.BLACK_FRIDAY)
             .build();
 
@@ -67,9 +73,10 @@ private class RecurringDiscountHandlerTest {
     }
 
     @IsTest
-    static void testBlackFriday_novemberWrongDay_returnsFalse() {
+    static void testBlackFridayNovemberWrongDayReturnsFalse() {
+        // Listopad, ale nie czwarty piątek — zniżka nie powinna się aktywować
         Date nov15 = Date.newInstance(2024, 11, 15);
-        Discount__c discount = TestDataFactory.aDiscount()
+        Discount__c discount = TestDataFactory.discount()
             .recurring(Utils.DISCOUNT.RECURRENCE_PATTERN.BLACK_FRIDAY)
             .build();
 
@@ -77,8 +84,9 @@ private class RecurringDiscountHandlerTest {
     }
 
     @IsTest
-    static void testCustomDate_sameMonthAndDay_returnsTrue() {
-        Discount__c discount = TestDataFactory.aDiscount()
+    static void testCustomDateSameMonthAndDayReturnsTrue() {
+        // Data zniżki to 15 czerwca — sprawdzam że aktywuje się w tym samym miesiącu i dniu w innym roku
+        Discount__c discount = TestDataFactory.discount()
             .recurring(Utils.DISCOUNT.RECURRENCE_PATTERN.CUSTOM_DATE)
             .validFrom(Date.newInstance(2020, 6, 15))
             .build();
@@ -89,8 +97,9 @@ private class RecurringDiscountHandlerTest {
     }
 
     @IsTest
-    static void testCustomDate_differentMonth_returnsFalse() {
-        Discount__c discount = TestDataFactory.aDiscount()
+    static void testCustomDateDifferentMonthReturnsFalse() {
+        // Data zniżki to 15 czerwca — lipiec nie pasuje, nawet jeśli dzień się zgadza
+        Discount__c discount = TestDataFactory.discount()
             .recurring(Utils.DISCOUNT.RECURRENCE_PATTERN.CUSTOM_DATE)
             .validFrom(Date.newInstance(2020, 6, 15))
             .build();
@@ -101,8 +110,9 @@ private class RecurringDiscountHandlerTest {
     }
 
     @IsTest
-    static void testCustomDate_nullStartDate_returnsFalse() {
-        Discount__c discount = TestDataFactory.aDiscount()
+    static void testCustomDateNullStartDateReturnsFalse() {
+        // Brak daty startowej przy CUSTOM_DATE — nie ma z czym porównać, więc zwraca false
+        Discount__c discount = TestDataFactory.discount()
             .recurring(Utils.DISCOUNT.RECURRENCE_PATTERN.CUSTOM_DATE)
             .build();
 
@@ -112,8 +122,9 @@ private class RecurringDiscountHandlerTest {
     }
 
     @IsTest
-    static void testUnknownPattern_returnsFalse() {
-        Discount__c discount = TestDataFactory.aDiscount()
+    static void testUnknownPatternReturnsFalse() {
+        // wzorzec powtarzania — handler powinien bezpiecznie zwrócić false zamiast się wysypać
+        Discount__c discount = TestDataFactory.discount()
             .recurring('UnknownPatternXyz')
             .build();
 

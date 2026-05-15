@@ -84,7 +84,7 @@ public class ProductSyncCallout {
         return JSON.serialize(payload);
     }
     // Tutaj zapisujemy informacje z wiadomością co się wyjebało.
-    // Wcześniej addToRetryQueue miał hardcodowane INSERT_OP — teraz zapisuje to co faktycznie przyszło z triggera.
+    // Wcześniej addToRetryQueue miało zahardkodowane INSERT_OP — teraz zapisuje to co faktycznie przyszło z triggera.
     private static void addToRetryQueue(Id productId, String operation, String payload, String errorMessage) {
         Product_Sync_Queue__c queue = new Product_Sync_Queue__c(
             Product__c = productId,

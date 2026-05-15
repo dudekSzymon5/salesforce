@@ -25,7 +25,7 @@ private class ProductSyncEndpointTest {
     @IsTest
     static void testUpsertProductUpdateModifiesExistingProduct() {
         TriggerBase.bypass('Product2');
-        TestDataFactory.aProduct()
+        TestDataFactory.product()
             .withCode('EXT-PC-001')
             .external('EXT-001', Utils.TEST.PRODUCT.DEFAULT_ORG_ID)
             .create(); //Tworzę sobie produkt w bazie
@@ -60,7 +60,7 @@ private class ProductSyncEndpointTest {
     @IsTest
     static void testSoftDeleteFoundMarksProductDeleted() {
         TriggerBase.bypass('Product2');
-        TestDataFactory.aProduct()
+        TestDataFactory.product()
             .withCode('EXT-PC-DEL')
             .external('EXT-DEL-001', Utils.TEST.PRODUCT.DEFAULT_ORG_ID)
             .create();
@@ -94,7 +94,7 @@ private class ProductSyncEndpointTest {
     static void testSoftDeleteIncrementsSyncCount() {
         TriggerBase.bypass('Product2');
         // Tworze produkt
-        Product2 product = TestDataFactory.aProduct()
+        Product2 product = TestDataFactory.product()
             .withCode('EXT-PC-CNT')
             .external('EXT-COUNT-001', Utils.TEST.PRODUCT.DEFAULT_ORG_ID)
             .create();

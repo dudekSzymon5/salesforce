@@ -3,6 +3,7 @@ private class ProductSyncRetrySchedulerTest {
 
     @IsTest
     static void testSchedulerEnqueuesRetryJob() {
+        // Scheduler zarejestrowany przez System.schedule powinien dodać dokładnie jeden job do kolejki
         Test.startTest();
         System.schedule('Daily Product Sync Retry ' + DateTime.now().getTime(), '0 0 2 * * ?', new ProductSyncRetryScheduler());
         Test.stopTest();
@@ -18,11 +19,12 @@ private class ProductSyncRetrySchedulerTest {
     }
 
     @IsTest
-    static void testSchedulerExecuteDirectly_withQueuedRecords() {
+    static void testSchedulerExecuteDirectlyWithQueuedRecords() {
+        // Wywołuję execute() bezpośrednio — gdy kolejka ma rekordy, scheduler powinien dodać job do przetworzenia
         TriggerBase.bypass('Product2');
-        Product2 product = TestDataFactory.aProduct().create();
+        Product2 product = TestDataFactory.product().create();
         TriggerBase.clearBypass('Product2');
-        TestDataFactory.aQueueRecord().forProduct(product.Id).create();
+        TestDataFactory.queueRecord().forProduct(product.Id).create();
 
         Test.startTest();
         new ProductSyncRetryScheduler().execute(null);

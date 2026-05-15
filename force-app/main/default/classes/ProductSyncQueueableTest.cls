@@ -5,7 +5,7 @@ private class ProductSyncQueueableTest {
     static void testExecuteInsertSuccessNoQueueEntry() {
         // Callout się udał
         TriggerBase.bypass('Product2');
-        Product2 product = TestDataFactory.aProduct().withCode('TP-001').create();
+        Product2 product = TestDataFactory.product().withCode('TP-001').create();
         TriggerBase.clearBypass('Product2');
         product = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 WHERE Id = :product.Id];
 
@@ -21,7 +21,7 @@ private class ProductSyncQueueableTest {
     static void testExecuteInsertServerErrorAddsToQueue() {
         // Callout się wyjebał
         TriggerBase.bypass('Product2');
-        Product2 product = TestDataFactory.aProduct().withCode('TP-002').create();
+        Product2 product = TestDataFactory.product().withCode('TP-002').create();
         TriggerBase.clearBypass('Product2');
         product = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 WHERE Id = :product.Id];
 
@@ -41,7 +41,7 @@ private class ProductSyncQueueableTest {
     static void testExecuteDeleteSuccessNoQueueEntry() {
         // DELETE - callout się udał
         TriggerBase.bypass('Product2');
-        Product2 product = TestDataFactory.aProduct().withCode('TP-003').create();
+        Product2 product = TestDataFactory.product().withCode('TP-003').create();
         TriggerBase.clearBypass('Product2');
 
         Test.setMock(HttpCalloutMock.class, TestDataFactory.httpSuccess());
@@ -56,7 +56,7 @@ private class ProductSyncQueueableTest {
     static void testExecuteDeleteServerErrorAddsToQueue() {
         // DELETE - callout się wyjebał
         TriggerBase.bypass('Product2');
-        Product2 product = TestDataFactory.aProduct().withCode('TP-004').create();
+        Product2 product = TestDataFactory.product().withCode('TP-004').create();
         TriggerBase.clearBypass('Product2');
 
         Test.setMock(HttpCalloutMock.class, TestDataFactory.httpError());

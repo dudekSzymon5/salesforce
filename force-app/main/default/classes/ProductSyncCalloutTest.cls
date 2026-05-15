@@ -4,7 +4,7 @@ private class ProductSyncCalloutTest {
     @IsTest
     static void testSyncProductSuccessNoQueueEntry() {
         // callout sie udał, brak rekordu w kolejce
-        Product2 product = TestDataFactory.aProduct().withCode('TEST-001').create();
+        Product2 product = TestDataFactory.product().withCode('TEST-001').create();
         product = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 WHERE Id = :product.Id];
 
         Test.setMock(HttpCalloutMock.class, TestDataFactory.httpSuccess('{"status":"success","productId":"001TEST"}'));
@@ -19,7 +19,7 @@ private class ProductSyncCalloutTest {
     static void testSyncProductServerErrorAddsToQueue() {
         // callout się nie udał, produkt trafił do kolejki
         TriggerBase.bypass('Product2');
-        Product2 product = TestDataFactory.aProduct().withCode('TEST-002').create();
+        Product2 product = TestDataFactory.product().withCode('TEST-002').create();
         TriggerBase.clearBypass('Product2');
         product = [SELECT Id, Name, ProductCode, Family, Description, Language__c FROM Product2 WHERE Id = :product.Id];
 
@@ -68,7 +68,7 @@ private class ProductSyncCalloutTest {
     @IsTest
     static void testBuildPayloadContainsAllFields() {
         // sprawdzam że payload ma wszystkie pola:
-        Product2 product = TestDataFactory.aProduct()
+        Product2 product = TestDataFactory.product()
             .withName('My Product')
             .withCode('MP-001')
             .withFamily('Electronics')
