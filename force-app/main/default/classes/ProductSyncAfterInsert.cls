@@ -10,8 +10,7 @@ public class ProductSyncAfterInsert implements TriggerAction.AfterInsert {
         }
         // Jeśli są jakieś produkty do synchronizacji — tworzy Queueable z listą produktów i operacją, i wpieprza go do kolejki.
         if (!toSync.isEmpty()) {
-            ProductSyncQueueable job = new ProductSyncQueueable(toSync, Utils.PRODUCT_SYNC.OPERATION.INSERT_OP);
-            System.enqueueJob(job);
+            ProductSyncQueueable.enqueueSync(toSync, Utils.PRODUCT_SYNC.OPERATION.INSERT_OP);
         }
     }
 }
