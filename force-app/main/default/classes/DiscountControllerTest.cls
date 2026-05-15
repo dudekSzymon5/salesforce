@@ -3,14 +3,14 @@ private class DiscountControllerTest {
 
     @TestSetup
     static void setupData() {
-        TestDataFactory.aDiscount()
+        TestDataFactory.discount()
             .conditional('Minimum Order Value')
             .withMinOrder(100)
             .create();
 
         Account account = TestDataFactory.createAccount();
         Contract contract = TestDataFactory.createContract(account.Id);
-        TestDataFactory.anOrder()
+        TestDataFactory.order()
             .forAccount(account.Id)
             .withContract(contract.Id)
             .create();
@@ -40,7 +40,7 @@ private class DiscountControllerTest {
     @IsTest
     static void testSaveDiscountNewRecordReturnsWithId() {
         // Nowy rekord zniżki — po zapisie powinien dostać Id z bazy
-        Discount__c discount = TestDataFactory.aDiscount().oneTime().asAmount().withValue(50).build();
+        Discount__c discount = TestDataFactory.discount().oneTime().asAmount().withValue(50).build();
 
         Test.startTest();
         Discount__c saved = DiscountController.saveDiscount(discount);
@@ -72,7 +72,7 @@ private class DiscountControllerTest {
     @IsTest
     static void testSaveDiscountTwoForOneSetsMinimumQuantity() {
         // Zniżka "Dwa za jeden" — kontroler powinien automatycznie ustawić Minimum_Quantity__c = 2
-        Discount__c discount = TestDataFactory.aDiscount()
+        Discount__c discount = TestDataFactory.discount()
             .conditional('Two For One')
             .withValue(50)
             .build();
@@ -87,7 +87,7 @@ private class DiscountControllerTest {
     @IsTest
     static void testSaveDiscountPercentageOver100ThrowsException() {
         // Zniżka procentowa 150% — wartość powyżej 100 jest nieprawidłowa, powinien polecieć wyjątek
-        Discount__c discount = TestDataFactory.aDiscount().oneTime().withValue(150).build();
+        Discount__c discount = TestDataFactory.discount().oneTime().withValue(150).build();
 
         Test.startTest();
         try {
@@ -143,7 +143,7 @@ private class DiscountControllerTest {
     @IsTest
     static void testGetProductOptions() {
         // Produkt dodany do cennika — powinien pojawić się na liście opcji do wyboru w zniżce
-        Product2 product = TestDataFactory.aProduct().withName('Option Product').create();
+        Product2 product = TestDataFactory.product().withName('Option Product').create();
         TestDataFactory.addToPricebook(product.Id, 100);
 
         Test.startTest();
@@ -167,7 +167,7 @@ private class DiscountControllerTest {
     static void testGetDiscountProducts() {
         // Produkt powiązany ze zniżką — kontroler powinien zwrócić jego Id
         Discount__c discount = [SELECT Id FROM Discount__c LIMIT 1];
-        Product2 product = TestDataFactory.aProduct().withName('Linked Product').create();
+        Product2 product = TestDataFactory.product().withName('Linked Product').create();
         insert new Discount_Product__c(Discount__c = discount.Id, Product__c = product.Id);
 
         Test.startTest();
@@ -181,7 +181,7 @@ private class DiscountControllerTest {
     static void testSaveDiscountProductsAddsLinks() {
         // Zapisuję listę produktów dla zniżki — powinny powstać rekordy Discount_Product__c
         Discount__c discount = [SELECT Id FROM Discount__c LIMIT 1];
-        Product2 product = TestDataFactory.aProduct().withName('Save Product').create();
+        Product2 product = TestDataFactory.product().withName('Save Product').create();
 
         Test.startTest();
         DiscountController.saveDiscountProducts(discount.Id, new List<Id>{ product.Id });
@@ -195,7 +195,7 @@ private class DiscountControllerTest {
     static void testSaveDiscountProductsEmptyListRemovesAll() {
         // Przekazuję pustą listę produktów — istniejące powiązania powinny zostać usunięte
         Discount__c discount = [SELECT Id FROM Discount__c LIMIT 1];
-        Product2 product = TestDataFactory.aProduct().withName('Del Product').create();
+        Product2 product = TestDataFactory.product().withName('Del Product').create();
         insert new Discount_Product__c(Discount__c = discount.Id, Product__c = product.Id);
 
         Test.startTest();
@@ -261,8 +261,8 @@ private class DiscountControllerTest {
     @IsTest
     static void testPreviewDiscountsSpecificProductTargeted() {
         // Zniżka skierowana na konkretny produkt — podgląd powinien ją uwzględnić gdy produkt jest w koszyku
-        Product2 product = TestDataFactory.aProduct().withName('Targeted Product').create();
-        Discount__c discount = TestDataFactory.aDiscount().oneTime().forProducts().create();
+        Product2 product = TestDataFactory.product().withName('Targeted Product').create();
+        Discount__c discount = TestDataFactory.discount().oneTime().forProducts().create();
         insert new Discount_Product__c(Discount__c = discount.Id, Product__c = product.Id);
 
         DiscountService.ItemInput item = new DiscountService.ItemInput();
@@ -282,8 +282,8 @@ private class DiscountControllerTest {
     @IsTest
     static void testPreviewDiscountsSpecificFamilyTargeted() {
         // Zniżka dla rodziny Electronics — podgląd powinien ją uwzględnić gdy produkt z tej rodziny jest w koszyku
-        Product2 product = TestDataFactory.aProduct().withName('Family Product').withFamily('Electronics').create();
-        Discount__c discount = TestDataFactory.aDiscount().oneTime().forFamilies('Electronics').create();
+        Product2 product = TestDataFactory.product().withName('Family Product').withFamily('Electronics').create();
+        Discount__c discount = TestDataFactory.discount().oneTime().forFamilies('Electronics').create();
 
         DiscountService.ItemInput item = new DiscountService.ItemInput();
         item.product2Id = product.Id;
@@ -302,8 +302,8 @@ private class DiscountControllerTest {
     @IsTest
     static void testPreviewDiscountsTwoForOne() {
         // Zniżka "Dwa za jeden" przy ilości 4 sztuk — warunek minimalnej ilości spełniony
-        Product2 product = TestDataFactory.aProduct().withName('TwoForOne Product').create();
-        TestDataFactory.aDiscount()
+        Product2 product = TestDataFactory.product().withName('TwoForOne Product').create();
+        TestDataFactory.discount()
             .conditional('Two For One')
             .withValue(50)
             .withMinQuantity(2)
@@ -326,7 +326,7 @@ private class DiscountControllerTest {
     @IsTest
     static void testPreviewDiscountsAmountForm() {
         // Zniżka kwotowa (20 zł) zamiast procentowej — sprawdzam że forma kwotowa działa w podglądzie
-        TestDataFactory.aDiscount()
+        TestDataFactory.discount()
             .conditional('Minimum Order Value')
             .asAmount()
             .withValue(20)

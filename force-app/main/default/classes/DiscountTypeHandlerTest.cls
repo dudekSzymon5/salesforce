@@ -27,7 +27,7 @@ private class DiscountTypeHandlerTest {
 
     @IsTest
     static void testIsApplicableTargetAllNoProductsReturnsTrue() {
-        Discount__c discount = TestDataFactory.aDiscount().build();
+        Discount__c discount = TestDataFactory.discount().build();
 
         Boolean result = new OneTimeDiscountHandler().isApplicable(
             discount, 100, Date.today(), new Set<Id>(), new Map<Id, Decimal>(), new Map<Id, String>(), null
@@ -40,8 +40,8 @@ private class DiscountTypeHandlerTest {
 
     @IsTest
     static void testIsApplicableTargetProductsNoLinkedProductsReturnsFalse() {
-        Discount__c discount = TestDataFactory.aDiscount().forProducts().build();
-        Product2 product = TestDataFactory.aProduct().withName('P1').create();
+        Discount__c discount = TestDataFactory.discount().forProducts().build();
+        Product2 product = TestDataFactory.product().withName('P1').create();
 
         Boolean result = new OneTimeDiscountHandler().isApplicable(
             discount, 100, Date.today(),
@@ -56,8 +56,8 @@ private class DiscountTypeHandlerTest {
 
     @IsTest
     static void testIsApplicableTargetProductsProductInOrderAndLinkedReturnsTrue() {
-        Discount__c discount = TestDataFactory.aDiscount().forProducts().build();
-        Product2 product = TestDataFactory.aProduct().withName('P1').create();
+        Discount__c discount = TestDataFactory.discount().forProducts().build();
+        Product2 product = TestDataFactory.product().withName('P1').create();
         Set<Id> productIds = new Set<Id>{ product.Id };
 
         Boolean result = new OneTimeDiscountHandler().isApplicable(
@@ -73,9 +73,9 @@ private class DiscountTypeHandlerTest {
 
     @IsTest
     static void testIsApplicableTargetProductsLinkedButNotInOrderReturnsFalse() {
-        Discount__c discount = TestDataFactory.aDiscount().forProducts().build();
-        Product2 product1 = TestDataFactory.aProduct().withName('P1').withCode('P1').create();
-        Product2 product2 = TestDataFactory.aProduct().withName('P2').withCode('P2').create();
+        Discount__c discount = TestDataFactory.discount().forProducts().build();
+        Product2 product1 = TestDataFactory.product().withName('P1').withCode('P1').create();
+        Product2 product2 = TestDataFactory.product().withName('P2').withCode('P2').create();
 
         Boolean result = new OneTimeDiscountHandler().isApplicable(
             discount, 100, Date.today(),
@@ -90,10 +90,10 @@ private class DiscountTypeHandlerTest {
 
     @IsTest
     static void testIsApplicableTargetFamiliesNullFamiliesReturnsFalse() {
-        Discount__c discount = TestDataFactory.aDiscount().build();
+        Discount__c discount = TestDataFactory.discount().build();
         discount.Target_Application__c = 'Specific Families';
         discount.Target_Families__c = null;
-        Product2 product = TestDataFactory.aProduct().withName('P1').withFamily('Electronics').create();
+        Product2 product = TestDataFactory.product().withName('P1').withFamily('Electronics').create();
 
         Boolean result = new OneTimeDiscountHandler().isApplicable(
             discount, 100, Date.today(),
@@ -108,8 +108,8 @@ private class DiscountTypeHandlerTest {
 
     @IsTest
     static void testIsApplicableTargetFamiliesNoMatchReturnsFalse() {
-        Discount__c discount = TestDataFactory.aDiscount().forFamilies('Electronics').build();
-        Product2 product = TestDataFactory.aProduct().withName('P1').withFamily('Software').create();
+        Discount__c discount = TestDataFactory.discount().forFamilies('Electronics').build();
+        Product2 product = TestDataFactory.product().withName('P1').withFamily('Software').create();
 
         Boolean result = new OneTimeDiscountHandler().isApplicable(
             discount, 100, Date.today(),
@@ -124,8 +124,8 @@ private class DiscountTypeHandlerTest {
 
     @IsTest
     static void testIsApplicableTargetFamiliesMatchesReturnsTrue() {
-        Discount__c discount = TestDataFactory.aDiscount().forFamilies('Electronics').build();
-        Product2 product = TestDataFactory.aProduct().withName('P1').withFamily('Electronics').create();
+        Discount__c discount = TestDataFactory.discount().forFamilies('Electronics').build();
+        Product2 product = TestDataFactory.product().withName('P1').withFamily('Electronics').create();
 
         Boolean result = new OneTimeDiscountHandler().isApplicable(
             discount, 100, Date.today(),
@@ -140,8 +140,8 @@ private class DiscountTypeHandlerTest {
 
     @IsTest
     static void testIsApplicableMinimumQuantityNotMetReturnsFalse() {
-        Discount__c discount = TestDataFactory.aDiscount().withMinQuantity(5).build();
-        Product2 product = TestDataFactory.aProduct().withName('P1').create();
+        Discount__c discount = TestDataFactory.discount().withMinQuantity(5).build();
+        Product2 product = TestDataFactory.product().withName('P1').create();
 
         Boolean result = new OneTimeDiscountHandler().isApplicable(
             discount, 100, Date.today(),
@@ -156,8 +156,8 @@ private class DiscountTypeHandlerTest {
 
     @IsTest
     static void testIsApplicableMinimumQuantityMetReturnsTrue() {
-        Discount__c discount = TestDataFactory.aDiscount().withMinQuantity(5).build();
-        Product2 product = TestDataFactory.aProduct().withName('P1').create();
+        Discount__c discount = TestDataFactory.discount().withMinQuantity(5).build();
+        Product2 product = TestDataFactory.product().withName('P1').create();
 
         Boolean result = new OneTimeDiscountHandler().isApplicable(
             discount, 100, Date.today(),

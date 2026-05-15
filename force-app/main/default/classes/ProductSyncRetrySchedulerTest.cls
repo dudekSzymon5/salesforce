@@ -22,9 +22,9 @@ private class ProductSyncRetrySchedulerTest {
     static void testSchedulerExecuteDirectlyWithQueuedRecords() {
         // Wywołuję execute() bezpośrednio — gdy kolejka ma rekordy, scheduler powinien dodać job do przetworzenia
         TriggerBase.bypass('Product2');
-        Product2 product = TestDataFactory.aProduct().create();
+        Product2 product = TestDataFactory.product().create();
         TriggerBase.clearBypass('Product2');
-        TestDataFactory.aQueueRecord().forProduct(product.Id).create();
+        TestDataFactory.queueRecord().forProduct(product.Id).create();
 
         Test.startTest();
         new ProductSyncRetryScheduler().execute(null);
