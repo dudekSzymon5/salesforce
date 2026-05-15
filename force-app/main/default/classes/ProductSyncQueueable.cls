@@ -11,13 +11,23 @@ public class ProductSyncQueueable implements Queueable, Database.AllowsCallouts 
 
     //Iteruje sobie po liście produktów i wybieram odpowiednią metodę w zależności od operacji
     public void execute(QueueableContext context) {
+        if (operation != Utils.PRODUCT_SYNC.OPERATION.DELETE_OP) {
+            Set<Id> productIds = new Set<Id>();
+            for (Product2 p : products) {
+                productIds.add(p.Id);
+            }
+            Map<Id, Product2> productMap = new Map<Id, Product2>([
+                SELECT Id, Name, Description, ProductCode, Family, Language__c
+                FROM Product2
+                WHERE Id IN :productIds
+            ]);
+            products = productMap.values();
+        }
+
         for (Product2 product : products) {
             if (operation == Utils.PRODUCT_SYNC.OPERATION.DELETE_OP) {
                 ProductSyncCallout.deleteProduct(product.Id);
             } else {
-                // Teraz daje operation (insert albo update) do syncProduct żeby retry queue wiedziało
-                // jaki typ operacji zapisać — wcześniej nie przyjmował operacji
-                // i zawsze zapisywał insert
                 ProductSyncCallout.syncProduct(product, operation);
             }
         }

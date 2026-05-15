@@ -8,7 +8,7 @@ private class ProductSyncRetryQueueableTest {
         TestDataFactory.product().withCode('RET-01').create();
         TestDataFactory.product().withCode('RET-02').create();
         TestDataFactory.product().withCode('RET-MAX').create();
-        TestDataFactory.product().withCode('DEL-001').create();
+        TestDataFactory.product().withCode('DEL-01').create();
         TriggerBase.clearBypass('Product2');
     }
 
