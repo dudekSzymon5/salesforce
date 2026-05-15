@@ -12,7 +12,8 @@ private class OneTimeDiscountHandlerTest {
     }
 
     @IsTest
-    static void testBeforeStartDate_returnsFalse() {
+    static void testBeforeStartDateReturnsFalse() {
+        // Zniżka jeszcze nie zaczęła obowiązywać — start za 5 dni, dziś nie powinna działać
         Discount__c d = makeOneTime();
         d.Start_Date__c = Date.today().addDays(5);
 
@@ -23,7 +24,8 @@ private class OneTimeDiscountHandlerTest {
     }
 
     @IsTest
-    static void testAfterEndDate_returnsFalse() {
+    static void testAfterEndDateReturnsFalse() {
+        // Zniżka już wygasła — koniec był 5 dni temu, dziś nie powinna działać
         Discount__c d = makeOneTime();
         d.End_Date__c = Date.today().addDays(-5);
 
@@ -34,7 +36,8 @@ private class OneTimeDiscountHandlerTest {
     }
 
     @IsTest
-    static void testWithinDateRange_returnsTrue() {
+    static void testWithinDateRangeReturnsTrue() {
+        // Dziś jest w środku okresu obowiązywania — zniżka powinna działać
         Discount__c d = makeOneTime();
         d.Start_Date__c = Date.today().addDays(-5);
         d.End_Date__c = Date.today().addDays(5);
@@ -46,7 +49,8 @@ private class OneTimeDiscountHandlerTest {
     }
 
     @IsTest
-    static void testNoDates_returnsTrue() {
+    static void testNoDatesReturnsTrue() {
+        // Brak dat oznacza brak ograniczeń czasowych — zniżka zawsze powinna działać
         Discount__c d = makeOneTime();
 
         OneTimeDiscountHandler handler = new OneTimeDiscountHandler();

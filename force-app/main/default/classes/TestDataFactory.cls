@@ -1,6 +1,7 @@
 @IsTest
 public class TestDataFactory {
-
+    // ZMIENIĆ TO NA ZMIENNE NA PRZYKŁAD PRODUCT, ORDER i inne potrzebne do testowania w tym wypadku. 
+    // Popakować w zmienne skoro mogę mieć w konstruktorze nowy produkt i zapisać bezpośrednio do tych pól
     // Buduje produkt testowy.
     // Użycie: TestDataFactory.aProduct().withName('APEX').inactive().create();
     public class ProductBuilder {
@@ -210,7 +211,7 @@ public class TestDataFactory {
         }
     }
 
-    // Odpowiedź HTTP — Salesforce zwraca to co tu ustawisz.
+    // Odpowiedź HTTP — Salesforce zwraca to co tu ustawisz. Udawany serwer
     // Użycie: Test.setMock(HttpCalloutMock.class, TestDataFactory.httpSuccess());
     public class HttpMock implements HttpCalloutMock {
         private Integer statusCode;

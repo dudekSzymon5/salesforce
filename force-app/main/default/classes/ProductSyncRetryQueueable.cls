@@ -8,14 +8,14 @@ public class ProductSyncRetryQueueable implements Queueable, Database.AllowsCall
             FROM Product_Sync_Queue__c
             WHERE Status__c = :Utils.PRODUCT_SYNC.STATUS.FAILED
             AND Attempt_Count__c < :MAX_ATTEMPTS
-            ORDER BY LastModifiedDate ASC
+            ORDER BY LastModifiedDate ASC // Najstarsze rekordy są przetwarzane pierwsze - te które czekają najdłużej 
             LIMIT 50
         ];
 
         if (failedSyncs.isEmpty()) return;
 
         // Z: Przed retry pobieramy świeże dane produktów jednym SOQL 
-        // zamiast używać starego Payload__c który mógł mieć dane sprzed godzin/dni).
+        // zamiast używać starego Payload__c który mógł mieć dane.
         Set<Id> productIds = new Set<Id>();
         for (Product_Sync_Queue__c record : failedSyncs) {
             if (record.Operation__c != Utils.PRODUCT_SYNC.OPERATION.DELETE_OP && record.Product__c != null) {
