@@ -1,14 +1,19 @@
 @IsTest
 private class ProductSyncAfterUpdateTest {
 
+    @TestSetup
+    static void makeData(){
+        TriggerBase.bypass('Product2');
+
+        TestDataFactory.product().withCode('TP-01').create();
+        TestDataFactory.product().withCode('EP-01').external().create();
+        TriggerBase.clearBypass('Product2');
+    }
+
     @IsTest
     static void testAfterUpdateSyncsNonExternalProducts() {
-        TriggerBase.bypass('Product2');
-        List<Product2> products = new List<Product2>{
-            TestDataFactory.product().withCode('TP-001').build()
-        };
-        insert products;
-        TriggerBase.clearBypass('Product2');
+        
+        List<Product2> products = [SELECT Id, Name, ProductCode, Is_External__c FROM Product2 WHERE ProductCode = 'TP-01'];
 
         Test.setMock(HttpCalloutMock.class, TestDataFactory.httpSuccess());
         Test.startTest();
@@ -21,12 +26,8 @@ private class ProductSyncAfterUpdateTest {
 
     @IsTest
     static void testAfterUpdateSyncsNonExternalProductsServerErrorAddsToQueue() {
-        TriggerBase.bypass('Product2');
-        List<Product2> products = new List<Product2>{
-            TestDataFactory.product().withCode('TP-001').build()
-        };
-        insert products;
-        TriggerBase.clearBypass('Product2');
+
+        List<Product2> products = [SELECT Id, Name, ProductCode, Is_External__c FROM Product2 WHERE ProductCode = 'TP-01'];
 
         Test.setMock(HttpCalloutMock.class, TestDataFactory.httpError());
         Test.startTest();
@@ -41,13 +42,9 @@ private class ProductSyncAfterUpdateTest {
 
     @IsTest
     static void testAfterUpdateSkipsExternalProducts() {
-        TriggerBase.bypass('Product2');
-        List<Product2> products = new List<Product2>{
-            TestDataFactory.product().withCode('EP-001').external().build()
-        };
-        insert products;
-        TriggerBase.clearBypass('Product2');
-
+       
+        List<Product2> products = [SELECT Id, Name, ProductCode, Is_External__c FROM Product2 WHERE ProductCode = 'EP-01'];
+        
         Test.startTest();
         new ProductSyncAfterUpdate().afterUpdate(products, products);
         Test.stopTest();

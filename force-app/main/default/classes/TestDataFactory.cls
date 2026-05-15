@@ -39,7 +39,9 @@ public class TestDataFactory {
             return this;
         }
 
-        public Product2 build() { return product; }
+        public Product2 build() { 
+            return product; 
+        }
 
         public Product2 create() {
             insert product;
@@ -125,7 +127,9 @@ public class TestDataFactory {
             return this;
         }
 
-        public Product_Sync_Queue__c build() { return record; }
+        public Product_Sync_Queue__c build() { 
+            return record; 
+        }
 
         public Product_Sync_Queue__c create() {
             insert record;
