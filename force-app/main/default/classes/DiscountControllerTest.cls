@@ -66,8 +66,7 @@ private class DiscountControllerTest {
     static void testSaveDiscountTwoForOneSetsMinimumQuantity() {
         Discount__c discount = TestDataFactory.discount()
             .conditional('Two For One')
-            .withValue(50)
-            .build();
+            .withValue(50).build();
 
         Test.startTest();
         Discount__c saved = DiscountController.saveDiscount(discount);
@@ -282,8 +281,7 @@ private class DiscountControllerTest {
         TestDataFactory.discount()
             .conditional('Two For One')
             .withValue(50)
-            .withMinQuantity(2)
-            .create();
+            .withMinQuantity(2).create();
 
         DiscountService.ItemInput item = new DiscountService.ItemInput();
         item.product2Id = product.Id;
@@ -305,8 +303,7 @@ private class DiscountControllerTest {
             .conditional('Minimum Order Value')
             .asAmount()
             .withValue(20)
-            .withMinOrder(100)
-            .create();
+            .withMinOrder(100).create();
 
         Test.startTest();
         List<DiscountService.DiscountPreview> previews = DiscountController.previewDiscounts(
