@@ -57,7 +57,7 @@ public class ProductSyncQueueable implements Queueable, Database.AllowsCallouts 
             }
             insert toInsert;
 
-            Integer howManyQueuedJobs = [SELECT COUNT() FROM AsyncApexJob WHERE Status IN('Queued', 'Holding', 'Preparing', 'Processing') AND ApexClass.Name = 'ProductSyncQueueable'];
+            Integer howManyQueuedJobs = [SELECT COUNT() FROM AsyncApexJob WHERE Status IN :Utils.PRODUCT_SYNC.JOB_STATUS.ACTIVE AND ApexClass.Name = 'ProductSyncQueueable'];
             if (howManyQueuedJobs == 0) {
             System.enqueueJob(new ProductSyncQueueable());
             }
@@ -93,7 +93,7 @@ public class ProductSyncQueueable implements Queueable, Database.AllowsCallouts 
         }
         upsert toUpsert;
 
-        Integer howManyQueuedJobs = [SELECT COUNT() FROM AsyncApexJob WHERE Status IN('Queued', 'Holding', 'Preparing', 'Processing') AND ApexClass.Name = 'ProductSyncQueueable'];
+        Integer howManyQueuedJobs = [SELECT COUNT() FROM AsyncApexJob WHERE Status IN :Utils.PRODUCT_SYNC.JOB_STATUS.ACTIVE AND ApexClass.Name = 'ProductSyncQueueable'];
 
         if (howManyQueuedJobs == 0) {
                 System.enqueueJob(new ProductSyncQueueable());
