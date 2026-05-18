@@ -3,6 +3,9 @@ private class DiscountControllerTest {
 
     @TestSetup
     static void makeData() {
+        TriggerBase.bypass('Account');
+        TriggerBase.bypass('Order');
+
         TestDataFactory.discount()
             .conditional('Minimum Order Value')
             .withMinOrder(100).create();
@@ -12,6 +15,8 @@ private class DiscountControllerTest {
         TestDataFactory.order()
             .forAccount(account.Id)
             .withContract(contract.Id).create();
+        TriggerBase.clearBypass('Account');
+        TriggerBase.clearBypass('Order');
     }
 
     @IsTest

@@ -15,19 +15,19 @@ private class DiscountTypeHandlerTest {
 
     @IsTest
     static void testForTypeReturnsRecurringHandler() {
-        DiscountTypeHandler handler = DiscountTypeHandler.forType('Recurring');
+        DiscountTypeHandler handler = DiscountTypeHandler.forType(Utils.DISCOUNT.TYPE.RECURRING);
         Assert.isTrue(handler instanceof RecurringDiscountHandler);
     }
 
     @IsTest
     static void testForTypeReturnsConditionalHandler() {
-        DiscountTypeHandler handler = DiscountTypeHandler.forType('Conditional');
+        DiscountTypeHandler handler = DiscountTypeHandler.forType(Utils.DISCOUNT.TYPE.CONDITIONAL);
         Assert.isTrue(handler instanceof ConditionalDiscountHandler);
     }
 
     @IsTest
     static void testForTypeReturnsOneTimeHandler() {
-        DiscountTypeHandler handler = DiscountTypeHandler.forType('One-Time');
+        DiscountTypeHandler handler = DiscountTypeHandler.forType(Utils.DISCOUNT.TYPE.ONE_TIME);
         Assert.isTrue(handler instanceof OneTimeDiscountHandler);
     }
 

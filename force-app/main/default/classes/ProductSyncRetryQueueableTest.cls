@@ -70,8 +70,7 @@ private class ProductSyncRetryQueueableTest {
     @IsTest
     static void testRetryDeleteSuccessMarksSuccess() {
         Product_Sync_Queue__c queueRecord = TestDataFactory.queueRecord()
-            .asDelete('EXT-PROD-001')
-            .create();
+            .asDelete('EXT-PROD-001').create();
 
         Test.setMock(HttpCalloutMock.class, TestDataFactory.httpSuccess('{"status":"deleted"}'));
         Test.startTest();
@@ -88,8 +87,7 @@ private class ProductSyncRetryQueueableTest {
         Product2 product = [SELECT Id FROM Product2 WHERE ProductCode = 'RET-MAX'];
         Product_Sync_Queue__c queueRecord = TestDataFactory.queueRecord()
             .forProduct(product.Id)
-            .withAttempts(3)
-            .create();
+            .withAttempts(3).create();
 
         Test.setMock(HttpCalloutMock.class, TestDataFactory.httpSuccess());
         Test.startTest();
