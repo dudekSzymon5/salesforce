@@ -9,6 +9,7 @@ private class DiscountTypeHandlerTest {
         TestDataFactory.product().withName('P2').withCode('TP-02').create();
         TestDataFactory.product().withName('P-DATA').withCode('P-DATA').withFamily('Data Services').create();
         TestDataFactory.product().withName('P-SOFT').withCode('P-SOFT').withFamily('Software').create();
+        TestDataFactory.product().withName('P-ELEC').withCode('P-ELEC').withFamily('Electronics').create();
         TriggerBase.clearBypass('Product2');
     }
 
@@ -50,7 +51,7 @@ private class DiscountTypeHandlerTest {
     @IsTest
     static void testIsApplicableTargetProductsNoLinkedProductsReturnsFalse() {
         Discount__c discount = TestDataFactory.discount().forProducts().build();
-        Product2 product = [SELECT Id FROM Product2 WHERE ProductCode = 'P1'];
+        Product2 product = [SELECT Id FROM Product2 WHERE ProductCode = 'TP-01'];
 
         Boolean result = new OneTimeDiscountHandler().isApplicable(
             discount, 100, Date.today(),
@@ -66,7 +67,7 @@ private class DiscountTypeHandlerTest {
     @IsTest
     static void testIsApplicableTargetProductsProductInOrderAndLinkedReturnsTrue() {
         Discount__c discount = TestDataFactory.discount().forProducts().build();
-        Product2 product = [SELECT Id FROM Product2 WHERE ProductCode = 'P1'];
+        Product2 product = [SELECT Id FROM Product2 WHERE ProductCode = 'TP-01'];
         Set<Id> productIds = new Set<Id>{ product.Id };
 
         Boolean result = new OneTimeDiscountHandler().isApplicable(
@@ -83,8 +84,8 @@ private class DiscountTypeHandlerTest {
     @IsTest
     static void testIsApplicableTargetProductsLinkedButNotInOrderReturnsFalse() {
         Discount__c discount = TestDataFactory.discount().forProducts().build();
-        Product2 product1 = [SELECT Id FROM Product2 WHERE ProductCode = 'P1'];
-        Product2 product2 = [SELECT Id FROM Product2 WHERE ProductCode = 'P2'];
+        Product2 product1 = [SELECT Id FROM Product2 WHERE ProductCode = 'TP-01'];
+        Product2 product2 = [SELECT Id FROM Product2 WHERE ProductCode = 'TP-02'];
 
         Boolean result = new OneTimeDiscountHandler().isApplicable(
             discount, 100, Date.today(),
@@ -102,7 +103,7 @@ private class DiscountTypeHandlerTest {
         Discount__c discount = TestDataFactory.discount().build();
         discount.Target_Application__c = 'Specific Families';
         discount.Target_Families__c = null;
-        Product2 product = [SELECT Id FROM Product2 WHERE ProductCode = 'P-ELEC'];
+        Product2 product = [SELECT Id FROM Product2 WHERE ProductCode = 'P-ELEC' LIMIT 1];
 
         Boolean result = new OneTimeDiscountHandler().isApplicable(
             discount, 100, Date.today(),
@@ -134,7 +135,7 @@ private class DiscountTypeHandlerTest {
     @IsTest
     static void testIsApplicableTargetFamiliesMatchesReturnsTrue() {
         Discount__c discount = TestDataFactory.discount().forFamilies('Electronics').build();
-        Product2 product = [SELECT Id FROM Product2 WHERE ProductCode = 'P-ELEC'];
+        Product2 product = [SELECT Id FROM Product2 WHERE ProductCode = 'P-ELEC' LIMIT 1];
 
         Boolean result = new OneTimeDiscountHandler().isApplicable(
             discount, 100, Date.today(),
@@ -150,7 +151,7 @@ private class DiscountTypeHandlerTest {
     @IsTest
     static void testIsApplicableMinimumQuantityNotMetReturnsFalse() {
         Discount__c discount = TestDataFactory.discount().withMinQuantity(5).build();
-        Product2 product = [SELECT Id FROM Product2 WHERE ProductCode = 'P1'];
+        Product2 product = [SELECT Id FROM Product2 WHERE ProductCode = 'TP-01' LIMIT 1];
 
         Boolean result = new OneTimeDiscountHandler().isApplicable(
             discount, 100, Date.today(),
@@ -166,7 +167,7 @@ private class DiscountTypeHandlerTest {
     @IsTest
     static void testIsApplicableMinimumQuantityMetReturnsTrue() {
         Discount__c discount = TestDataFactory.discount().withMinQuantity(5).build();
-        Product2 product = [SELECT Id FROM Product2 WHERE ProductCode = 'P1'];
+        Product2 product = [SELECT Id FROM Product2 WHERE ProductCode = 'TP-01' LIMIT 1];
 
         Boolean result = new OneTimeDiscountHandler().isApplicable(
             discount, 100, Date.today(),
