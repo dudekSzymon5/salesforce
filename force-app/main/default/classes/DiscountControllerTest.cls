@@ -2,7 +2,7 @@
 private class DiscountControllerTest {
 
     @TestSetup
-    static void setupData() {
+    static void makeData() {
         TestDataFactory.discount()
             .conditional('Minimum Order Value')
             .withMinOrder(100).create();
@@ -36,7 +36,6 @@ private class DiscountControllerTest {
     @IsTest
     static void testSaveDiscountNewRecordReturnsWithId() {
         Discount__c discount = TestDataFactory.discount().oneTime().asAmount().withValue(50).build();
-
         Test.startTest();
         Discount__c saved = DiscountController.saveDiscount(discount);
         Test.stopTest();
