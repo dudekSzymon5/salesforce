@@ -21,7 +21,7 @@ private class ProductSyncQueueableTest {
             Operation__c = Utils.PRODUCT_SYNC.OPERATION.INSERT_OP,
             Status__c = Utils.PRODUCT_SYNC.STATUS.PENDING
         );
-
+        
         Test.setMock(HttpCalloutMock.class, TestDataFactory.httpSuccess());
         Test.startTest();
         System.enqueueJob(new ProductSyncQueueable());

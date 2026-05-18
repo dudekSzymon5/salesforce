@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="705241f2-16ab-4a4d-a856-ff87bf59e88e" name="Changes" comment="" />
+    <list default="true" id="705241f2-16ab-4a4d-a856-ff87bf59e88e" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.forceignore" beforeDir="false" afterPath="$PROJECT_DIR$/.forceignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/force-app/main/default/classes/DiscountControllerTest.cls" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/classes/DiscountControllerTest.cls" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/force-app/main/default/classes/DiscountTypeHandlerTest.cls" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/classes/DiscountTypeHandlerTest.cls" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/force-app/main/default/classes/ProductSyncQueueable.cls" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/classes/ProductSyncQueueable.cls" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/force-app/main/default/classes/ProductSyncQueueableTest.cls" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/classes/ProductSyncQueueableTest.cls" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/force-app/main/default/classes/ProductSyncRetryQueueableTest.cls" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/classes/ProductSyncRetryQueueableTest.cls" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/force-app/main/default/classes/TestDataFactory.cls" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/classes/TestDataFactory.cls" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -10,10 +20,23 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 1
-}]]></component>
+  <component name="IlluminatedCloudWorkspaceSettings">
+    <option name="moduleWorkspaceSettings">
+      <map>
+        <entry key="szkolenie-salesforce">
+          <value>
+            <ModuleWorkspaceSettings>
+              <option name="moduleContentsLastModified" value="1779099526839" />
+            </ModuleWorkspaceSettings>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 1
+}</component>
   <component name="ProjectId" id="3Cm83Urn7zuCBmAQljO4f2TgJsz" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -23,9 +46,15 @@
   "keyToString": {
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "feature/fix-discout-query",
-    "kotlin-language-version-configured": "true"
+    "git-widget-placeholder": "refactor/product-sync-optimize-and-soft-delete",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/szymon.dudek_britene/Documents/szkolenie/szkolenie-salesforce",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
   }
 }]]></component>
   <component name="SharedIndexes">
@@ -44,5 +73,20 @@
       <updated>1776979189217</updated>
     </task>
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>
