@@ -9,18 +9,18 @@ public with sharing class ProductSyncSoftDeleteController {
                 LIMIT 1
             ];
             if (product.Is_Deleted__c == true) {
-                AuraHandledException exception = new AuraHandledException('Product is already deleted');
-                exception.setMessage('Product is already deleted');
-                throw exception;
+                AuraHandledException ex = new AuraHandledException('Product is already deleted');
+                ex.setMessage('Product is already deleted');
+                throw ex;
             }
             product.Is_Deleted__c = true;
             update product;
         } catch (AuraHandledException e) {
             throw e;
         } catch (Exception e) {
-            AuraHandledException exception = new AuraHandledException(e.getMessage());
-            exception.setMessage(e.getMessage());
-            throw exception;
+            AuraHandledException ex = new AuraHandledException(e.getMessage());
+            ex.setMessage(e.getMessage());
+            throw ex;
         }
     }
 }
