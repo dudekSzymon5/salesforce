@@ -9,6 +9,7 @@ private class ProductSyncRetryQueueableTest {
         TestDataFactory.product().withCode('RET-02').create();
         TestDataFactory.product().withCode('RET-MAX').create();
         TestDataFactory.product().withCode('DEL-01').create();
+        TestDataFactory.product().withCode('RET-EMAIL').create();
         TriggerBase.clearBypass('Product2');
     }
 
@@ -105,5 +106,50 @@ private class ProductSyncRetryQueueableTest {
         System.enqueueJob(new ProductSyncRetryQueueable());
         Test.stopTest();
         Assert.areEqual(0, [SELECT Id FROM Product_Sync_Queue__c].size());
+    }
+
+    @IsTest
+    static void testRetryThirdFailureSendsEmail() {
+        Product2 product = [
+            SELECT Id
+            FROM Product2
+            WHERE ProductCode = 'RET-EMAIL'
+        ];
+
+        Product_Sync_Queue__c queueRecord = TestDataFactory.queueRecord()
+            .forProduct(product.Id)
+            .withAttempts(2).create();
+
+        Test.setMock(HttpCalloutMock.class, TestDataFactory.httpError());
+        Test.startTest();
+        System.enqueueJob(new ProductSyncRetryQueueable());
+        Test.stopTest();
+
+        Product_Sync_Queue__c result = [
+            SELECT Status__c, Attempt_Count__c
+            FROM  Product_Sync_Queue__c 
+            WHERE Id = :queueRecord.Id
+        ];
+        Assert.areEqual(Utils.PRODUCT_SYNC.STATUS.FAILED, result.Status__c);
+        Assert.areEqual(3, result.Attempt_Count__c, 'Should be at MAX_ATTEMPTS after 3rd failure');
+        Assert.areEqual(1, Limits.getEmailInvocations(), 'Email should be sent on 3rd failure');
+    }
+
+    @IsTest
+    static void testRetrySecondFailureDoesNotSendEmail() {
+        Product2 product = [
+            SELECT Id 
+            FROM Product2 
+            WHERE ProductCode = 'RET-EMAIL'
+        ];
+        
+        TestDataFactory.queueRecord().forProduct(product.Id).withAttempts(1).create();
+
+        Test.setMock(HttpCalloutMock.class, TestDataFactory.httpError());
+        Test.startTest();
+        System.enqueueJob(new ProductSyncRetryQueueable());
+        Test.stopTest();
+
+        Assert.areEqual(0, Limits.getEmailInvocations(), 'Email should NOT be sent before 3rd failure');
     }
 }

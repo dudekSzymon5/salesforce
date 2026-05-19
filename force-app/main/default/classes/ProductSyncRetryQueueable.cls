@@ -4,18 +4,16 @@ public class ProductSyncRetryQueueable implements Queueable, Database.AllowsCall
 
     public void execute(QueueableContext ctx) {
         List<Product_Sync_Queue__c> failedSyncs = [
-            SELECT Id, Product__c, Operation__c, Payload__c, Attempt_Count__c, Target_Org__c
+            SELECT Id, Product__c, Operation__c, Payload__c, Attempt_Count__c, Target_Org__c, Error_Message__c
             FROM Product_Sync_Queue__c
             WHERE Status__c = :Utils.PRODUCT_SYNC.STATUS.FAILED
             AND Attempt_Count__c < :MAX_ATTEMPTS
-            ORDER BY LastModifiedDate ASC // Najstarsze rekordy są przetwarzane pierwsze - te które czekają najdłużej 
+            ORDER BY LastModifiedDate ASC
             LIMIT 50
         ];
 
         if (failedSyncs.isEmpty()) return;
 
-        // Z: Przed retry pobieramy świeże dane produktów jednym SOQL 
-        // zamiast używać starego Payload__c który mógł mieć dane.
         Set<Id> productIds = new Set<Id>();
         for (Product_Sync_Queue__c record : failedSyncs) {
             if (record.Operation__c != Utils.PRODUCT_SYNC.OPERATION.DELETE_OP && record.Product__c != null) {
@@ -32,6 +30,7 @@ public class ProductSyncRetryQueueable implements Queueable, Database.AllowsCall
             ]);
         }
 
+        List<Product_Sync_Queue__c> sendItemsToEmail = new List<Product_Sync_Queue__c>();
         List<Product_Sync_Queue__c> toUpdate = new List<Product_Sync_Queue__c>();
 
         for (Product_Sync_Queue__c record : failedSyncs) {
@@ -53,8 +52,7 @@ public class ProductSyncRetryQueueable implements Queueable, Database.AllowsCall
                         toUpdate.add(record);
                         continue;
                     }
-                    // Z: Odbudowujemy payload ze świeżych danych zamiast używać record.Payload__c
-                    // Zamiast wysłać to co było zapisane przy błędzie, pobieramy aktualne dane produktu z bazy i wysyłam je
+                
                     String currentPayload = ProductSyncCallout.buildPayload(currentProduct);
                     record.Payload__c = currentPayload;
                     httpRequest.setMethod('POST');
@@ -84,11 +82,50 @@ public class ProductSyncRetryQueueable implements Queueable, Database.AllowsCall
 
             record.Attempt_Count__c = (record.Attempt_Count__c == null ? 0 : record.Attempt_Count__c) + 1;
             record.Last_Attempt__c = DateTime.now();
+
+            if(record.Status__c == Utils.PRODUCT_SYNC.STATUS.FAILED && record.Attempt_Count__c >= MAX_ATTEMPTS) {
+                sendItemsToEmail.add(record);
+            }
+
             toUpdate.add(record);
         }
 
         if (!toUpdate.isEmpty()) {
             update toUpdate;
         }
+
+        if (!sendItemsToEmail.isEmpty()) {
+            sendFailureEmail(sendItemsToEmail, productMap);
+        }
     }
+
+    private void sendFailureEmail(List<Product_Sync_Queue__c> failedItems, Map<Id, Product2> productsMap) {
+        Messaging.SingleEmailMessage singleEmailMessage = new Messaging.SingleEmailMessage();
+        singleEmailMessage.setToAddresses(new List<String> {'szymon.dudek@britenet.eu'});
+        singleEmailMessage.setSubject('Alert: ' + failedItems.size() + ' Execution failed 3 times');
+
+         String message = 'The synchronization for the following products has failed 3 times and will no longer be retried automatically.\n\n';
+
+         for (Product_Sync_Queue__c item : failedItems) {
+            Product2 product = productsMap.get(item.Product__c);
+
+            if ( product != null ) {
+                message += 'Product' + product.Name + ' (' + product.ProductCode + ')\n';
+            } else {
+                message += 'Product: [DELETED] \n';
+            }
+            message += ' Operation: ' + item.Operation__c + '\n';
+            message += ' Error: ' + item.Error_Message__c + '\n\n';
+         }
+
+         message += 'Please review the data and update these products in Salesforce to re-trigger the sync.';
+         singleEmailMessage.setPlainTextBody(message);
+
+         try {
+            Messaging.sendEmail(new List<Messaging.SingleEmailMessage> {singleEmailMessage});
+         } catch (Exception e) {
+            ErrorLogger.log('ProductSyncRetryQueueable', e);
+         }
+    }
+
 }
