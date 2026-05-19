@@ -30,9 +30,9 @@ public with sharing class OrderComplaintController {
                 Complaint_Reason__c = reason,
                 Expected_Refund_Type__c = expectedRefundType,
                 Has_External_Product__c = hasExternal,
-                Refund_Status__c = 'Pending',
-                Status = 'New',
-                Origin = 'Web'
+                Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.PENDING,
+                Status = Utils.ORDER_COMPLAINT.CASE_STATUS.NEW_CASE,
+                Origin = Utils.ORDER_COMPLAINT.CASE_ORIGIN.WEB
         );
         insert aCase;
 
@@ -81,7 +81,9 @@ public with sharing class OrderComplaintController {
                 LIMIT 1
         ];
 
-        String approvalAction = refundType == 'Rejected' ? 'Reject' : 'Approve';
+        String approvalAction = refundType == Utils.ORDER_COMPLAINT.REFUND_TYPE.REJECTED
+                ? Utils.ORDER_COMPLAINT.APPROVAL_ACTION.REJECT
+                : Utils.ORDER_COMPLAINT.APPROVAL_ACTION.APPROVE;
 
         Approval.ProcessWorkitemRequest approvalWorkItemRequest = new Approval.ProcessWorkitemRequest();
         approvalWorkItemRequest.setWorkitemId(workitem.Id);
@@ -89,7 +91,7 @@ public with sharing class OrderComplaintController {
         approvalWorkItemRequest.setComments(comment);
         Approval.process(approvalWorkItemRequest);
 
-        if (approvalAction == 'Approve') {
+        if (approvalAction == Utils.ORDER_COMPLAINT.APPROVAL_ACTION.APPROVE) {
             Case aCase = [SELECT Id, Order__c FROM Case WHERE Id = :caseId];
             aCase.Approved_Refund_Type__c = refundType;
             update aCase;
