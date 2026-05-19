@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<PlatformEventSubscriberConfig xmlns="http://soap.sforce.com/2006/04/metadata">
+    <platformEventConsumer>ExternalComplaintTrigger</platformEventConsumer>
+    <batchSize>200</batchSize>
+    <masterLabel>External Complaint Trigger Config</masterLabel>
+    <user>konrad.org.user@apexsync.integration</user>
+    <isProtected>false</isProtected>
+</PlatformEventSubscriberConfig>
