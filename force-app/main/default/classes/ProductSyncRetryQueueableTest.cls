@@ -132,7 +132,7 @@ private class ProductSyncRetryQueueableTest {
         ];
         Assert.areEqual(Utils.PRODUCT_SYNC.STATUS.FAILED, result.Status__c);
         Assert.areEqual(3, result.Attempt_Count__c, 'Should be at MAX_ATTEMPTS after 3rd failure');
-        Assert.areEqual(1, Limits.getEmailInvocations(), 'Email should be sent on 3rd failure');
+        Assert.areEqual(1, ProductSyncRetryQueueable.emailsSent, 'Email should be sent on 3rd failure');
     }
 
     @IsTest

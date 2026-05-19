@@ -1,6 +1,7 @@
 public class ProductSyncRetryQueueable implements Queueable, Database.AllowsCallouts {
 
     private static final Integer MAX_ATTEMPTS = 3;
+    @TestVisible private static Integer emailsSent = 0;
 
     public void execute(QueueableContext ctx) {
         List<Product_Sync_Queue__c> failedSyncs = [
@@ -121,6 +122,7 @@ public class ProductSyncRetryQueueable implements Queueable, Database.AllowsCall
          message += 'Please review the data and update these products in Salesforce to re-trigger the sync.';
          singleEmailMessage.setPlainTextBody(message);
 
+         emailsSent++;
          try {
             Messaging.sendEmail(new List<Messaging.SingleEmailMessage> {singleEmailMessage});
          } catch (Exception e) {
