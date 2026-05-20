@@ -44,14 +44,18 @@
 </lightning-modal-body>
 
 <lightning-modal-footer>
-    <lightning-button label = "Cancel" onclick={handleCancel}></lightning-button>
+    <template if:true={waitingForExternal}>
+        <lightning-spinner alternative-text="Waiting for external system..." size="small"></lightning-spinner>
+        <span class="slds-m-left_small">Waiting for external system confirmation...</span>
+    </template>
+
+    <lightning-button label="Cancel" onclick={handleCancel}></lightning-button>
 
     <lightning-button
-        label = "Submit"
-        variant = "brand"
-        onclick = {handleSubmit}
-        disabled= {isSubmitDisabled}>
+        label="Submit"
+        variant="brand"
+        onclick={handleSubmit}
+        disabled={isSubmitDisabled}>
     </lightning-button>
-    
 </lightning-modal-footer>
 </template>

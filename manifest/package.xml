@@ -83,6 +83,12 @@
         <members>TwoForOneStrategy</members>
         <members>Utils</members>
         <members>UtilsTest</members>
+        <members>ComplaintForwarderQueueable</members>
+        <members>ComplaintQueueableTest</members>
+        <members>ComplaintResponseQueueable</members>
+        <members>ExternalComplaintTriggerTest</members>
+        <members>ExternalComplaintUtils</members>
+        <members>OrderComplaintControllerTest</members>
         <name>ApexClass</name>
     </types>
     <types>
@@ -111,6 +117,7 @@
     <types>
         <members>ErrorLogEventTrigger</members>
         <members>ProductTrigger</members>
+        <members>ExternalComplaintTrigger</members>
         <name>ApexTrigger</name>
     </types>
     <types>
@@ -277,6 +284,16 @@
     </types>
     <types>
         <name>ValidationRule</name>
+    </types>
+    <types>
+        <members>ComplaintForwarderQueueable</members>
+        <members>ComplaintResponseQueueable</members>
+        <name>EmailServicesFunction</name>
+    </types>
+    <types>
+        <members>ExternalComplaintResponseTriggerConfig</members>
+        <members>ExternalComplaintTriggerConfig</members>
+        <name>PlatformEventSubscriberConfig</name>
     </types>
     <version>66.0</version>
 </Package>
