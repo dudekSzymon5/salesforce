@@ -84,11 +84,12 @@ export default class OrderComplaint extends NavigationMixin(LightningElement) {
                 selectedOrderItemsId: this.selectedProductIds
             });
 
-            if (!this.hasExternalProduct) {
-                this.caseId = result;
+            this.caseId = result.caseId;
+            this.correlationId = result.correlationId;
+
+            if (!this.correlationId) {
                 this._navigateToCase();
             } else {
-                this.correlationId = result;
                 this.waitingForExternal = true;
                 this.isLoading = false;
             }
@@ -112,7 +113,11 @@ export default class OrderComplaint extends NavigationMixin(LightningElement) {
                     message: 'Complaint registered on external system.',
                     variant: 'success'
                 }));
-                this.dispatchEvent(new CloseActionScreenEvent());
+                if (this.caseId) {
+                    this._navigateToCase();
+                } else {
+                    this.dispatchEvent(new CloseActionScreenEvent());
+                }
             }
         });
     }
@@ -127,7 +132,6 @@ export default class OrderComplaint extends NavigationMixin(LightningElement) {
             type: 'standard__recordPage',
             attributes: { recordId: this.caseId, actionName: 'view' }
         });
-        this.dispatchEvent(new CloseActionScreenEvent());
     }
 
     _unsubscribe() {
