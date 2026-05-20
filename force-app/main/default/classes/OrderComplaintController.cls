@@ -14,18 +14,20 @@ public with sharing class OrderComplaintController {
     public static String submitComplaint(Id orderId, String reason, String expectedRefundType, List<Id> selectedOrderItemsId) {
         try {
             List<OrderItem> getItems = [
-                    SELECT Id, Product2Id, Product2.Name, Product2.Is_External__c
+                    SELECT Id, Product2Id, Product2.Name, Product2.Is_External__c, Product2.External_Product_Id__c, Quantity, UnitPrice
                     FROM OrderItem
                     WHERE Id IN :selectedOrderItemsId
             ];
 
             Boolean hasExternal = false;
             List<String> externalProductIds = new List<String>();
+            Decimal refundAmount = 0;
 
             for (OrderItem orderItem : getItems) {
                 if (orderItem.Product2.Is_External__c) {
                     hasExternal = true;
-                    externalProductIds.add(orderItem.Product2Id);
+                    externalProductIds.add(orderItem.Product2.External_Product_Id__c);
+                    refundAmount += orderItem.UnitPrice * orderItem.Quantity;
                 }
             }
 
@@ -40,7 +42,8 @@ public with sharing class OrderComplaintController {
                         'Order_Id__c' => orderId,
                         'Case_Id__c' => correlationId,
                         'Reason__c' => expectedRefundType + ' - ' + reason,
-                        'Product_Ids__c' => String.join(externalProductIds, ',')
+                        'Product_Ids__c' => String.join(externalProductIds, ','),
+                        'Refund_Amount__c' => refundAmount
                 }));
 
                 HttpResponse response = new Http().send(request);

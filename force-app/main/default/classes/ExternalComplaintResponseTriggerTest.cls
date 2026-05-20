@@ -12,7 +12,11 @@ private class ExternalComplaintResponseTriggerTest {
         ));
         Test.stopTest();
 
-        List<Case> cases = [SELECT Id FROM Case WHERE Id = :correlationId];
+        List<Case> cases = [
+            SELECT Id 
+            FROM Case 
+            WHERE Id = :correlationId
+        ];
         Assert.areEqual(0, cases.size(), 'No Case should be queried or updated');
     }
 }
