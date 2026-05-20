@@ -6,6 +6,7 @@ trigger ExternalComplaintTrigger on External_Complaint__e (after insert) {
         casesToInsert.add(new Case(
             Complaint_Reason__c = ev.Reason__c,
             External_Case_Id__c = ev.Case_Id__c,
+            Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.PENDING,
             Status = Utils.ORDER_COMPLAINT.CASE_STATUS.NEW_CASE,
             Origin = Utils.ORDER_COMPLAINT.CASE_ORIGIN.WEB
         ));
@@ -14,17 +15,22 @@ trigger ExternalComplaintTrigger on External_Complaint__e (after insert) {
     try {
         insert casesToInsert;
         ErrorLogger.logInfo('ExternalComplaintTrigger', 'Created ' + casesToInsert.size() + ' Case(s) from external complaint');
+    } catch (Exception e) {
+        ErrorLogger.log('ExternalComplaintTrigger', e);
+        return;
+    }
 
-        for (Case c : casesToInsert) {
+    try {
+        for (Case aCase : casesToInsert) {
             Approval.ProcessSubmitRequest req = new Approval.ProcessSubmitRequest();
-            req.setObjectId(c.Id);
+            req.setObjectId(aCase.Id);
             req.setSubmitterId(UserInfo.getUserId());
             Approval.process(req);
         }
         ErrorLogger.logInfo('ExternalComplaintTrigger', 'Approval process submitted for ' + casesToInsert.size() + ' Case(s)');
-
-        System.enqueueJob(new ComplaintResponseQueueable(casesToInsert, Trigger.new));
     } catch (Exception e) {
         ErrorLogger.log('ExternalComplaintTrigger', e);
     }
+
+    System.enqueueJob(new ComplaintResponseQueueable(casesToInsert, Trigger.new));
 }

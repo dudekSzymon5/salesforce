@@ -11,7 +11,7 @@ public with sharing class OrderComplaintController {
     }
 
     @AuraEnabled
-    public static Id submitComplaint(Id orderId, String reason, String expectedRefundType, List<Id> selectedOrderItemsId) {
+    public static String submitComplaint(Id orderId, String reason, String expectedRefundType, List<Id> selectedOrderItemsId) {
         try {
             List<OrderItem> getItems = [
                     SELECT Id, Product2Id, Product2.Name, Product2.Is_External__c
@@ -20,19 +20,43 @@ public with sharing class OrderComplaintController {
             ];
 
             Boolean hasExternal = false;
+            List<String> externalProductIds = new List<String>();
 
             for (OrderItem orderItem : getItems) {
                 if (orderItem.Product2.Is_External__c) {
                     hasExternal = true;
-                    break;
+                    externalProductIds.add(orderItem.Product2Id);
                 }
+            }
+
+            if (hasExternal) {
+                String correlationId = generateUUID();
+
+                HttpRequest request = new HttpRequest();
+                request.setEndpoint(Utils.EXTERNAL_COMPLAINT.API.FORWARD_ENDPOINT);
+                request.setMethod('POST');
+                request.setHeader('Content-Type', 'application/json');
+                request.setBody(JSON.serialize(new Map<String, Object>{
+                        'Order_Id__c' => orderId,
+                        'Case_Id__c' => correlationId,
+                        'Reason__c' => expectedRefundType + ' - ' + reason,
+                        'Product_Ids__c' => String.join(externalProductIds, ',')
+                }));
+
+                HttpResponse response = new Http().send(request);
+
+                if (response.getStatusCode() != 200 && response.getStatusCode() != 201) {
+                    throw new AuraHandledException('External system rejected the complaint: ' + response.getStatusCode());
+                }
+
+                ErrorLogger.logInfo('OrderComplaintController.submitComplaint', 'External complaint forwarded | correlationId: ' + correlationId + ' | products: ' + String.join(externalProductIds, ','));
+                return correlationId;
             }
 
             Case aCase = new Case(
                     Order__c = orderId,
                     Complaint_Reason__c = reason,
                     Expected_Refund_Type__c = expectedRefundType,
-                    Has_External_Product__c = hasExternal,
                     Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.PENDING,
                     Status = Utils.ORDER_COMPLAINT.CASE_STATUS.NEW_CASE,
                     Origin = Utils.ORDER_COMPLAINT.CASE_ORIGIN.WEB
@@ -53,26 +77,6 @@ public with sharing class OrderComplaintController {
 
             update new Order(Id = orderId, ComplaintCaseId__c = aCase.Id);
 
-            List<String> externalProductsId = new List<String>();
-            for (OrderItem orderItem : getItems) {
-                if (orderItem.Product2.Is_External__c) {
-                    externalProductsId.add(orderItem.Product2Id);
-                }
-            }
-
-            if (hasExternal) {
-                External_Complaint__e externalComplaintEvent = new External_Complaint__e(
-                        Order_Id__c = orderId,
-                        Case_Id__c = aCase.Id,
-                        Reason__c = reason,
-                        Product_Ids__c = String.join(externalProductsId, ',')
-                );
-                System.enqueueJob(new ComplaintForwarderQueueable(
-                    new List<External_Complaint__e>{ externalComplaintEvent }
-                ));
-                ErrorLogger.logInfo('OrderComplaintController.submitComplaint', 'ComplaintForwarderQueueable enqueued for Case: ' + aCase.Id + ', products: ' + String.join(externalProductsId, ','));
-            }
-
             Approval.ProcessSubmitRequest request = new Approval.ProcessSubmitRequest();
             request.setObjectId(aCase.Id);
             request.setSubmitterId(UserInfo.getUserId());
@@ -81,10 +85,17 @@ public with sharing class OrderComplaintController {
 
             return aCase.Id;
 
+        } catch (AuraHandledException e) {
+            throw e;
         } catch (Exception e) {
             ErrorLogger.log('OrderComplaintController.submitComplaint', e, orderId);
             throw new AuraHandledException(e.getMessage());
         }
+    }
+
+    private static String generateUUID() {
+        String hex = EncodingUtil.convertToHex(Crypto.generateAesKey(128));
+        return hex.substring(0, 8) + '-' + hex.substring(8, 12) + '-' + hex.substring(12, 16) + '-' + hex.substring(16, 20) + '-' + hex.substring(20);
     }
 
     @AuraEnabled
@@ -110,14 +121,18 @@ public with sharing class OrderComplaintController {
 
             if (approvalAction == Utils.ORDER_COMPLAINT.APPROVAL_ACTION.APPROVE) {
                 Case aCase = [
-                    SELECT Id, Order__c 
-                    FROM Case 
-                    WHERE Id = :caseId
+                        SELECT Id, Order__c
+                        FROM Case
+                        WHERE Id = :caseId
                 ];
+
                 aCase.Approved_Refund_Type__c = refundType;
+
                 update aCase;
-                update new Order(Id = aCase.Order__c, Refund_Type__c = refundType);
-                ErrorLogger.logInfo('OrderComplaintController.approveComplaint', 'Refund type ' + refundType + ' applied to Order: ' + aCase.Order__c + ' and Case: ' + caseId);
+                if (aCase.Order__c != null) {
+                    update new Order(Id = aCase.Order__c, Refund_Type__c = refundType);
+                }
+                ErrorLogger.logInfo('OrderComplaintController.approveComplaint', 'Refund type ' + refundType + ' applied to Case: ' + caseId + (aCase.Order__c != null ? ' and Order: ' + aCase.Order__c : ''));
             }
 
         } catch (Exception e) {
