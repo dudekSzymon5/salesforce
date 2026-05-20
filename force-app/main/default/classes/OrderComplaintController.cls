@@ -1,5 +1,10 @@
 public with sharing class OrderComplaintController {
 
+    public class ComplaintResult {
+        @AuraEnabled public String caseId;
+        @AuraEnabled public String correlationId;
+    }
+
     @AuraEnabled(cacheable=true)
     public static List<OrderItem> getOrderProducts(Id orderId) {
         List<OrderItem> orderItems = [
@@ -11,7 +16,7 @@ public with sharing class OrderComplaintController {
     }
 
     @AuraEnabled
-    public static String submitComplaint(Id orderId, String reason, String expectedRefundType, List<Id> selectedOrderItemsId) {
+    public static ComplaintResult submitComplaint(Id orderId, String reason, String expectedRefundType, List<Id> selectedOrderItemsId) {
         try {
             List<OrderItem> getItems = [
                     SELECT Id, Product2Id, Product2.Name, Product2.Is_External__c, Product2.External_Product_Id__c, Quantity, UnitPrice
@@ -20,7 +25,9 @@ public with sharing class OrderComplaintController {
             ];
 
             Boolean hasExternal = false;
+            Boolean hasLocal = false;
             List<String> externalProductIds = new List<String>();
+            List<OrderItem> localItems = new List<OrderItem>();
             Decimal refundAmount = 0;
 
             for (OrderItem orderItem : getItems) {
@@ -28,8 +35,13 @@ public with sharing class OrderComplaintController {
                     hasExternal = true;
                     externalProductIds.add(orderItem.Product2.External_Product_Id__c);
                     refundAmount += orderItem.UnitPrice * orderItem.Quantity;
+                } else {
+                    hasLocal = true;
+                    localItems.add(orderItem);
                 }
             }
+
+            ComplaintResult result = new ComplaintResult();
 
             if (hasExternal) {
                 String correlationId = generateUUID();
@@ -39,10 +51,10 @@ public with sharing class OrderComplaintController {
                 request.setMethod('POST');
                 request.setHeader('Content-Type', 'application/json');
                 request.setBody(JSON.serialize(new Map<String, Object>{
-                        'Order_Id__c' => orderId,
-                        'Case_Id__c' => correlationId,
-                        'Reason__c' => expectedRefundType + ' - ' + reason,
-                        'Product_Ids__c' => String.join(externalProductIds, ','),
+                        'Order_Id__c'      => orderId,
+                        'Case_Id__c'       => correlationId,
+                        'Reason__c'        => expectedRefundType + ' - ' + reason,
+                        'Product_Ids__c'   => String.join(externalProductIds, ','),
                         'Refund_Amount__c' => refundAmount
                 }));
 
@@ -52,41 +64,45 @@ public with sharing class OrderComplaintController {
                     throw new AuraHandledException('External system rejected the complaint: ' + response.getStatusCode());
                 }
 
+                result.correlationId = correlationId;
                 ErrorLogger.logInfo('OrderComplaintController.submitComplaint', 'External complaint forwarded | correlationId: ' + correlationId + ' | products: ' + String.join(externalProductIds, ','));
-                return correlationId;
             }
 
-            Case aCase = new Case(
-                    Order__c = orderId,
-                    Complaint_Reason__c = reason,
-                    Expected_Refund_Type__c = expectedRefundType,
-                    Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.PENDING,
-                    Status = Utils.ORDER_COMPLAINT.CASE_STATUS.NEW_CASE,
-                    Origin = Utils.ORDER_COMPLAINT.CASE_ORIGIN.WEB
-            );
-            insert aCase;
-            ErrorLogger.logInfo('OrderComplaintController.submitComplaint', 'Case created: ' + aCase.Id + ' for Order: ' + orderId);
+            if (hasLocal) {
+                Case aCase = new Case(
+                        Order__c = orderId,
+                        Complaint_Reason__c = reason,
+                        Expected_Refund_Type__c = expectedRefundType,
+                        Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.PENDING,
+                        Status = Utils.ORDER_COMPLAINT.CASE_STATUS.NEW_CASE,
+                        Origin = Utils.ORDER_COMPLAINT.CASE_ORIGIN.WEB
+                );
+                insert aCase;
+                ErrorLogger.logInfo('OrderComplaintController.submitComplaint', 'Case created: ' + aCase.Id + ' for Order: ' + orderId);
 
-            List<Case_Order_Product__c> caseOrderProducts = new List<Case_Order_Product__c>();
-            for (OrderItem orderItem : getItems) {
-                caseOrderProducts.add(new Case_Order_Product__c(
-                        Case__c = aCase.Id,
-                        Order_Product__c = orderItem.Id,
-                        Product_Name__c = orderItem.Product2.Name,
-                        Is_External__c = orderItem.Product2.Is_External__c
-                ));
+                List<Case_Order_Product__c> caseOrderProducts = new List<Case_Order_Product__c>();
+                for (OrderItem orderItem : localItems) {
+                    caseOrderProducts.add(new Case_Order_Product__c(
+                            Case__c = aCase.Id,
+                            Order_Product__c = orderItem.Id,
+                            Product_Name__c = orderItem.Product2.Name,
+                            Is_External__c = false
+                    ));
+                }
+                insert caseOrderProducts;
+
+                update new Order(Id = orderId, ComplaintCaseId__c = aCase.Id);
+
+                Approval.ProcessSubmitRequest approvalRequest = new Approval.ProcessSubmitRequest();
+                approvalRequest.setObjectId(aCase.Id);
+                approvalRequest.setSubmitterId(UserInfo.getUserId());
+                Approval.process(approvalRequest);
+                ErrorLogger.logInfo('OrderComplaintController.submitComplaint', 'Approval process submitted for Case: ' + aCase.Id);
+
+                result.caseId = aCase.Id;
             }
-            insert caseOrderProducts;
 
-            update new Order(Id = orderId, ComplaintCaseId__c = aCase.Id);
-
-            Approval.ProcessSubmitRequest request = new Approval.ProcessSubmitRequest();
-            request.setObjectId(aCase.Id);
-            request.setSubmitterId(UserInfo.getUserId());
-            Approval.process(request);
-            ErrorLogger.logInfo('OrderComplaintController.submitComplaint', 'Approval process submitted for Case: ' + aCase.Id);
-
-            return aCase.Id;
+            return result;
 
         } catch (AuraHandledException e) {
             throw e;

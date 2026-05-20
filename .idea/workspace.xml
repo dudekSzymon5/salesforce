@@ -3,14 +3,27 @@
   <component name="ChangeListManager">
     <list default="true" id="705241f2-16ab-4a4d-a856-ff87bf59e88e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/force-app/main/default/classes/ComplaintResponseQueueable.cls" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/classes/ComplaintResponseQueueable.cls" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/force-app/main/default/classes/ExternalComplaintResponseTriggerTest.cls" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/classes/ExternalComplaintResponseTriggerTest.cls" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/force-app/main/default/classes/ExternalComplaintUtils.cls" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/classes/ExternalComplaintUtils.cls" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/force-app/main/default/classes/OrderComplaintController.cls" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/classes/OrderComplaintController.cls" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/force-app/main/default/classes/OrderComplaintControllerTest.cls" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/classes/OrderComplaintControllerTest.cls" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/force-app/main/default/lwc/orderComplaint/orderComplaint.js" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/lwc/orderComplaint/orderComplaint.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/force-app/main/default/triggers/ExternalComplaintResponseTrigger.trigger" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/triggers/ExternalComplaintResponseTrigger.trigger" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/force-app/main/default/triggers/ExternalComplaintTrigger.trigger" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/triggers/ExternalComplaintTrigger.trigger" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Apex Class" />
+        <option value="Apex Metadata" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -21,7 +34,7 @@
         <entry key="szkolenie-salesforce">
           <value>
             <ModuleWorkspaceSettings>
-              <option name="moduleContentsLastModified" value="1779193876613" />
+              <option name="moduleContentsLastModified" value="1779282157800" />
             </ModuleWorkspaceSettings>
           </value>
         </entry>
@@ -39,7 +52,7 @@
                       <entry key="APEXCLASS:ORDERCOMPLAINTCONTROLLER" value="1779199333237" />
                       <entry key="APEXCLASS:ORDERCOMPLAINTCONTROLLERTEST" value="1779258158712" />
                       <entry key="APEXTRIGGER:EXTERNALCOMPLAINTRESPONSETRIGGER" value="1779258983612" />
-                      <entry key="APEXTRIGGER:EXTERNALCOMPLAINTTRIGGER" value="1779264713118" />
+                      <entry key="APEXTRIGGER:EXTERNALCOMPLAINTTRIGGER" value="1779280764429" />
                       <entry key="LIGHTNINGCOMPONENTBUNDLE:ORDERCOMPLAINT" value="1779258984241" />
                     </map>
                   </option>
