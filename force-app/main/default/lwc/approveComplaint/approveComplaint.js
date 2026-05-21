@@ -1,6 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 import { CloseActionScreenEvent } from 'lightning/actions';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { notifyRecordUpdateAvailable } from 'lightning/uiRecordApi';
 import approveComplaint from '@salesforce/apex/OrderComplaintController.approveComplaint';
 
 export default class ApproveComplaint extends LightningElement {
@@ -52,6 +53,7 @@ export default class ApproveComplaint extends LightningElement {
                 refundAmount: this.refundAmount,
                 comment: this.comments
             });
+            notifyRecordUpdateAvailable([{ recordId: this.recordId }]);
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Success',
                 message: 'Decision submitted.',
