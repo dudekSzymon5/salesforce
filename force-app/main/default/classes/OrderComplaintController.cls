@@ -27,6 +27,7 @@ public with sharing class OrderComplaintController {
             Boolean hasExternal = false;
             Boolean hasLocal = false;
             List<String> externalProductIds = new List<String>();
+            List<OrderItem> externalItems = new List<OrderItem>();
             List<OrderItem> localItems = new List<OrderItem>();
             Decimal refundAmount = 0;
 
@@ -35,6 +36,7 @@ public with sharing class OrderComplaintController {
                     hasExternal = true;
                     externalProductIds.add(orderItem.Product2.External_Product_Id__c);
                     refundAmount += orderItem.UnitPrice * orderItem.Quantity;
+                    externalItems.add(orderItem);
                 } else {
                     hasLocal = true;
                     localItems.add(orderItem);
@@ -64,8 +66,38 @@ public with sharing class OrderComplaintController {
                     throw new AuraHandledException('External system rejected the complaint: ' + response.getStatusCode());
                 }
 
+                Case trackingCase = new Case(
+                        Order__c = orderId,
+                        Complaint_Reason__c = reason,
+                        Expected_Refund_Type__c = expectedRefundType,
+                        External_Case_Id__c = correlationId,
+                        Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.PENDING,
+                        Status = Utils.ORDER_COMPLAINT.CASE_STATUS.NEW_CASE,
+                        Origin = Utils.ORDER_COMPLAINT.CASE_ORIGIN.WEB
+                );
+                insert trackingCase;
+
+                List<Case_Order_Product__c> externalCaseProducts = new List<Case_Order_Product__c>();
+                for (OrderItem item : externalItems) {
+                    externalCaseProducts.add(new Case_Order_Product__c(
+                            Case__c = trackingCase.Id,
+                            Order_Product__c = item.Id,
+                            Product_Name__c = item.Product2.Name,
+                            Is_External__c = true
+                    ));
+                }
+                if (!externalCaseProducts.isEmpty()) {
+                    insert externalCaseProducts;
+                }
+
                 result.correlationId = correlationId;
-                ErrorLogger.logInfo('OrderComplaintController.submitComplaint', 'External complaint forwarded | correlationId: ' + correlationId + ' | products: ' + String.join(externalProductIds, ','));
+
+                if (!hasLocal) {
+                    update new Order(Id = orderId, ComplaintCaseId__c = trackingCase.Id);
+                    result.caseId = trackingCase.Id;
+                }
+
+                ErrorLogger.logInfo('OrderComplaintController.submitComplaint', 'External complaint forwarded | correlationId: ' + correlationId + ' | trackingCaseId: ' + trackingCase.Id + ' | products: ' + String.join(externalProductIds, ','));
             }
 
             if (hasLocal) {
@@ -120,13 +152,17 @@ public with sharing class OrderComplaintController {
     @AuraEnabled
     public static void approveComplaint(Id caseId, String refundType, String comment, String action) {
         try {
-            ProcessInstanceWorkitem workitem = [
+            List<ProcessInstanceWorkitem> workitems = [
                     SELECT Id
                     FROM ProcessInstanceWorkitem
                     WHERE ProcessInstance.TargetObjectId = :caseId
                     AND ActorId = :UserInfo.getUserId()
                     LIMIT 1
             ];
+            if (workitems.isEmpty()) {
+                throw new AuraHandledException('No pending approval found for this Case.');
+            }
+            ProcessInstanceWorkitem workitem = workitems[0];
 
             String approvalAction = refundType == Utils.ORDER_COMPLAINT.REFUND_TYPE.REJECTED ? Utils.ORDER_COMPLAINT.APPROVAL_ACTION.REJECT : Utils.ORDER_COMPLAINT.APPROVAL_ACTION.APPROVE;
 
@@ -138,20 +174,38 @@ public with sharing class OrderComplaintController {
 
             ErrorLogger.logInfo('OrderComplaintController.approveComplaint', 'Approval decision: ' + approvalAction + ' for Case: ' + caseId + ', refundType: ' + refundType);
 
+            Case aCase = [
+                    SELECT Id, Order__c, External_Case_Id__c, Refund_Amount__c
+                    FROM Case
+                    WHERE Id = :caseId
+            ];
+
             if (approvalAction == Utils.ORDER_COMPLAINT.APPROVAL_ACTION.APPROVE) {
-                Case aCase = [
-                        SELECT Id, Order__c
-                        FROM Case
-                        WHERE Id = :caseId
-                ];
-
                 aCase.Approved_Refund_Type__c = refundType;
-
                 update aCase;
                 if (aCase.Order__c != null) {
                     update new Order(Id = aCase.Order__c, Refund_Type__c = refundType);
                 }
                 ErrorLogger.logInfo('OrderComplaintController.approveComplaint', 'Refund type ' + refundType + ' applied to Case: ' + caseId + (aCase.Order__c != null ? ' and Order: ' + aCase.Order__c : ''));
+            }
+
+            if (String.isNotBlank(aCase.External_Case_Id__c)) {
+                String responseStatus;
+                if (approvalAction == Utils.ORDER_COMPLAINT.APPROVAL_ACTION.REJECT) {
+                    responseStatus = Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.REJECTED;
+                } else if (refundType == 'Full') {
+                    responseStatus = Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.APPROVED_FULL;
+                } else {
+                    responseStatus = Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.APPROVED_PARTIAL;
+                }
+
+                System.enqueueJob(new ApprovalSyncQueueable(
+                        aCase.External_Case_Id__c,
+                        responseStatus,
+                        aCase.Refund_Amount__c,
+                        refundType
+                ));
+                ErrorLogger.logInfo('OrderComplaintController.approveComplaint', 'Enqueued approval sync to Org B | externalCaseId: ' + aCase.External_Case_Id__c + ' | status: ' + responseStatus);
             }
 
         } catch (Exception e) {

@@ -2,15 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="705241f2-16ab-4a4d-a856-ff87bf59e88e" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/force-app/main/default/classes/OrderComplaintPayload.cls" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/force-app/main/default/classes/OrderComplaintPayload.cls-meta.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/force-app/main/default/classes/ComplaintResponseQueueable.cls" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/classes/ComplaintResponseQueueable.cls" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/force-app/main/default/classes/ExternalComplaintResponseTriggerTest.cls" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/classes/ExternalComplaintResponseTriggerTest.cls" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/force-app/main/default/classes/ExternalComplaintUtils.cls" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/classes/ExternalComplaintUtils.cls" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/force-app/main/default/classes/OrderComplaintController.cls" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/classes/OrderComplaintController.cls" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/force-app/main/default/classes/OrderComplaintControllerTest.cls" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/classes/OrderComplaintControllerTest.cls" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/force-app/main/default/lwc/orderComplaint/orderComplaint.js" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/lwc/orderComplaint/orderComplaint.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/force-app/main/default/triggers/ExternalComplaintResponseTrigger.trigger" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/triggers/ExternalComplaintResponseTrigger.trigger" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/force-app/main/default/triggers/ExternalComplaintTrigger.trigger" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/triggers/ExternalComplaintTrigger.trigger" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/manifest/package.xml" beforeDir="false" afterPath="$PROJECT_DIR$/manifest/package.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,7 +32,7 @@
         <entry key="szkolenie-salesforce">
           <value>
             <ModuleWorkspaceSettings>
-              <option name="moduleContentsLastModified" value="1779282157800" />
+              <option name="moduleContentsLastModified" value="1779285020818" />
             </ModuleWorkspaceSettings>
           </value>
         </entry>
@@ -51,6 +49,7 @@
                     <map>
                       <entry key="APEXCLASS:ORDERCOMPLAINTCONTROLLER" value="1779199333237" />
                       <entry key="APEXCLASS:ORDERCOMPLAINTCONTROLLERTEST" value="1779258158712" />
+                      <entry key="APEXCLASS:ORDERCOMPLAINTPAYLOAD" value="1779286573005" />
                       <entry key="APEXTRIGGER:EXTERNALCOMPLAINTRESPONSETRIGGER" value="1779258983612" />
                       <entry key="APEXTRIGGER:EXTERNALCOMPLAINTTRIGGER" value="1779280764429" />
                       <entry key="LIGHTNINGCOMPONENTBUNDLE:ORDERCOMPLAINT" value="1779258984241" />
@@ -73,21 +72,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;feat/order-complaint-with-refund&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/szymon.dudek_britene/Documents/szkolenie/szkolenie-salesforce&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.fileTypes&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "feat/complaint-sync-and-refund-processing",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/szymon.dudek_britene/Documents/szkolenie/szkolenie-salesforce",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.fileTypes"
   }
-}</component>
+}]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>

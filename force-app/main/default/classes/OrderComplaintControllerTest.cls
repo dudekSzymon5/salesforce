@@ -65,10 +65,14 @@ private class OrderComplaintControllerTest {
 
         Assert.isNotNull(result.correlationId, 'Should return a correlation UUID for external product');
         Assert.isTrue(result.correlationId.contains('-'), 'Correlation ID should be a UUID');
-        Assert.isNull(result.caseId, 'Should not create a local Case for external-only complaint');
+        Assert.isNotNull(result.caseId, 'Should create a local tracking Case for external-only complaint');
 
-        List<Case> cases = [SELECT Id FROM Case WHERE Order__c = :item.OrderId];
-        Assert.areEqual(0, cases.size(), 'No local Case should be created for external products');
+        Case trackingCase = [SELECT Id, External_Case_Id__c, Refund_Status__c FROM Case WHERE Id = :result.caseId];
+        Assert.areEqual(result.correlationId, trackingCase.External_Case_Id__c, 'Tracking Case should store correlationId in External_Case_Id__c');
+        Assert.areEqual('Pending', trackingCase.Refund_Status__c);
+
+        List<Case_Order_Product__c> lines = [SELECT Id FROM Case_Order_Product__c WHERE Case__c = :result.caseId];
+        Assert.areEqual(1, lines.size(), 'External product should be linked to tracking Case');
     }
 
     @IsTest
