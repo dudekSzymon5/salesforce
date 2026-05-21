@@ -44,9 +44,10 @@ public with sharing class OrderComplaintController {
             }
 
             ComplaintResult result = new ComplaintResult();
+            String correlationId = null;
 
             if (hasExternal) {
-                String correlationId = generateUUID();
+                correlationId = generateUUID();
 
                 HttpRequest request = new HttpRequest();
                 request.setEndpoint(Utils.EXTERNAL_COMPLAINT.API.FORWARD_ENDPOINT);
@@ -66,11 +67,14 @@ public with sharing class OrderComplaintController {
                     throw new AuraHandledException('External system rejected the complaint: ' + response.getStatusCode());
                 }
 
+                result.correlationId = correlationId;
+
                 Case trackingCase = new Case(
                         Order__c = orderId,
                         Complaint_Reason__c = reason,
                         Expected_Refund_Type__c = expectedRefundType,
                         External_Case_Id__c = correlationId,
+                        Has_External_Product__c = true,
                         Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.PENDING,
                         Status = Utils.ORDER_COMPLAINT.CASE_STATUS.NEW_CASE,
                         Origin = Utils.ORDER_COMPLAINT.CASE_ORIGIN.WEB
@@ -90,8 +94,6 @@ public with sharing class OrderComplaintController {
                     insert externalCaseProducts;
                 }
 
-                result.correlationId = correlationId;
-
                 if (!hasLocal) {
                     update new Order(Id = orderId, ComplaintCaseId__c = trackingCase.Id);
                     result.caseId = trackingCase.Id;
@@ -105,6 +107,7 @@ public with sharing class OrderComplaintController {
                         Order__c = orderId,
                         Complaint_Reason__c = reason,
                         Expected_Refund_Type__c = expectedRefundType,
+                        Has_External_Product__c = hasExternal,
                         Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.PENDING,
                         Status = Utils.ORDER_COMPLAINT.CASE_STATUS.NEW_CASE,
                         Origin = Utils.ORDER_COMPLAINT.CASE_ORIGIN.WEB
@@ -119,6 +122,14 @@ public with sharing class OrderComplaintController {
                             Order_Product__c = orderItem.Id,
                             Product_Name__c = orderItem.Product2.Name,
                             Is_External__c = false
+                    ));
+                }
+                for (OrderItem orderItem : externalItems) {
+                    caseOrderProducts.add(new Case_Order_Product__c(
+                            Case__c = aCase.Id,
+                            Order_Product__c = orderItem.Id,
+                            Product_Name__c = orderItem.Product2.Name,
+                            Is_External__c = true
                     ));
                 }
                 insert caseOrderProducts;
