@@ -52,6 +52,7 @@ public with sharing class OrderComplaintController {
                 request.setEndpoint(Utils.EXTERNAL_COMPLAINT.API.FORWARD_ENDPOINT);
                 request.setMethod('POST');
                 request.setHeader('Content-Type', 'application/json');
+                request.setTimeout(10000);
                 request.setBody(new OrderComplaintPayload.OrderComplaintController(
                         correlationId,
                         orderId,
@@ -59,7 +60,6 @@ public with sharing class OrderComplaintController {
                         expectedRefundType + ' - ' + reason,
                         refundAmount
                 ).toJSON());
-
 
                 HttpResponse response = new Http().send(request);
 
@@ -93,12 +93,10 @@ public with sharing class OrderComplaintController {
                 if (!externalCaseProducts.isEmpty()) {
                     insert externalCaseProducts;
                 }
-
                 if (!hasLocal) {
                     update new Order(Id = orderId, ComplaintCaseId__c = trackingCase.Id);
                     result.caseId = trackingCase.Id;
                 }
-
                 ErrorLogger.logInfo('OrderComplaintController.submitComplaint', 'External complaint forwarded | correlationId: ' + correlationId + ' | trackingCaseId: ' + trackingCase.Id + ' | products: ' + String.join(externalProductIds, ','));
             }
 
@@ -144,7 +142,6 @@ public with sharing class OrderComplaintController {
 
                 result.caseId = aCase.Id;
             }
-
             return result;
 
         } catch (AuraHandledException e) {

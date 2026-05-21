@@ -17,6 +17,7 @@ public class ApprovalSyncQueueable implements Queueable, Database.AllowsCallouts
         request.setEndpoint(Utils.EXTERNAL_COMPLAINT.API.RESPONSE_ENDPOINT);
         request.setMethod('POST');
         request.setHeader('Content-Type', 'application/json');
+        request.setTimeout(10000);
         request.setBody(new OrderComplaintPayload.ApprovalSyncQueueable(externalCaseId, refundAmount, refundType, status ).toJSON());
 
         try {

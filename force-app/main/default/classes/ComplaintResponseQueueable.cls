@@ -27,6 +27,7 @@ public class ComplaintResponseQueueable implements Queueable, Database.AllowsCal
             request.setEndpoint(endpoint);
             request.setMethod('POST');
             request.setHeader('Content-Type', 'application/json');
+            request.setTimeout(10000);
             request.setBody(body);
 
             try {
