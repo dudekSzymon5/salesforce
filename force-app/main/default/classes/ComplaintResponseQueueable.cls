@@ -16,13 +16,11 @@ public class ComplaintResponseQueueable implements Queueable, Database.AllowsCal
             Case createdCase = createdCases[i];
             External_Complaint__e originalEvent = originalEvents[i];
 
-            Map<String, Object> payload = new Map<String, Object> {
-                'Case_Id__c'          => originalEvent.Case_Id__c,
-                'External_Case_Id__c' => createdCase.Id,
-                'Status__c'           => Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.CREATED
-            };
-
-            String body = JSON.serialize(payload);
+            String body = JSON.serialize(new OrderComplaintPayload.ComplaintResponseQueueable(
+                    originalEvent.Case_Id__c,
+                    createdCase.Id,
+                    Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.CREATED
+            ));
             
             HttpRequest request = new HttpRequest();
             request.setEndpoint(endpoint);

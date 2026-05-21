@@ -17,12 +17,12 @@ public class ApprovalSyncQueueable implements Queueable, Database.AllowsCallouts
         request.setEndpoint(Utils.EXTERNAL_COMPLAINT.API.RESPONSE_ENDPOINT);
         request.setMethod('POST');
         request.setHeader('Content-Type', 'application/json');
-        request.setBody(JSON.serialize(new Map<String, Object>{
-                'Case_Id__c'             => externalCaseId,
-                'Status__c'              => status,
-                'Final_Refund_Amount__c' => refundAmount,
-                'Final_Refund_Type__c'   => refundType
-        }));
+        request.setBody(JSON.serialize(new OrderComplaintPayload.ApprovalSyncQueueable(
+                externalCaseId,
+                refundAmount,
+                refundType,
+                status
+        )));
 
         try {
             HttpResponse response = new Http().send(request);

@@ -53,13 +53,14 @@ public with sharing class OrderComplaintController {
                 request.setEndpoint(Utils.EXTERNAL_COMPLAINT.API.FORWARD_ENDPOINT);
                 request.setMethod('POST');
                 request.setHeader('Content-Type', 'application/json');
-                request.setBody(JSON.serialize(new Map<String, Object>{
-                        'Order_Id__c'      => orderId,
-                        'Case_Id__c'       => correlationId,
-                        'Reason__c'        => expectedRefundType + ' - ' + reason,
-                        'Product_Ids__c'   => String.join(externalProductIds, ','),
-                        'Refund_Amount__c' => refundAmount
-                }));
+                request.setBody(JSON.serialize(new OrderComplaintPayload.OrderComplaintController(
+                        correlationId,
+                        orderId,
+                        String.join(externalProductIds, ','),
+                        expectedRefundType + ' - ' + reason,
+                        refundAmount
+                )));
+
 
                 HttpResponse response = new Http().send(request);
 
