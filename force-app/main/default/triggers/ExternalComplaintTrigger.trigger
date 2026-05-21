@@ -39,7 +39,9 @@ trigger ExternalComplaintTrigger on External_Complaint__e (after insert) {
         List<Case_Order_Product__c> caseOrderProducts = new List<Case_Order_Product__c>();
         for (Integer i = 0; i < casesToInsert.size(); i++) {
             External_Complaint__e ev = Trigger.new[i];
-            if (String.isBlank(ev.Product_Ids__c)) continue;
+            if (String.isBlank(ev.Product_Ids__c)) {
+                continue;
+            }
             for (String extId : ev.Product_Ids__c.split(',')) {
                 Product2 product = productsByExternalId.get(extId);
                 if (product != null) {

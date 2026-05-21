@@ -1,5 +1,7 @@
 trigger ExternalComplaintResponseTrigger on External_Complaint_Response__e (after insert) {
+    
     Set<String> correlationIds = new Set<String>();
+    
     for (External_Complaint_Response__e response : Trigger.new) {
         if (String.isNotBlank(response.Case_Id__c)) {
             correlationIds.add(response.Case_Id__c);

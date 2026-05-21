@@ -48,7 +48,6 @@ public with sharing class OrderComplaintController {
 
             if (hasExternal) {
                 correlationId = generateUUID();
-
                 HttpRequest request = new HttpRequest();
                 request.setEndpoint(Utils.EXTERNAL_COMPLAINT.API.FORWARD_ENDPOINT);
                 request.setMethod('POST');
@@ -171,9 +170,11 @@ public with sharing class OrderComplaintController {
                     AND ActorId = :UserInfo.getUserId()
                     LIMIT 1
             ];
+
             if (workitems.isEmpty()) {
                 throw new AuraHandledException('No pending approval found for this Case.');
             }
+
             ProcessInstanceWorkitem workitem = workitems[0];
 
             String approvalAction = refundType == Utils.ORDER_COMPLAINT.REFUND_TYPE.REJECTED ? Utils.ORDER_COMPLAINT.APPROVAL_ACTION.REJECT : Utils.ORDER_COMPLAINT.APPROVAL_ACTION.APPROVE;
@@ -194,14 +195,14 @@ public with sharing class OrderComplaintController {
 
             if (approvalAction == Utils.ORDER_COMPLAINT.APPROVAL_ACTION.APPROVE) {
                 Decimal approvedAmount = refundAmount;
-                if (refundType == 'Full') {
+                if (refundType == Utils.ORDER_COMPLAINT.REFUND_TYPE.FULL) {
                     approvedAmount = 0;
-                    for (Case_Order_Product__c cop : [
+                    for (Case_Order_Product__c caseOrderProduct : [
                             SELECT Order_Product__r.UnitPrice, Order_Product__r.Quantity
                             FROM Case_Order_Product__c
                             WHERE Case__c = :caseId AND Order_Product__c != null
                     ]) {
-                        approvedAmount += cop.Order_Product__r.UnitPrice * cop.Order_Product__r.Quantity;
+                        approvedAmount += caseOrderProduct.Order_Product__r.UnitPrice * caseOrderProduct.Order_Product__r.Quantity;
                     }
                 }
 
@@ -218,7 +219,7 @@ public with sharing class OrderComplaintController {
                 String responseStatus;
                 if (approvalAction == Utils.ORDER_COMPLAINT.APPROVAL_ACTION.REJECT) {
                     responseStatus = Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.REJECTED;
-                } else if (refundType == 'Full') {
+                } else if (refundType == Utils.ORDER_COMPLAINT.REFUND_TYPE.FULL) {
                     responseStatus = Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.APPROVED_FULL;
                 } else {
                     responseStatus = Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.APPROVED_PARTIAL;
