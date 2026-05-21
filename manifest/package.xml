@@ -90,6 +90,8 @@
         <members>ExternalComplaintUtils</members>
         <members>OrderComplaintControllerTest</members>
         <members>OrderComplaintPayload</members>
+        <members>ApprovalSyncQueueableTest</members>
+        <members>ComplaintResponseQueueableTest</members>
         <name>ApexClass</name>
     </types>
     <types>
