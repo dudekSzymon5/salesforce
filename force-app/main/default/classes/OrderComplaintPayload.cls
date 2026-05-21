@@ -1,43 +1,76 @@
 public with sharing class OrderComplaintPayload {
 
     public class OrderComplaintController {
-        public String Order_Id__c;
-        public String Case_Id__c;
-        public String Reason__c;
-        public String Product_Ids__c;
-        public Decimal Refund_Amount__c;
+        private String orderId;
+        private String caseId;
+        private String reason;
+        private String productIds;
+        private Decimal refundAmount;
 
-        public OrderComplaintController(String Case_Id__c, String Order_Id__c, String Product_Ids__c, String Reason__c, Decimal Refund_Amount__c) {
-            this.Case_Id__c = Case_Id__c;
-            this.Order_Id__c = Order_Id__c;
-            this.Product_Ids__c = Product_Ids__c;
-            this.Reason__c = Reason__c;
-            this.Refund_Amount__c = Refund_Amount__c;
+        public OrderComplaintController(String caseId, String orderId, String productIds, String reason, Decimal refundAmount) {
+            this.caseId = caseId;
+            this.orderId = orderId;
+            this.productIds = productIds;
+            this.reason = reason;
+            this.refundAmount = refundAmount;
+        }
+
+        public String toJSON(){
+            JSONGenerator generator = JSON.createGenerator(false);
+            generator.writeStartObject();
+            generator.writeStringField('Order_Id__c', orderId);
+            generator.writeStringField('Case_Id__c', caseId);
+            generator.writeStringField('Reason__c', reason);
+            generator.writeStringField('Product_Ids__c', productIds);
+            generator.writeNumberField('Refund_Amount__c', refundAmount);
+            generator.writeEndObject();
+            return generator.getAsString();
         }
     }
     public class ApprovalSyncQueueable {
-        public String Case_Id__c;
-        public String Status__c;
-        public Decimal Final_Refund_Amount__c;
-        public String Final_Refund_Type__c;
+        private String caseId;
+        private String status;
+        private Decimal finalRefundAmount;
+        private String finalRefundType;
 
-        public ApprovalSyncQueueable(String Case_Id__c, Decimal Final_Refund_Amount__c, String Final_Refund_Type__c, String Status__c) {
-            this.Case_Id__c = Case_Id__c;
-            this.Final_Refund_Amount__c = Final_Refund_Amount__c;
-            this.Final_Refund_Type__c = Final_Refund_Type__c;
-            this.Status__c = Status__c;
+        public ApprovalSyncQueueable(String caseId, Decimal finalRefundAmount, String finalRefundType, String status) {
+            this.caseId = caseId;
+            this.finalRefundAmount = finalRefundAmount;
+            this.finalRefundType = finalRefundType;
+            this.status = status;
+        }
+
+        public String toJSON() {
+            JSONGenerator generator = JSON.createGenerator(false);
+            generator.writeStartObject();
+            generator.writeStringField('Case_Id__c', caseId);
+            generator.writeStringField('Status__c', status);
+            generator.writeNumberField('Final_Refund_Amount__c', finalRefundAmount);
+            generator.writeStringField('Final_Refund_Type__c', finalRefundType);
+            generator.writeEndObject();
+            return generator.getAsString();
         }
     }
 
     public class ComplaintResponseQueueable {
-        public String Case_Id__c;
-        public String External_Case_Id__c;
-        public String Status__c;
+        private String caseId;
+        private String externalCaseId;
+        private String status;
 
-        public ComplaintResponseQueueable(String Case_Id__c, String External_Case_Id__c, String Status__c) {
-            this.Case_Id__c = Case_Id__c;
-            this.External_Case_Id__c = External_Case_Id__c;
-            this.Status__c = Status__c;
+        public ComplaintResponseQueueable(String caseId, String externalCaseId, String status) {
+            this.caseId = caseId;
+            this.externalCaseId = externalCaseId;
+            this.status = status;
+        }
+
+        public String toJSON() {
+            JSONGenerator generator = JSON.createGenerator(false);
+            generator.writeStartObject();
+            generator.writeStringField('Case_Id__c', caseId);
+            generator.writeStringField('External_Case_Id__c', externalCaseId);
+            generator.writeStringField('Status__c', status);
+            generator.writeEndObject();
+            return generator.getAsString();
         }
     }
 
