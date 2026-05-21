@@ -105,8 +105,8 @@ private class OrderComplaintControllerTest {
         Case aCase = [SELECT Id, Complaint_Reason__c FROM Case WHERE Id = :result.caseId];
         Assert.areEqual('Mixed reason', aCase.Complaint_Reason__c);
 
-        List<Case_Order_Product__c> lines = [SELECT Id FROM Case_Order_Product__c WHERE Case__c = :result.caseId];
-        Assert.areEqual(1, lines.size(), 'Only local product should be linked to the local Case');
+        List<Case_Order_Product__c> lines = [SELECT Id, Is_External__c FROM Case_Order_Product__c WHERE Case__c = :result.caseId];
+        Assert.areEqual(2, lines.size(), 'Both local and external products should be linked to the local Case');
     }
 
     @IsTest
