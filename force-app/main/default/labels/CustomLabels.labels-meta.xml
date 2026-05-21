@@ -478,4 +478,69 @@
         <value>Submit</value>
     </labels>
 
+    <!-- Complaint -->
+    <labels>
+        <fullName>Complaint_RefundTypePartial</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Partial Refund option label</shortDescription>
+        <value>Partial Refund</value>
+    </labels>
+    <labels>
+        <fullName>Complaint_RefundTypeFull</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Full Refund option label</shortDescription>
+        <value>Full Refund</value>
+    </labels>
+    <labels>
+        <fullName>Complaint_RefundTypeRejected</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Rejected option label</shortDescription>
+        <value>Rejected</value>
+    </labels>
+    <labels>
+        <fullName>Complaint_DecisionSubmitted</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Toast message after complaint decision</shortDescription>
+        <value>Decision submitted.</value>
+    </labels>
+    <labels>
+        <fullName>Complaint_ErrorGeneric</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Generic error message in complaint</shortDescription>
+        <value>Something went wrong.</value>
+    </labels>
+    <labels>
+        <fullName>Complaint_ErrorLoadProducts</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Error when loading products fails</shortDescription>
+        <value>Failed to load products.</value>
+    </labels>
+    <labels>
+        <fullName>Complaint_ExternalRegistered</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Toast message when external complaint registered</shortDescription>
+        <value>Complaint registered on external system.</value>
+    </labels>
+    <labels>
+        <fullName>Complaint_SubmittedSuccess</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Toast message when complaint submitted successfully</shortDescription>
+        <value>Complaint submitted successfully.</value>
+    </labels>
+    <labels>
+        <fullName>Complaint_ErrorRetry</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Generic error with retry suggestion</shortDescription>
+        <value>Something is wrong, try again.</value>
+    </labels>
+
 </CustomLabels>
