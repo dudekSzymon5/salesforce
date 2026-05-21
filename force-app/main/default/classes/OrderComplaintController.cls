@@ -101,10 +101,16 @@ public with sharing class OrderComplaintController {
             }
 
             if (hasLocal) {
+                Decimal localRefundAmount = 0;
+                for (OrderItem item : localItems) {
+                    localRefundAmount += item.UnitPrice * item.Quantity;
+                }
+
                 Case aCase = new Case(
                         Order__c = orderId,
                         Complaint_Reason__c = reason,
                         Expected_Refund_Type__c = expectedRefundType,
+                        Refund_Amount__c = localRefundAmount,
                         Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.PENDING,
                         Status = Utils.ORDER_COMPLAINT.CASE_STATUS.NEW_CASE,
                         Origin = Utils.ORDER_COMPLAINT.CASE_ORIGIN.WEB
@@ -184,7 +190,7 @@ public with sharing class OrderComplaintController {
                 aCase.Approved_Refund_Type__c = refundType;
                 update aCase;
                 if (aCase.Order__c != null) {
-                    update new Order(Id = aCase.Order__c, Refund_Type__c = refundType);
+                    update new Order(Id = aCase.Order__c, Refund_Type__c = refundType, Refund_Amount__c = aCase.Refund_Amount__c);
                 }
                 ErrorLogger.logInfo('OrderComplaintController.approveComplaint', 'Refund type ' + refundType + ' applied to Case: ' + caseId + (aCase.Order__c != null ? ' and Order: ' + aCase.Order__c : ''));
             }
