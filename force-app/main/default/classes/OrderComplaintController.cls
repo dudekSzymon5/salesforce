@@ -101,16 +101,10 @@ public with sharing class OrderComplaintController {
             }
 
             if (hasLocal) {
-                Decimal localRefundAmount = 0;
-                for (OrderItem item : localItems) {
-                    localRefundAmount += item.UnitPrice * item.Quantity;
-                }
-
                 Case aCase = new Case(
                         Order__c = orderId,
                         Complaint_Reason__c = reason,
                         Expected_Refund_Type__c = expectedRefundType,
-                        Refund_Amount__c = localRefundAmount,
                         Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.PENDING,
                         Status = Utils.ORDER_COMPLAINT.CASE_STATUS.NEW_CASE,
                         Origin = Utils.ORDER_COMPLAINT.CASE_ORIGIN.WEB
@@ -156,7 +150,7 @@ public with sharing class OrderComplaintController {
     }
 
     @AuraEnabled
-    public static void approveComplaint(Id caseId, String refundType, String comment, String action) {
+    public static void approveComplaint(Id caseId, String refundType, Decimal refundAmount, String comment, String action) {
         try {
             List<ProcessInstanceWorkitem> workitems = [
                     SELECT Id
@@ -187,10 +181,23 @@ public with sharing class OrderComplaintController {
             ];
 
             if (approvalAction == Utils.ORDER_COMPLAINT.APPROVAL_ACTION.APPROVE) {
+                Decimal approvedAmount = refundAmount;
+                if (refundType == 'Full') {
+                    approvedAmount = 0;
+                    for (Case_Order_Product__c cop : [
+                            SELECT Order_Product__r.UnitPrice, Order_Product__r.Quantity
+                            FROM Case_Order_Product__c
+                            WHERE Case__c = :caseId AND Order_Product__c != null
+                    ]) {
+                        approvedAmount += cop.Order_Product__r.UnitPrice * cop.Order_Product__r.Quantity;
+                    }
+                }
+
                 aCase.Approved_Refund_Type__c = refundType;
+                aCase.Refund_Amount__c = approvedAmount;
                 update aCase;
                 if (aCase.Order__c != null) {
-                    update new Order(Id = aCase.Order__c, Refund_Type__c = refundType, Refund_Amount__c = aCase.Refund_Amount__c);
+                    update new Order(Id = aCase.Order__c, Refund_Type__c = refundType, Refund_Amount__c = approvedAmount);
                 }
                 ErrorLogger.logInfo('OrderComplaintController.approveComplaint', 'Refund type ' + refundType + ' applied to Case: ' + caseId + (aCase.Order__c != null ? ' and Order: ' + aCase.Order__c : ''));
             }

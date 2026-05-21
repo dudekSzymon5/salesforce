@@ -4,24 +4,36 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import approveComplaint from '@salesforce/apex/OrderComplaintController.approveComplaint';
 
 export default class ApproveComplaint extends LightningElement {
-    
-    @api recordId; 
+
+    @api recordId;
 
     @track approvedRefundType = '';
+    @track refundAmount = null;
     @track comments = '';
-    
+
     refundOptions = [
         { label: 'Partial Refund', value: 'Partial' },
         { label: 'Full Refund', value: 'Full' },
         { label: 'Rejected', value: 'Rejected' }
     ];
 
+    get showPartialInput() {
+        return this.approvedRefundType === 'Partial';
+    }
+
     get isApproveDisabled() {
-        return !this.approvedRefundType;
+        if (!this.approvedRefundType) return true;
+        if (this.showPartialInput && (!this.refundAmount || this.refundAmount <= 0)) return true;
+        return false;
     }
 
     handleRefundChange(event) {
         this.approvedRefundType = event.target.value;
+        if (this.approvedRefundType !== 'Partial') this.refundAmount = null;
+    }
+
+    handleAmountChange(event) {
+        this.refundAmount = parseFloat(event.target.value);
     }
 
     handleCommentsChange(event) {
@@ -37,7 +49,8 @@ export default class ApproveComplaint extends LightningElement {
             await approveComplaint({
                 caseId: this.recordId,
                 refundType: this.approvedRefundType,
-                comments: this.comments
+                refundAmount: this.refundAmount,
+                comment: this.comments
             });
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Success',
@@ -45,7 +58,7 @@ export default class ApproveComplaint extends LightningElement {
                 variant: 'success'
             }));
             this.dispatchEvent(new CloseActionScreenEvent());
-        } catch(exception) {
+        } catch (exception) {
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error',
                 message: exception.body?.message || 'Something went wrong.',
