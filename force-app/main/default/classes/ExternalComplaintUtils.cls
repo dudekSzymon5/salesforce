@@ -9,6 +9,10 @@ public class ExternalComplaintUtils {
     }
 
     public class ResponseStatus {
-        public String CREATED { get { return 'Created'; } }
+        public String CREATED          { get { return 'Created'; } }
+        public String APPROVED         { get { return 'Approved'; } }
+        public String REJECTED         { get { return 'Rejected'; } }
+        public String APPROVED_FULL    { get { return 'Approved Full Refund'; } }
+        public String APPROVED_PARTIAL { get { return 'Approved Partial Refund'; } }
     }
 }

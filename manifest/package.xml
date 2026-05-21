@@ -89,6 +89,7 @@
         <members>ExternalComplaintTriggerTest</members>
         <members>ExternalComplaintUtils</members>
         <members>OrderComplaintControllerTest</members>
+        <members>OrderComplaintPayload</members>
         <name>ApexClass</name>
     </types>
     <types>
