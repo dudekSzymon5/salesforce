@@ -3,6 +3,13 @@ import { CloseActionScreenEvent } from 'lightning/actions';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { notifyRecordUpdateAvailable } from 'lightning/uiRecordApi';
 import approveComplaint from '@salesforce/apex/OrderComplaintController.approveComplaint';
+import labelSuccess from '@salesforce/label/c.Common_Success';
+import labelError from '@salesforce/label/c.Common_Error';
+import labelRefundPartial from '@salesforce/label/c.Complaint_RefundTypePartial';
+import labelRefundFull from '@salesforce/label/c.Complaint_RefundTypeFull';
+import labelRefundRejected from '@salesforce/label/c.Complaint_RefundTypeRejected';
+import labelDecisionSubmitted from '@salesforce/label/c.Complaint_DecisionSubmitted';
+import labelErrorGeneric from '@salesforce/label/c.Complaint_ErrorGeneric';
 
 export default class ApproveComplaint extends LightningElement {
 
@@ -13,9 +20,9 @@ export default class ApproveComplaint extends LightningElement {
     @track comments = '';
 
     refundOptions = [
-        { label: 'Partial Refund', value: 'Partial' },
-        { label: 'Full Refund', value: 'Full' },
-        { label: 'Rejected', value: 'Rejected' }
+        { label: labelRefundPartial, value: 'Partial' },
+        { label: labelRefundFull, value: 'Full' },
+        { label: labelRefundRejected, value: 'Rejected' }
     ];
 
     get showPartialInput() {
@@ -55,15 +62,15 @@ export default class ApproveComplaint extends LightningElement {
             });
             notifyRecordUpdateAvailable([{ recordId: this.recordId }]);
             this.dispatchEvent(new ShowToastEvent({
-                title: 'Success',
-                message: 'Decision submitted.',
+                title: labelSuccess,
+                message: labelDecisionSubmitted,
                 variant: 'success'
             }));
             this.dispatchEvent(new CloseActionScreenEvent());
         } catch (exception) {
             this.dispatchEvent(new ShowToastEvent({
-                title: 'Error',
-                message: exception.body?.message || 'Something went wrong.',
+                title: labelError,
+                message: exception.body?.message || labelErrorGeneric,
                 variant: 'error'
             }));
         }

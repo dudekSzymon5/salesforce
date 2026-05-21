@@ -5,6 +5,13 @@ import { NavigationMixin } from 'lightning/navigation';
 import { subscribe, unsubscribe } from 'lightning/empApi';
 import getOrderProducts from '@salesforce/apex/OrderComplaintController.getOrderProducts';
 import submitComplaint from '@salesforce/apex/OrderComplaintController.submitComplaint';
+import labelSuccess from '@salesforce/label/c.Common_Success';
+import labelRefundPartial from '@salesforce/label/c.Complaint_RefundTypePartial';
+import labelRefundFull from '@salesforce/label/c.Complaint_RefundTypeFull';
+import labelErrorLoadProducts from '@salesforce/label/c.Complaint_ErrorLoadProducts';
+import labelExternalRegistered from '@salesforce/label/c.Complaint_ExternalRegistered';
+import labelSubmittedSuccess from '@salesforce/label/c.Complaint_SubmittedSuccess';
+import labelErrorRetry from '@salesforce/label/c.Complaint_ErrorRetry';
 
 const WHERE_TO_RESPONSE = '/event/External_Complaint_Response__e';
 
@@ -25,8 +32,8 @@ export default class OrderComplaint extends NavigationMixin(LightningElement) {
     hasExternalProduct = false
 
     refundOptions = [
-        { label: 'Partial Refund', value: 'Partial' },
-        { label: 'Full Refund', value: 'Full' }
+        { label: labelRefundPartial, value: 'Partial' },
+        { label: labelRefundFull, value: 'Full' }
     ];
 
     @wire(getOrderProducts, { orderId: '$recordId' })
@@ -40,7 +47,7 @@ export default class OrderComplaint extends NavigationMixin(LightningElement) {
                 isExternal: item.Product2.Is_External__c
             }))
         } else if (error) {
-            this.errorMessage = 'Failed to load products.';
+            this.errorMessage = labelErrorLoadProducts;
         }
     }
 
@@ -96,7 +103,7 @@ export default class OrderComplaint extends NavigationMixin(LightningElement) {
 
         } catch (exception) {
             this._unsubscribe();
-            this.errorMessage = exception.body?.message || 'Something is wrong, try again.';
+            this.errorMessage = exception.body?.message || labelErrorRetry;
             this.isLoading = false;
             this.waitingForExternal = false;
         }
@@ -109,8 +116,8 @@ export default class OrderComplaint extends NavigationMixin(LightningElement) {
                 this._unsubscribe();
                 this.waitingForExternal = false;
                 this.dispatchEvent(new ShowToastEvent({
-                    title: 'Success',
-                    message: 'Complaint registered on external system.',
+                    title: labelSuccess,
+                    message: labelExternalRegistered,
                     variant: 'success'
                 }));
                 if (this.caseId) {
@@ -124,8 +131,8 @@ export default class OrderComplaint extends NavigationMixin(LightningElement) {
 
     _navigateToCase() {
         this.dispatchEvent(new ShowToastEvent({
-            title: 'Success',
-            message: 'Complaint submitted successfully.',
+            title: labelSuccess,
+            message: labelSubmittedSuccess,
             variant: 'success'
         }));
         this[NavigationMixin.Navigate]({
