@@ -1,7 +1,8 @@
-import { LightningElement, api, track } from 'lwc';
+import { LightningElement, api, track, wire } from 'lwc';
 import { CloseActionScreenEvent } from 'lightning/actions';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { notifyRecordUpdateAvailable } from 'lightning/uiRecordApi';
+import getCaseLocalTotal from '@salesforce/apex/OrderComplaintController.getMaxRefundAmount'
 import approveComplaint from '@salesforce/apex/OrderComplaintController.approveComplaint';
 import labelSuccess from '@salesforce/label/c.Common_Success';
 import labelError from '@salesforce/label/c.Common_Error';
@@ -10,6 +11,7 @@ import labelRefundFull from '@salesforce/label/c.Complaint_RefundTypeFull';
 import labelRefundRejected from '@salesforce/label/c.Complaint_RefundTypeRejected';
 import labelDecisionSubmitted from '@salesforce/label/c.Complaint_DecisionSubmitted';
 import labelErrorGeneric from '@salesforce/label/c.Complaint_ErrorGeneric';
+
 
 export default class ApproveComplaint extends LightningElement {
 
@@ -25,6 +27,14 @@ export default class ApproveComplaint extends LightningElement {
         { label: labelRefundRejected, value: 'Rejected' }
     ];
 
+    @wire(getCaseLocalTotal, { caseId: '$recordId' })
+    wiredTotal ({data}) { //-> Destrukturyzacja wyciąga pole {data} z odpowiedzi
+        if (data != null) {
+            this.maxRefundAmount = data;
+        }
+    }
+    @track maxRefundAmount = null;
+
     get showPartialInput() {
         return this.approvedRefundType === 'Partial';
     }
@@ -32,6 +42,7 @@ export default class ApproveComplaint extends LightningElement {
     get isApproveDisabled() {
         if (!this.approvedRefundType) return true;
         if (this.showPartialInput && (!this.refundAmount || this.refundAmount <= 0)) return true;
+        if (this.showPartialInput && this.maxRefundAmount != null && this.refundAmount > this.maxRefundAmount) return true;
         return false;
     }
 
