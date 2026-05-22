@@ -45,6 +45,7 @@ public with sharing class OrderComplaintController {
 
             ComplaintResult result = new ComplaintResult();
             String correlationId = null;
+            Case trackingCase = null;
 
             if (hasExternal) {
                 correlationId = generateUUID();
@@ -69,7 +70,7 @@ public with sharing class OrderComplaintController {
 
                 result.correlationId = correlationId;
 
-                Case trackingCase = new Case(
+                trackingCase = new Case(
                         Order__c = orderId,
                         Complaint_Reason__c = reason,
                         Expected_Refund_Type__c = expectedRefundType,
@@ -132,7 +133,7 @@ public with sharing class OrderComplaintController {
                 }
                 insert caseOrderProducts;
 
-                update new Order(Id = orderId, ComplaintCaseId__c = aCase.Id);
+                update new Order(Id = orderId, ComplaintCaseId__c = aCase.Id, Tracking_Case__c = trackingCase != null ? trackingCase.Id : null);
 
                 Approval.ProcessSubmitRequest approvalRequest = new Approval.ProcessSubmitRequest();
                 approvalRequest.setObjectId(aCase.Id);
@@ -235,5 +236,18 @@ public with sharing class OrderComplaintController {
             ErrorLogger.log('OrderComplaintController.approveComplaint', e, caseId);
             throw new AuraHandledException(e.getMessage());
         }
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static Decimal getMaxRefundAmount(Id caseId) {
+        Decimal total = 0;
+        for (Case_Order_Product__c caseOrderProduct : [
+                SELECT Order_Product__r.UnitPrice, Order_Product__r.Quantity
+                FROM Case_Order_Product__c
+                WHERE Case__c = :caseId AND Is_External__c = false AND Order_Product__c != null
+        ]) {
+            total += caseOrderProduct.Order_Product__r.UnitPrice * caseOrderProduct.Order_Product__r.Quantity;
+        }
+        return total;
     }
 }
