@@ -14,5 +14,6 @@ public class ExternalComplaintUtils {
         public String REJECTED { get {return 'Rejected';} }
         public String APPROVED_FULL { get {return 'Approved Full Refund';} }
         public String APPROVED_PARTIAL { get {return 'Approved Partial Refund';} }
+        public String FAILED { get {return 'Failed';} }
     }
 }

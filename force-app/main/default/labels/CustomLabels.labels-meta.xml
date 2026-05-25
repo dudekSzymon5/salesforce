@@ -542,5 +542,12 @@
         <shortDescription>Generic error with retry suggestion</shortDescription>
         <value>Something is wrong, try again.</value>
     </labels>
+    <labels>
+        <fullName>Complaint_StatusFailed</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Failed status value for external complaint response</shortDescription>
+        <value>Failed</value>
+    </labels>
 
 </CustomLabels>
