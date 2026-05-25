@@ -28,6 +28,7 @@ export default class OrderComplaint extends NavigationMixin(LightningElement) {
     @track waitingForExternal = false
 
     subscription = null
+    externalResponseTimeout = null
     caseId = null
     correlationId = null
     hasExternalProduct = false
@@ -100,6 +101,11 @@ export default class OrderComplaint extends NavigationMixin(LightningElement) {
             } else {
                 this.waitingForExternal = true;
                 this.isLoading = false;
+                this.externalResponseTimeout = setTimeout(() => {
+                    this._unsubscribe();
+                    this.waitingForExternal = false;
+                    this.errorMessage = labelErrorRetry;
+                }, 30000);
             }
 
         } catch (exception) {
@@ -150,6 +156,10 @@ export default class OrderComplaint extends NavigationMixin(LightningElement) {
         if (this.subscription) {
             unsubscribe(this.subscription);
             this.subscription = null;
+        }
+        if (this.externalResponseTimeout) {
+            clearTimeout(this.externalResponseTimeout);
+            this.externalResponseTimeout = null;
         }
     }
 

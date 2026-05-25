@@ -19,9 +19,9 @@ trigger ExternalComplaintTrigger on External_Complaint__e (after insert) {
         ErrorLogger.logInfo('ExternalComplaintTrigger', 'Created ' + casesToInsert.size() + ' Case(s) from external complaint');
     } catch (Exception e) {
         ErrorLogger.log('ExternalComplaintTrigger', e);
-        for (External_Complaint__e ev : Trigger.new) {
+        for (External_Complaint__e externalComplaint : Trigger.new) {
             errorResponses.add(new External_Complaint_Response__e(
-                Case_Id__c = ev.Case_Id__c,
+                Case_Id__c = externalComplaint.Case_Id__c,
                 Status__c = Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.FAILED,
                 Error_Message__c = 'Failed to create Case: ' + e.getMessage()
             ));

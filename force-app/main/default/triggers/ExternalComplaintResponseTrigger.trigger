@@ -92,4 +92,22 @@ trigger ExternalComplaintResponseTrigger on External_Complaint_Response__e (afte
     if (!ordersToUpdateById.isEmpty()) {
         update ordersToUpdateById.values();
     }
+
+    List<CustomNotificationType> notifTypes = [SELECT Id FROM CustomNotificationType WHERE DeveloperName = 'Complaint_Decision' LIMIT 1];
+    if (!notifTypes.isEmpty() && !casesToUpdate.isEmpty()) {
+        String notifTypeId = notifTypes[0].Id;
+        for (Case aCase : casesToUpdate) {
+            String status = aCase.Refund_Status__c == Utils.ORDER_COMPLAINT.REFUND_STATUS.APPROVED ? 'approved' : 'rejected';
+            try {
+                Messaging.CustomNotification notification = new Messaging.CustomNotification();
+                notification.setNotificationTypeId(notifTypeId);
+                notification.setTargetId(aCase.Id);
+                notification.setTitle('Complaint Decision');
+                notification.setBody('Your complaint refund has been ' + status + ' by the external system.');
+                notification.send(new Set<String>{ aCase.OwnerId });
+            } catch (Exception e) {
+                ErrorLogger.log('ExternalComplaintResponseTrigger.notification', e);
+            }
+        }
+    }
 }
