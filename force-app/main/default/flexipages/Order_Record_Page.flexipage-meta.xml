@@ -335,6 +335,16 @@
                 <identifier>force_relatedListContainer</identifier>
             </componentInstance>
         </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>relatedList</name>
+                    <value>Case_Order_Products</value>
+                </componentInstanceProperties>
+                <componentName>force:relatedList</componentName>
+                <identifier>force_relatedList_caseOrderProducts</identifier>
+            </componentInstance>
+        </itemInstances>
         <name>relatedTabContent</name>
         <type>Facet</type>
     </flexiPageRegions>
