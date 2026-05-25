@@ -549,5 +549,75 @@
         <shortDescription>Failed status value for external complaint response</shortDescription>
         <value>Failed</value>
     </labels>
+    <labels>
+        <fullName>Complaint_DecisionTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Complaint Decision modal header</shortDescription>
+        <value>Complaint Decision</value>
+    </labels>
+    <labels>
+        <fullName>Complaint_RefundDecision</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Refund Decision combobox label</shortDescription>
+        <value>Refund Decision</value>
+    </labels>
+    <labels>
+        <fullName>Complaint_RefundAmount</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Refund Amount input label</shortDescription>
+        <value>Refund Amount</value>
+    </labels>
+    <labels>
+        <fullName>Complaint_Comment</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Comment textarea label</shortDescription>
+        <value>Comment</value>
+    </labels>
+    <labels>
+        <fullName>Complaint_MaxRefundPrefix</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Prefix for max refund field-level help</shortDescription>
+        <value>Maximum refund: </value>
+    </labels>
+    <labels>
+        <fullName>Complaint_NewComplaintTitle</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>New Complaint modal header</shortDescription>
+        <value>New Complaint</value>
+    </labels>
+    <labels>
+        <fullName>Complaint_Reason</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Complaint Reason textarea label</shortDescription>
+        <value>Complaint Reason</value>
+    </labels>
+    <labels>
+        <fullName>Complaint_RefundExpectation</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Refund expectation combobox label</shortDescription>
+        <value>What kind of refund do you expect?</value>
+    </labels>
+    <labels>
+        <fullName>Complaint_WaitingSpinner</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Spinner alternative text when waiting for external system</shortDescription>
+        <value>Waiting for external system...</value>
+    </labels>
+    <labels>
+        <fullName>Complaint_WaitingMessage</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Message shown while waiting for external system confirmation</shortDescription>
+        <value>Waiting for external system confirmation...</value>
+    </labels>
 
 </CustomLabels>

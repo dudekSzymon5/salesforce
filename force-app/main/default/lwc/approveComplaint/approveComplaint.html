@@ -1,8 +1,8 @@
 <template>
-    <lightning-modal-header label="Complaint Decision"></lightning-modal-header>
+    <lightning-modal-header label={labelDecisionTitle}></lightning-modal-header>
     <lightning-modal-body>
         <lightning-combobox
-            label="Refund Decision"
+            label={labelRefundDecision}
             value={approvedRefundType}
             options={refundOptions}
             onchange={handleRefundChange}>
@@ -11,7 +11,7 @@
         <template if:true={showPartialInput}>
             <lightning-input
                 type="number"
-                label="Refund Amount"
+                label={labelRefundAmount}
                 value={refundAmount}
                 min="0"
                 max={maxRefundAmount}
@@ -23,15 +23,15 @@
         </template>
 
         <lightning-textarea
-            label="Comment"
+            label={labelComment}
             value={comments}
             onchange={handleCommentsChange}>
         </lightning-textarea>
     </lightning-modal-body>
     <lightning-modal-footer>
-        <lightning-button label="Cancel" onclick={handleCancel}></lightning-button>
+        <lightning-button label={labelCancel} onclick={handleCancel}></lightning-button>
         <lightning-button
-            label="Submit"
+            label={labelSubmit}
             variant="brand"
             class="slds-m-left_small"
             onclick={handleApprove}
