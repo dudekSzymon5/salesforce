@@ -31,7 +31,7 @@ public with sharing class OrderComplaintController {
             List<OrderItem> localItems = new List<OrderItem>();
             Decimal refundAmount = 0;
 
-            for (OrderItem orderItem : getItems) { // Iteruje po wybranych produktach i segreguje je na dwie listy
+            for (OrderItem orderItem : getItems) {
                 if (orderItem.Product2.Is_External__c) {
                     hasExternal = true;
                     externalProductIds.add(orderItem.Product2.External_Product_Id__c);
@@ -70,7 +70,6 @@ public with sharing class OrderComplaintController {
                 
                 result.correlationId = correlationId;
 
-                // Czyli trackingCase tworzę po to aby widzieć, że wysłałem complaint do Konrada i czekam na odpowiedź
                 trackingCase = new Case(
                         Order__c = orderId,
                         Complaint_Reason__c = reason,
@@ -118,8 +117,6 @@ public with sharing class OrderComplaintController {
                 insert aCase;
                 ErrorLogger.logInfo('OrderComplaintController.submitComplaint', 'Case created: ' + aCase.Id + ' for Order: ' + orderId);
 
-               
-                // Każdy Case musi mieć swoją własną listę powiązanych produktów
                 List<Case_Order_Product__c> caseOrderProducts = new List<Case_Order_Product__c>();
                 for (OrderItem orderItem : localItems) {
                     caseOrderProducts.add(new Case_Order_Product__c(
@@ -181,7 +178,7 @@ public with sharing class OrderComplaintController {
 
             ProcessInstanceWorkitem workitem = workitems[0]; 
             String approvalAction = refundType == Utils.ORDER_COMPLAINT.REFUND_TYPE.REJECTED ? Utils.ORDER_COMPLAINT.APPROVAL_ACTION.REJECT : Utils.ORDER_COMPLAINT.APPROVAL_ACTION.APPROVE;
-            // Buduje proces zatwirdzenia
+            
             Approval.ProcessWorkitemRequest approvalWorkItemRequest = new Approval.ProcessWorkitemRequest();
             approvalWorkItemRequest.setWorkitemId(workitem.Id);
             approvalWorkItemRequest.setAction(approvalAction);
