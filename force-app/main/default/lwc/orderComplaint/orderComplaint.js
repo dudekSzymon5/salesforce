@@ -113,7 +113,6 @@ export default class OrderComplaint extends NavigationMixin(LightningElement) {
         this.subscription = await subscribe(WHERE_TO_RESPONSE, -1, (event) => {
             const payload = event.data.payload;
             if (payload.Case_Id__c === this.correlationId) {
-                this._unsubscribe();
                 this.waitingForExternal = false;
                 this.dispatchEvent(new ShowToastEvent({
                     title: labelSuccess,

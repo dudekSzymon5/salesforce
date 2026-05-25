@@ -15,7 +15,9 @@ public class OrderComplaintUtils {
     }
 
     public class RefundStatus {
-        public String PENDING { get {return 'Pending';} }
+        public String PENDING  { get {return 'Pending';} }
+        public String APPROVED { get {return 'Approved';} }
+        public String REJECTED { get {return 'Rejected';} }
     }
 
     public class RefundType {
