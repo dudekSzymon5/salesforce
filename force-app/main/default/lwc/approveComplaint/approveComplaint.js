@@ -12,7 +12,6 @@ import labelRefundRejected from '@salesforce/label/c.Complaint_RefundTypeRejecte
 import labelDecisionSubmitted from '@salesforce/label/c.Complaint_DecisionSubmitted';
 import labelErrorGeneric from '@salesforce/label/c.Complaint_ErrorGeneric';
 
-
 export default class ApproveComplaint extends LightningElement {
 
     @api recordId;
@@ -20,6 +19,7 @@ export default class ApproveComplaint extends LightningElement {
     @track approvedRefundType = '';
     @track refundAmount = null;
     @track comments = '';
+    @track maxRefundAmount = null;
 
     refundOptions = [
         { label: labelRefundPartial, value: 'Partial' },
@@ -28,12 +28,11 @@ export default class ApproveComplaint extends LightningElement {
     ];
 
     @wire(getCaseLocalTotal, { caseId: '$recordId' })
-    wiredTotal ({data}) { //-> Destrukturyzacja wyciąga pole {data} z odpowiedzi
+    wiredTotal({ data }) {
         if (data != null) {
             this.maxRefundAmount = data;
         }
     }
-    @track maxRefundAmount = null;
 
     get showPartialInput() {
         return this.approvedRefundType === 'Partial';

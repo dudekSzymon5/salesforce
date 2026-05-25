@@ -193,6 +193,7 @@ public with sharing class OrderComplaintService {
             aCase.Approved_Refund_Type__c = refundType;
             aCase.Refund_Amount__c = approvedAmount;
             aCase.Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.APPROVED;
+            aCase.Status = Utils.ORDER_COMPLAINT.CASE_STATUS.CLOSED;
             update aCase;
 
             if (aCase.Order__c != null) {
@@ -218,6 +219,7 @@ public with sharing class OrderComplaintService {
             ErrorLogger.logInfo('OrderComplaintService.approveComplaint', 'Refund type ' + refundType + ' applied to Case: ' + caseId + (aCase.Order__c != null ? ' and Order: ' + aCase.Order__c : ''));
         } else {
             aCase.Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.REJECTED;
+            aCase.Status = Utils.ORDER_COMPLAINT.CASE_STATUS.CLOSED;
             update aCase;
         }
 

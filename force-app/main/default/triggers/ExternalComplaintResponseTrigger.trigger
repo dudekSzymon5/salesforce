@@ -93,7 +93,12 @@ trigger ExternalComplaintResponseTrigger on External_Complaint_Response__e (afte
         update ordersToUpdateById.values();
     }
 
-    List<CustomNotificationType> notifTypes = [SELECT Id FROM CustomNotificationType WHERE DeveloperName = 'Complaint_Decision' LIMIT 1];
+    List<CustomNotificationType> notifTypes = [
+        SELECT Id 
+        FROM CustomNotificationType 
+        WHERE DeveloperName = 'Complaint_Decision' 
+        LIMIT 1
+    ];
     if (!notifTypes.isEmpty() && !casesToUpdate.isEmpty()) {
         String notifTypeId = notifTypes[0].Id;
         for (Case aCase : casesToUpdate) {
