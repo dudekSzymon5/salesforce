@@ -8,6 +8,7 @@ public class OrderComplaintUtils {
 
     public class CaseStatus {
         public String NEW_CASE { get {return 'New';} }
+        public String CLOSED   { get {return 'Closed';} }
     }
 
     public class CaseOrigin {

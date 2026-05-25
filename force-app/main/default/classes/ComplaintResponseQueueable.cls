@@ -22,7 +22,6 @@ public class ComplaintResponseQueueable implements Queueable, Database.AllowsCal
                     Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.CREATED
             ).toJSON();
 
-
             HttpRequest request = new HttpRequest();
             request.setEndpoint(endpoint);
             request.setMethod('POST');
