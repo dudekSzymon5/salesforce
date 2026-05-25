@@ -1,13 +1,13 @@
 <template>
-    <lightning-modal-header label="New Complaint"></lightning-modal-header>
+    <lightning-modal-header label={labelNewComplaintTitle}></lightning-modal-header>
 <lightning-modal-body>
     <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered">
         <thead>
             <tr class="slds-line-height_reset">
                 <th scope="col" style="width: 3rem;"></th>
-                <th scope="col"><div class="slds-truncate">Product</div></th>
-                <th scope="col"><div class="slds-truncate">Quantity</div></th>
-                <th scope="col"><div class="slds-truncate">Unit Price</div></th>
+                <th scope="col"><div class="slds-truncate">{labelColProduct}</div></th>
+                <th scope="col"><div class="slds-truncate">{labelColQuantity}</div></th>
+                <th scope="col"><div class="slds-truncate">{labelColUnitPrice}</div></th>
             </tr>
         </thead>
         <tbody>
@@ -30,14 +30,14 @@
     </table>
 
     <lightning-textarea
-        label = "Complaint Reason"
-        value = {reason}
-        onchange= {handleReasonChange}>
+        label={labelComplaintReason}
+        value={reason}
+        onchange={handleReasonChange}>
     </lightning-textarea>
 
     <lightning-combobox
-        label = "What kind of refund do you expect?"
-        value = {expectedRefundType}
+        label={labelRefundExpectation}
+        value={expectedRefundType}
         options={refundOptions}
         onchange={handleRefundChange}>
     </lightning-combobox>
@@ -45,14 +45,14 @@
 
 <lightning-modal-footer>
     <template if:true={waitingForExternal}>
-        <lightning-spinner alternative-text="Waiting for external system..." size="small"></lightning-spinner>
-        <span class="slds-m-left_small">Waiting for external system confirmation...</span>
+        <lightning-spinner alternative-text={labelWaitingSpinner} size="small"></lightning-spinner>
+        <span class="slds-m-left_small">{labelWaitingMessage}</span>
     </template>
 
-    <lightning-button label="Cancel" onclick={handleCancel}></lightning-button>
+    <lightning-button label={labelCancel} onclick={handleCancel}></lightning-button>
 
     <lightning-button
-        label="Submit"
+        label={labelSubmit}
         variant="brand"
         onclick={handleSubmit}
         disabled={isSubmitDisabled}>

@@ -4,8 +4,15 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { notifyRecordUpdateAvailable } from 'lightning/uiRecordApi';
 import getCaseLocalTotal from '@salesforce/apex/OrderComplaintController.getMaxRefundAmount'
 import approveComplaint from '@salesforce/apex/OrderComplaintController.approveComplaint';
+import labelDecisionTitle from '@salesforce/label/c.Complaint_DecisionTitle';
+import labelRefundDecision from '@salesforce/label/c.Complaint_RefundDecision';
+import labelRefundAmount from '@salesforce/label/c.Complaint_RefundAmount';
+import labelComment from '@salesforce/label/c.Complaint_Comment';
+import labelMaxRefundPrefix from '@salesforce/label/c.Complaint_MaxRefundPrefix';
 import labelSuccess from '@salesforce/label/c.Common_Success';
 import labelError from '@salesforce/label/c.Common_Error';
+import labelCancel from '@salesforce/label/c.Common_Cancel';
+import labelSubmit from '@salesforce/label/c.Order_Submit';
 import labelRefundPartial from '@salesforce/label/c.Complaint_RefundTypePartial';
 import labelRefundFull from '@salesforce/label/c.Complaint_RefundTypeFull';
 import labelRefundRejected from '@salesforce/label/c.Complaint_RefundTypeRejected';
@@ -20,6 +27,13 @@ export default class ApproveComplaint extends LightningElement {
     @track refundAmount = null;
     @track comments = '';
     @track maxRefundAmount = null;
+
+    labelDecisionTitle = labelDecisionTitle;
+    labelRefundDecision = labelRefundDecision;
+    labelRefundAmount = labelRefundAmount;
+    labelComment = labelComment;
+    labelCancel = labelCancel;
+    labelSubmit = labelSubmit;
 
     refundOptions = [
         { label: labelRefundPartial, value: 'Partial' },
@@ -39,7 +53,7 @@ export default class ApproveComplaint extends LightningElement {
     }
 
     get maxRefundLabel() {
-        return this.maxRefundAmount != null ? `Maximum refund: ${this.maxRefundAmount}` : '';
+        return this.maxRefundAmount != null ? labelMaxRefundPrefix + this.maxRefundAmount : '';
     }
 
     get isApproveDisabled() {

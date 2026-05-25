@@ -6,8 +6,18 @@ import { subscribe, unsubscribe } from 'lightning/empApi';
 import getOrderProducts from '@salesforce/apex/OrderComplaintController.getOrderProducts';
 import submitComplaint from '@salesforce/apex/OrderComplaintController.submitComplaint';
 import labelSuccess from '@salesforce/label/c.Common_Success';
+import labelCancel from '@salesforce/label/c.Common_Cancel';
+import labelSubmit from '@salesforce/label/c.Order_Submit';
+import labelColProduct from '@salesforce/label/c.Order_ColProduct';
+import labelColQuantity from '@salesforce/label/c.Order_ColQuantity';
+import labelColUnitPrice from '@salesforce/label/c.Order_ColUnitPrice';
 import labelRefundPartial from '@salesforce/label/c.Complaint_RefundTypePartial';
 import labelRefundFull from '@salesforce/label/c.Complaint_RefundTypeFull';
+import labelNewComplaintTitle from '@salesforce/label/c.Complaint_NewComplaintTitle';
+import labelComplaintReason from '@salesforce/label/c.Complaint_Reason';
+import labelRefundExpectation from '@salesforce/label/c.Complaint_RefundExpectation';
+import labelWaitingSpinner from '@salesforce/label/c.Complaint_WaitingSpinner';
+import labelWaitingMessage from '@salesforce/label/c.Complaint_WaitingMessage';
 import labelErrorLoadProducts from '@salesforce/label/c.Complaint_ErrorLoadProducts';
 import labelExternalRegistered from '@salesforce/label/c.Complaint_ExternalRegistered';
 import labelSubmittedSuccess from '@salesforce/label/c.Complaint_SubmittedSuccess';
@@ -26,6 +36,17 @@ export default class OrderComplaint extends NavigationMixin(LightningElement) {
     @track errorMessage = ''
     @track isLoading = false
     @track waitingForExternal = false
+
+    labelNewComplaintTitle = labelNewComplaintTitle;
+    labelComplaintReason = labelComplaintReason;
+    labelRefundExpectation = labelRefundExpectation;
+    labelWaitingSpinner = labelWaitingSpinner;
+    labelWaitingMessage = labelWaitingMessage;
+    labelCancel = labelCancel;
+    labelSubmit = labelSubmit;
+    labelColProduct = labelColProduct;
+    labelColQuantity = labelColQuantity;
+    labelColUnitPrice = labelColUnitPrice;
 
     subscription = null
     externalResponseTimeout = null
