@@ -42,8 +42,8 @@ private class ExternalComplaintTriggerTest {
     static void testTriggerLinksExistingProduct() {
         Test.setMock(HttpCalloutMock.class, new ComplaintCalloutMock());
 
-        String extProductId = 'EXT-PROD-COMPLAINT-001';
-        Product2 product = TestDataFactory.product().external(extProductId, 'ORG-TEST-001').create();
+        String extProductId = 'EXT-PRD-001';
+        Product2 product = TestDataFactory.product().external(extProductId, 'ORG-001').create();
 
         String fakeCaseId = '500000000000002AAA';
 
