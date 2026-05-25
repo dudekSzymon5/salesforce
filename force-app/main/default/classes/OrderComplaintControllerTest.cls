@@ -109,6 +109,36 @@ private class OrderComplaintControllerTest {
     }
 
     @IsTest
+    static void testGetCaseProducts() {
+        OrderItem item = setupOrderWithProduct(false);
+
+        Test.startTest();
+        OrderComplaintService.ComplaintResult result = OrderComplaintController.submitComplaint(
+            item.OrderId, 'Test reason', 'Partial', new List<Id>{ item.Id }
+        );
+        List<Case_Order_Product__c> products = OrderComplaintController.getCaseProducts(result.caseId);
+        Test.stopTest();
+
+        Assert.areEqual(1, products.size(), 'Should return one product for the case');
+        Assert.areEqual(item.Id, products[0].Order_Product__c, 'Should be linked to the correct order item');
+    }
+
+    @IsTest
+    static void testSubmitComplaintSetsOrderOnCaseProduct() {
+        OrderItem item = setupOrderWithProduct(false);
+
+        Test.startTest();
+        OrderComplaintService.ComplaintResult result = OrderComplaintController.submitComplaint(
+            item.OrderId, 'Test reason', 'Partial', new List<Id>{ item.Id }
+        );
+        Test.stopTest();
+
+        List<Case_Order_Product__c> cops = [SELECT Id, Order__c FROM Case_Order_Product__c WHERE Case__c = :result.caseId];
+        Assert.areEqual(1, cops.size());
+        Assert.areEqual(item.OrderId, cops[0].Order__c, 'Order__c should be set on Case_Order_Product__c');
+    }
+
+    @IsTest
     static void testApproveComplaintNoWorkitem() {
         Case aCase = new Case(Status = 'New', Origin = 'Web');
         insert aCase;
