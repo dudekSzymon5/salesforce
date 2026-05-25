@@ -41,7 +41,6 @@ public with sharing class OrderComplaintService {
 
         ComplaintResult result = new ComplaintResult();
         String correlationId = null;
-        Case trackingCase = null;
 
         if (hasExternal) {
             correlationId = generateUUID();
@@ -65,38 +64,7 @@ public with sharing class OrderComplaintService {
             }
 
             result.correlationId = correlationId;
-
-            trackingCase = new Case(
-                    Order__c = orderId,
-                    Complaint_Reason__c = reason,
-                    Expected_Refund_Type__c = expectedRefundType,
-                    External_Case_Id__c = correlationId,
-                    Has_External_Product__c = true,
-                    Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.PENDING,
-                    Status = Utils.ORDER_COMPLAINT.CASE_STATUS.NEW_CASE,
-                    Origin = Utils.ORDER_COMPLAINT.CASE_ORIGIN.WEB
-            );
-            insert trackingCase;
-
-            List<Case_Order_Product__c> externalCaseProducts = new List<Case_Order_Product__c>();
-            for (OrderItem item : externalItems) {
-                externalCaseProducts.add(new Case_Order_Product__c(
-                        Case__c = trackingCase.Id,
-                        Order_Product__c = item.Id,
-                        Product_Name__c = item.Product2.Name,
-                        Is_External__c = true
-                ));
-            }
-
-            if (!externalCaseProducts.isEmpty()) {
-                insert externalCaseProducts;
-            }
-
-            if (!hasLocal) {
-                update new Order(Id = orderId, ComplaintCaseId__c = trackingCase.Id);
-                result.caseId = trackingCase.Id;
-            }
-            ErrorLogger.logInfo('OrderComplaintService.submitComplaint', 'External complaint forwarded | correlationId: ' + correlationId + ' | trackingCaseId: ' + trackingCase.Id + ' | products: ' + String.join(externalProductIds, ','));
+            ErrorLogger.logInfo('OrderComplaintService.submitComplaint', 'External complaint forwarded | correlationId: ' + correlationId + ' | products: ' + String.join(externalProductIds, ','));
         }
 
         if (hasLocal) {
@@ -131,7 +99,11 @@ public with sharing class OrderComplaintService {
             }
             insert caseOrderProducts;
 
-            update new Order(Id = orderId, ComplaintCaseId__c = aCase.Id, Tracking_Case__c = trackingCase != null ? trackingCase.Id : null);
+            update new Order(
+                    Id = orderId,
+                    ComplaintCaseId__c = aCase.Id,
+                    External_Complaint_Correlation_Id__c = correlationId
+            );
             Approval.ProcessSubmitRequest approvalRequest = new Approval.ProcessSubmitRequest();
             approvalRequest.setObjectId(aCase.Id);
             approvalRequest.setSubmitterId(UserInfo.getUserId());
@@ -139,7 +111,10 @@ public with sharing class OrderComplaintService {
             ErrorLogger.logInfo('OrderComplaintService.submitComplaint', 'Approval process submitted for Case: ' + aCase.Id);
 
             result.caseId = aCase.Id;
+        } else if (hasExternal) {
+            update new Order(Id = orderId, External_Complaint_Correlation_Id__c = correlationId);
         }
+
         return result;
     }
 
@@ -198,11 +173,13 @@ public with sharing class OrderComplaintService {
 
             if (aCase.Order__c != null) {
                 Order currentOrder = [
-                    SELECT Id, Tracking_Case__c
+                    SELECT Id, Tracking_Case__c, External_Complaint_Correlation_Id__c
                     FROM Order
                     WHERE Id = :aCase.Order__c
                 ];
-                if (currentOrder.Tracking_Case__c == null) {
+                if (String.isNotBlank(currentOrder.External_Complaint_Correlation_Id__c)) {
+                    // External complaint still pending — wait for Konrad's response before updating Order
+                } else if (currentOrder.Tracking_Case__c == null) {
                     update new Order(Id = aCase.Order__c, Refund_Type__c = refundType, Refund_Amount__c = approvedAmount);
                 } else {
                     Case trackingCase = [
