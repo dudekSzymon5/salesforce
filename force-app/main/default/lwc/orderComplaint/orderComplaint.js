@@ -12,6 +12,7 @@ import labelErrorLoadProducts from '@salesforce/label/c.Complaint_ErrorLoadProdu
 import labelExternalRegistered from '@salesforce/label/c.Complaint_ExternalRegistered';
 import labelSubmittedSuccess from '@salesforce/label/c.Complaint_SubmittedSuccess';
 import labelErrorRetry from '@salesforce/label/c.Complaint_ErrorRetry';
+import labelStatusFailed from '@salesforce/label/c.Complaint_StatusFailed';
 
 const WHERE_TO_RESPONSE = '/event/External_Complaint_Response__e';
 
@@ -113,16 +114,21 @@ export default class OrderComplaint extends NavigationMixin(LightningElement) {
         this.subscription = await subscribe(WHERE_TO_RESPONSE, -1, (event) => {
             const payload = event.data.payload;
             if (payload.Case_Id__c === this.correlationId) {
+                this._unsubscribe();
                 this.waitingForExternal = false;
-                this.dispatchEvent(new ShowToastEvent({
-                    title: labelSuccess,
-                    message: labelExternalRegistered,
-                    variant: 'success'
-                }));
-                if (this.caseId) {
-                    this._navigateToCase();
+                if (payload.Status__c === labelStatusFailed) {
+                    this.errorMessage = payload.Error_Message__c || labelErrorRetry;
                 } else {
-                    this.dispatchEvent(new CloseActionScreenEvent());
+                    this.dispatchEvent(new ShowToastEvent({
+                        title: labelSuccess,
+                        message: labelExternalRegistered,
+                        variant: 'success'
+                    }));
+                    if (this.caseId) {
+                        this._navigateToCase();
+                    } else {
+                        this.dispatchEvent(new CloseActionScreenEvent());
+                    }
                 }
             }
         });
