@@ -36,7 +36,7 @@ private class OrderComplaintControllerTest {
         OrderItem item = setupOrderWithProduct(false);
 
         Test.startTest();
-        OrderComplaintController.ComplaintResult result = OrderComplaintController.submitComplaint(
+        OrderComplaintService.ComplaintResult result = OrderComplaintController.submitComplaint(
             item.OrderId, 'Test reason', 'Partial', new List<Id>{ item.Id }
         );
         Test.stopTest();
@@ -58,7 +58,7 @@ private class OrderComplaintControllerTest {
         OrderItem item = setupOrderWithProduct(true);
 
         Test.startTest();
-        OrderComplaintController.ComplaintResult result = OrderComplaintController.submitComplaint(
+        OrderComplaintService.ComplaintResult result = OrderComplaintController.submitComplaint(
             item.OrderId, 'External reason', 'Full', new List<Id>{ item.Id }
         );
         Test.stopTest();
@@ -93,7 +93,7 @@ private class OrderComplaintControllerTest {
         insert new List<OrderItem>{ localItem, externalItem };
 
         Test.startTest();
-        OrderComplaintController.ComplaintResult result = OrderComplaintController.submitComplaint(
+        OrderComplaintService.ComplaintResult result = OrderComplaintController.submitComplaint(
             order.Id, 'Mixed reason', 'Partial', new List<Id>{ localItem.Id, externalItem.Id }
         );
         Test.stopTest();
