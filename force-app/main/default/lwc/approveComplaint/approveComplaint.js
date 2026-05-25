@@ -39,6 +39,10 @@ export default class ApproveComplaint extends LightningElement {
         return this.approvedRefundType === 'Partial';
     }
 
+    get maxRefundLabel() {
+        return this.maxRefundAmount != null ? `Maximum refund: ${this.maxRefundAmount}` : '';
+    }
+
     get isApproveDisabled() {
         if (!this.approvedRefundType) return true;
         if (this.showPartialInput && (!this.refundAmount || this.refundAmount <= 0)) return true;

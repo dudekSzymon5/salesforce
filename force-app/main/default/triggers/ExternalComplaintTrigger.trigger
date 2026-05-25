@@ -1,10 +1,8 @@
 trigger ExternalComplaintTrigger on External_Complaint__e (after insert) {
     List<Case> casesToInsert = new List<Case>();
-
+    // Iteruje po platform eventach od Konrada i dla każdego tworzę Case z danymi które Konrad przesłał. I potem insertuje całość do bazy
     for (External_Complaint__e externalComplaint : Trigger.new) {
-
         ErrorLogger.logInfo('ExternalComplaintTrigger', 'Received External_Complaint__e | Case_Id__c: ' + externalComplaint.Case_Id__c + ' | Order_Id__c: ' + externalComplaint.Order_Id__c);
-        
         casesToInsert.add(new Case(
             Complaint_Reason__c = externalComplaint.Reason__c,
             External_Case_Id__c = externalComplaint.Case_Id__c,
@@ -25,25 +23,30 @@ trigger ExternalComplaintTrigger on External_Complaint__e (after insert) {
 
     try {
         Set<String> allExternalProductIds = new Set<String>();
-        for (External_Complaint__e ev : Trigger.new) {
-            if (String.isNotBlank(ev.Product_Ids__c)) {
-                allExternalProductIds.addAll(ev.Product_Ids__c.split(','));
+        for (External_Complaint__e externalComplaint : Trigger.new) {
+            if (String.isNotBlank(externalComplaint.Product_Ids__c)) {
+                allExternalProductIds.addAll(externalComplaint.Product_Ids__c.split(','));
             }
         }
 
         Map<String, Product2> productsByExternalId = new Map<String, Product2>();
-        for (Product2 p : [SELECT Id, Name, External_Product_Id__c FROM Product2 WHERE External_Product_Id__c IN :allExternalProductIds]) {
-            productsByExternalId.put(p.External_Product_Id__c, p);
+        for (Product2 product : [
+                SELECT Id, Name, External_Product_Id__c
+                FROM Product2
+                WHERE External_Product_Id__c IN :allExternalProductIds
+        ]) {
+            productsByExternalId.put(product.External_Product_Id__c, product);
         }
 
+        // Zapisuje jakie produkty nalezą do danego Case'a
         List<Case_Order_Product__c> caseOrderProducts = new List<Case_Order_Product__c>();
         for (Integer i = 0; i < casesToInsert.size(); i++) {
-            External_Complaint__e ev = Trigger.new[i];
-            if (String.isBlank(ev.Product_Ids__c)) {
+            External_Complaint__e externalComplaint = Trigger.new[i];
+            if (String.isBlank(externalComplaint.Product_Ids__c)) {
                 continue;
             }
-            for (String extId : ev.Product_Ids__c.split(',')) {
-                Product2 product = productsByExternalId.get(extId);
+            for (String externalId : externalComplaint.Product_Ids__c.split(',')) {
+                Product2 product = productsByExternalId.get(externalId);
                 if (product != null) {
                     caseOrderProducts.add(new Case_Order_Product__c(
                         Case__c = casesToInsert[i].Id,

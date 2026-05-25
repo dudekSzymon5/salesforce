@@ -31,7 +31,7 @@ public with sharing class OrderComplaintController {
             List<OrderItem> localItems = new List<OrderItem>();
             Decimal refundAmount = 0;
 
-            for (OrderItem orderItem : getItems) {
+            for (OrderItem orderItem : getItems) { // Iteruje po wybranych produktach i segreguje je na dwie listy
                 if (orderItem.Product2.Is_External__c) {
                     hasExternal = true;
                     externalProductIds.add(orderItem.Product2.External_Product_Id__c);
@@ -67,9 +67,10 @@ public with sharing class OrderComplaintController {
                 if (response.getStatusCode() != 200 && response.getStatusCode() != 201) {
                     throw new AuraHandledException('External system rejected the complaint: ' + response.getStatusCode());
                 }
-
+                
                 result.correlationId = correlationId;
 
+                // Czyli trackingCase tworzę po to aby widzieć, że wysłałem complaint do Konrada i czekam na odpowiedź
                 trackingCase = new Case(
                         Order__c = orderId,
                         Complaint_Reason__c = reason,
@@ -91,10 +92,13 @@ public with sharing class OrderComplaintController {
                             Is_External__c = true
                     ));
                 }
+               
                 if (!externalCaseProducts.isEmpty()) {
                     insert externalCaseProducts;
                 }
+
                 if (!hasLocal) {
+                    // Przypisuje trackingCase jako główny Case orderu
                     update new Order(Id = orderId, ComplaintCaseId__c = trackingCase.Id);
                     result.caseId = trackingCase.Id;
                 }
@@ -114,6 +118,8 @@ public with sharing class OrderComplaintController {
                 insert aCase;
                 ErrorLogger.logInfo('OrderComplaintController.submitComplaint', 'Case created: ' + aCase.Id + ' for Order: ' + orderId);
 
+               
+                // Każdy Case musi mieć swoją własną listę powiązanych produktów
                 List<Case_Order_Product__c> caseOrderProducts = new List<Case_Order_Product__c>();
                 for (OrderItem orderItem : localItems) {
                     caseOrderProducts.add(new Case_Order_Product__c(
@@ -134,7 +140,7 @@ public with sharing class OrderComplaintController {
                 insert caseOrderProducts;
 
                 update new Order(Id = orderId, ComplaintCaseId__c = aCase.Id, Tracking_Case__c = trackingCase != null ? trackingCase.Id : null);
-
+                // Wbudowana klasa salesforce do obsługi zatwierdzania procesu
                 Approval.ProcessSubmitRequest approvalRequest = new Approval.ProcessSubmitRequest();
                 approvalRequest.setObjectId(aCase.Id);
                 approvalRequest.setSubmitterId(UserInfo.getUserId());
@@ -161,7 +167,7 @@ public with sharing class OrderComplaintController {
     @AuraEnabled
     public static void approveComplaint(Id caseId, String refundType, Decimal refundAmount, String comment, String action) {
         try {
-            List<ProcessInstanceWorkitem> workitems = [
+            List<ProcessInstanceWorkitem> workitems = [ 
                     SELECT Id
                     FROM ProcessInstanceWorkitem
                     WHERE ProcessInstance.TargetObjectId = :caseId
@@ -173,10 +179,9 @@ public with sharing class OrderComplaintController {
                 throw new AuraHandledException('No pending approval found for this Case.');
             }
 
-            ProcessInstanceWorkitem workitem = workitems[0];
-
+            ProcessInstanceWorkitem workitem = workitems[0]; 
             String approvalAction = refundType == Utils.ORDER_COMPLAINT.REFUND_TYPE.REJECTED ? Utils.ORDER_COMPLAINT.APPROVAL_ACTION.REJECT : Utils.ORDER_COMPLAINT.APPROVAL_ACTION.APPROVE;
-
+            // Buduje proces zatwirdzenia
             Approval.ProcessWorkitemRequest approvalWorkItemRequest = new Approval.ProcessWorkitemRequest();
             approvalWorkItemRequest.setWorkitemId(workitem.Id);
             approvalWorkItemRequest.setAction(approvalAction);
@@ -184,13 +189,12 @@ public with sharing class OrderComplaintController {
             Approval.process(approvalWorkItemRequest);
 
             ErrorLogger.logInfo('OrderComplaintController.approveComplaint', 'Approval decision: ' + approvalAction + ' for Case: ' + caseId + ', refundType: ' + refundType);
-
             Case aCase = [
                     SELECT Id, Order__c, External_Case_Id__c, Refund_Amount__c
                     FROM Case
                     WHERE Id = :caseId
             ];
-
+            
             if (approvalAction == Utils.ORDER_COMPLAINT.APPROVAL_ACTION.APPROVE) {
                 Decimal approvedAmount = refundAmount;
                 if (refundType == Utils.ORDER_COMPLAINT.REFUND_TYPE.FULL) {
@@ -198,7 +202,7 @@ public with sharing class OrderComplaintController {
                     for (Case_Order_Product__c caseOrderProduct : [
                             SELECT Order_Product__r.UnitPrice, Order_Product__r.Quantity
                             FROM Case_Order_Product__c
-                            WHERE Case__c = :caseId AND Order_Product__c != null
+                            WHERE Case__c = :caseId AND Is_External__c = false AND Order_Product__c != null
                     ]) {
                         approvedAmount += caseOrderProduct.Order_Product__r.UnitPrice * caseOrderProduct.Order_Product__r.Quantity;
                     }
@@ -206,11 +210,33 @@ public with sharing class OrderComplaintController {
 
                 aCase.Approved_Refund_Type__c = refundType;
                 aCase.Refund_Amount__c = approvedAmount;
+                aCase.Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.APPROVED;
                 update aCase;
+
                 if (aCase.Order__c != null) {
-                    update new Order(Id = aCase.Order__c, Refund_Type__c = refundType, Refund_Amount__c = approvedAmount);
+                    Order currentOrder = [
+                        SELECT Id, Tracking_Case__c 
+                        FROM Order 
+                        WHERE Id = :aCase.Order__c
+                    ];
+                    if (currentOrder.Tracking_Case__c == null) {
+                        update new Order(Id = aCase.Order__c, Refund_Type__c = refundType, Refund_Amount__c = approvedAmount);
+                    } else {
+                        Case trackingCase = [
+                            SELECT Id, Refund_Status__c, Refund_Amount__c 
+                            FROM Case 
+                            WHERE Id = :currentOrder.Tracking_Case__c
+                        ];
+                        if (trackingCase.Refund_Status__c == Utils.ORDER_COMPLAINT.REFUND_STATUS.APPROVED) {
+                            Decimal externalAmount = trackingCase.Refund_Amount__c != null ? trackingCase.Refund_Amount__c : 0;
+                            update new Order(Id = aCase.Order__c, Refund_Type__c = refundType, Refund_Amount__c = approvedAmount + externalAmount);
+                        }
+                    }
                 }
                 ErrorLogger.logInfo('OrderComplaintController.approveComplaint', 'Refund type ' + refundType + ' applied to Case: ' + caseId + (aCase.Order__c != null ? ' and Order: ' + aCase.Order__c : ''));
+            } else {
+                aCase.Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.REJECTED;
+                update aCase;
             }
 
             if (String.isNotBlank(aCase.External_Case_Id__c)) {
@@ -222,7 +248,7 @@ public with sharing class OrderComplaintController {
                 } else {
                     responseStatus = Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.APPROVED_PARTIAL;
                 }
-
+            
                 System.enqueueJob(new ApprovalSyncQueueable(
                         aCase.External_Case_Id__c,
                         responseStatus,
