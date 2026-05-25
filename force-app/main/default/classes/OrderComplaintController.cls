@@ -199,12 +199,17 @@ public with sharing class OrderComplaintController {
                 Decimal approvedAmount = refundAmount;
                 if (refundType == Utils.ORDER_COMPLAINT.REFUND_TYPE.FULL) {
                     approvedAmount = 0;
+                    Integer localProductCount = 0;
                     for (Case_Order_Product__c caseOrderProduct : [
                             SELECT Order_Product__r.UnitPrice, Order_Product__r.Quantity
                             FROM Case_Order_Product__c
                             WHERE Case__c = :caseId AND Is_External__c = false AND Order_Product__c != null
                     ]) {
                         approvedAmount += caseOrderProduct.Order_Product__r.UnitPrice * caseOrderProduct.Order_Product__r.Quantity;
+                        localProductCount++;
+                    }
+                    if (localProductCount == 0) {
+                        approvedAmount = aCase.Refund_Amount__c != null ? aCase.Refund_Amount__c : 0;
                     }
                 }
 
@@ -267,12 +272,18 @@ public with sharing class OrderComplaintController {
     @AuraEnabled(cacheable=true)
     public static Decimal getMaxRefundAmount(Id caseId) {
         Decimal total = 0;
+        Integer localProductCount = 0;
         for (Case_Order_Product__c caseOrderProduct : [
                 SELECT Order_Product__r.UnitPrice, Order_Product__r.Quantity
                 FROM Case_Order_Product__c
                 WHERE Case__c = :caseId AND Is_External__c = false AND Order_Product__c != null
         ]) {
             total += caseOrderProduct.Order_Product__r.UnitPrice * caseOrderProduct.Order_Product__r.Quantity;
+            localProductCount++;
+        }
+        if (localProductCount == 0) {
+            Case aCase = [SELECT Refund_Amount__c FROM Case WHERE Id = :caseId];
+            total = aCase.Refund_Amount__c != null ? aCase.Refund_Amount__c : 0;
         }
         return total;
     }
