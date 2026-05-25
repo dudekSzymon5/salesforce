@@ -9,17 +9,35 @@
         </lightning-combobox>
 
         <template if:true={showPartialInput}>
-            <lightning-input
-                type="number"
-                label={labelRefundAmount}
-                value={refundAmount}
-                min="0"
-                max={maxRefundAmount}
-                step="0.01"
-                formatter="currency"
-                field-level-help={maxRefundLabel}
-                onchange={handleAmountChange}>
-            </lightning-input>
+            <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered slds-m-top_small">
+                <thead>
+                    <tr class="slds-line-height_reset">
+                        <th scope="col"><div class="slds-truncate">{labelColProduct}</div></th>
+                        <th scope="col"><div class="slds-truncate">{labelColUnitPrice}</div></th>
+                        <th scope="col"><div class="slds-truncate">{labelRefundAmount}</div></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={caseProducts} for:item="product">
+                        <tr key={product.Id}>
+                            <td>{product.name}</td>
+                            <td>{product.unitPrice} $</td>
+                            <td>
+                                <lightning-input
+                                    type="number"
+                                    label=""
+                                    data-id={product.Id}
+                                    min="0"
+                                    max={product.maxAmount}
+                                    step="0.01"
+                                    formatter="currency"
+                                    onchange={handleProductAmountChange}>
+                                </lightning-input>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
         </template>
 
         <lightning-textarea

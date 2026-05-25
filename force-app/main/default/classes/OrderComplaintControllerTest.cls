@@ -115,7 +115,7 @@ private class OrderComplaintControllerTest {
 
         Test.startTest();
         try {
-            OrderComplaintController.approveComplaint(aCase.Id, 'Partial', 50.00, 'comment', 'Approve');
+            OrderComplaintController.approveComplaint(aCase.Id, 'Partial', 50.00, 'comment', 'Approve', null);
             Assert.fail('Expected AuraHandledException');
         } catch (AuraHandledException e) {
             Assert.isNotNull(e.getMessage());

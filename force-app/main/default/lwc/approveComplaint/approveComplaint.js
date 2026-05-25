@@ -2,17 +2,18 @@ import { LightningElement, api, track, wire } from 'lwc';
 import { CloseActionScreenEvent } from 'lightning/actions';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { notifyRecordUpdateAvailable } from 'lightning/uiRecordApi';
-import getCaseLocalTotal from '@salesforce/apex/OrderComplaintController.getMaxRefundAmount'
+import getCaseProducts from '@salesforce/apex/OrderComplaintController.getCaseProducts';
 import approveComplaint from '@salesforce/apex/OrderComplaintController.approveComplaint';
 import labelDecisionTitle from '@salesforce/label/c.Complaint_DecisionTitle';
 import labelRefundDecision from '@salesforce/label/c.Complaint_RefundDecision';
 import labelRefundAmount from '@salesforce/label/c.Complaint_RefundAmount';
 import labelComment from '@salesforce/label/c.Complaint_Comment';
-import labelMaxRefundPrefix from '@salesforce/label/c.Complaint_MaxRefundPrefix';
 import labelSuccess from '@salesforce/label/c.Common_Success';
 import labelError from '@salesforce/label/c.Common_Error';
 import labelCancel from '@salesforce/label/c.Common_Cancel';
 import labelSubmit from '@salesforce/label/c.Order_Submit';
+import labelColProduct from '@salesforce/label/c.Order_ColProduct';
+import labelColUnitPrice from '@salesforce/label/c.Order_ColUnitPrice';
 import labelRefundPartial from '@salesforce/label/c.Complaint_RefundTypePartial';
 import labelRefundFull from '@salesforce/label/c.Complaint_RefundTypeFull';
 import labelRefundRejected from '@salesforce/label/c.Complaint_RefundTypeRejected';
@@ -24,9 +25,9 @@ export default class ApproveComplaint extends LightningElement {
     @api recordId;
 
     @track approvedRefundType = '';
-    @track refundAmount = null;
     @track comments = '';
-    @track maxRefundAmount = null;
+    @track caseProducts = [];
+    @track productRefunds = {};
 
     labelDecisionTitle = labelDecisionTitle;
     labelRefundDecision = labelRefundDecision;
@@ -34,6 +35,8 @@ export default class ApproveComplaint extends LightningElement {
     labelComment = labelComment;
     labelCancel = labelCancel;
     labelSubmit = labelSubmit;
+    labelColProduct = labelColProduct;
+    labelColUnitPrice = labelColUnitPrice;
 
     refundOptions = [
         { label: labelRefundPartial, value: 'Partial' },
@@ -41,10 +44,19 @@ export default class ApproveComplaint extends LightningElement {
         { label: labelRefundRejected, value: 'Rejected' }
     ];
 
-    @wire(getCaseLocalTotal, { caseId: '$recordId' })
-    wiredTotal({ data }) {
-        if (data != null) {
-            this.maxRefundAmount = data;
+    @wire(getCaseProducts, { caseId: '$recordId' })
+    wiredProducts({ data }) {
+        if (data) {
+            this.caseProducts = data.map(p => ({
+                Id: p.Id,
+                name: p.Product_Name__c,
+                unitPrice: p.Order_Product__r?.UnitPrice || 0,
+                quantity: p.Order_Product__r?.Quantity || 0,
+                maxAmount: (p.Order_Product__r?.UnitPrice || 0) * (p.Order_Product__r?.Quantity || 0)
+            }));
+            const refunds = {};
+            this.caseProducts.forEach(p => { refunds[p.Id] = 0; });
+            this.productRefunds = refunds;
         }
     }
 
@@ -52,24 +64,24 @@ export default class ApproveComplaint extends LightningElement {
         return this.approvedRefundType === 'Partial';
     }
 
-    get maxRefundLabel() {
-        return this.maxRefundAmount != null ? labelMaxRefundPrefix + this.maxRefundAmount : '';
-    }
-
     get isApproveDisabled() {
         if (!this.approvedRefundType) return true;
-        if (this.showPartialInput && (!this.refundAmount || this.refundAmount <= 0)) return true;
-        if (this.showPartialInput && this.maxRefundAmount != null && this.refundAmount > this.maxRefundAmount) return true;
+        if (this.showPartialInput) {
+            const total = this.caseProducts.reduce((sum, p) => sum + (this.productRefunds[p.Id] || 0), 0);
+            if (total <= 0) return true;
+            if (this.caseProducts.some(p => (this.productRefunds[p.Id] || 0) > p.maxAmount)) return true;
+        }
         return false;
     }
 
     handleRefundChange(event) {
         this.approvedRefundType = event.target.value;
-        if (this.approvedRefundType !== 'Partial') this.refundAmount = null;
     }
 
-    handleAmountChange(event) {
-        this.refundAmount = parseFloat(event.target.value);
+    handleProductAmountChange(event) {
+        const productId = event.target.dataset.id;
+        const amount = parseFloat(event.target.value) || 0;
+        this.productRefunds = { ...this.productRefunds, [productId]: amount };
     }
 
     handleCommentsChange(event) {
@@ -81,12 +93,18 @@ export default class ApproveComplaint extends LightningElement {
     }
 
     async handleApprove() {
+        const productRefundsJson = this.showPartialInput
+            ? JSON.stringify(this.caseProducts.map(p => ({ id: p.Id, amount: this.productRefunds[p.Id] || 0 })))
+            : null;
+
         try {
             await approveComplaint({
                 caseId: this.recordId,
                 refundType: this.approvedRefundType,
-                refundAmount: this.refundAmount,
-                comment: this.comments
+                refundAmount: null,
+                comment: this.comments,
+                action: null,
+                productRefundsJson: productRefundsJson
             });
             notifyRecordUpdateAvailable([{ recordId: this.recordId }]);
             this.dispatchEvent(new ShowToastEvent({

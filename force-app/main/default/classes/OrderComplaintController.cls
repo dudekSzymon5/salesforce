@@ -1,6 +1,18 @@
 public with sharing class OrderComplaintController {
 
     @AuraEnabled(cacheable=true)
+    public static List<Case_Order_Product__c> getCaseProducts(Id caseId) {
+        try {
+            return OrderComplaintService.getCaseProducts(caseId);
+        } catch (AuraHandledException e) {
+            throw e;
+        } catch (Exception e) {
+            ErrorLogger.log('OrderComplaintController', e);
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    @AuraEnabled(cacheable=true)
     public static List<OrderItem> getOrderProducts(Id orderId) {
         try {
             return OrderComplaintService.getOrderProducts(orderId);
@@ -25,9 +37,9 @@ public with sharing class OrderComplaintController {
     }
 
     @AuraEnabled
-    public static void approveComplaint(Id caseId, String refundType, Decimal refundAmount, String comment, String action) {
+    public static void approveComplaint(Id caseId, String refundType, Decimal refundAmount, String comment, String action, String productRefundsJson) {
         try {
-            OrderComplaintService.approveComplaint(caseId, refundType, refundAmount, comment, action);
+            OrderComplaintService.approveComplaint(caseId, refundType, refundAmount, comment, action, productRefundsJson);
         } catch (AuraHandledException e) {
             throw e;
         } catch (Exception e) {
