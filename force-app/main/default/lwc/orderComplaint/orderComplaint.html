@@ -49,6 +49,10 @@
         <span class="slds-m-left_small">{labelWaitingMessage}</span>
     </template>
 
+    <template if:true={errorMessage}>
+        <p class="slds-text-color_error slds-m-bottom_small">{errorMessage}</p>
+    </template>
+
     <lightning-button label={labelCancel} onclick={handleCancel}></lightning-button>
 
     <lightning-button
