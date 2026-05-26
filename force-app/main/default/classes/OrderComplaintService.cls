@@ -51,6 +51,16 @@ public with sharing class OrderComplaintService {
         String correlationId = null;
 
         if (hasExternal) {
+            List<OrderComplaintPayload.LineItem> lineItems = new List<OrderComplaintPayload.LineItem>();
+            for (OrderItem item : externalItems) {
+                OrderComplaintPayload.LineItem lineItem = new OrderComplaintPayload.LineItem();
+                lineItem.productId = item.Product2.External_Product_Id__c;
+                lineItem.refundAmount = item.UnitPrice * item.Quantity;
+                lineItem.refundType = expectedRefundType;
+                lineItems.add(lineItem);
+            }
+            String lineItemsJson = JSON.serialize(lineItems);
+
             correlationId = generateUUID();
             HttpRequest request = new HttpRequest();
             request.setEndpoint(Utils.EXTERNAL_COMPLAINT.API.FORWARD_ENDPOINT);
@@ -62,7 +72,8 @@ public with sharing class OrderComplaintService {
                     orderId,
                     String.join(externalProductIds, ','),
                     expectedRefundType + ' - ' + reason,
-                    refundAmount
+                    refundAmount,
+                    lineItemsJson
             ).toJSON());
 
             HttpResponse response = new Http().send(request);
@@ -75,12 +86,12 @@ public with sharing class OrderComplaintService {
             ErrorLogger.logInfo('OrderComplaintService.submitComplaint', 'External complaint forwarded | correlationId: ' + correlationId + ' | products: ' + String.join(externalProductIds, ','));
         }
 
-        if (hasLocal) {
+        if (hasLocal && !hasExternal) {
             Case aCase = new Case(
                     Order__c = orderId,
                     Complaint_Reason__c = reason,
                     Expected_Refund_Type__c = expectedRefundType,
-                    Has_External_Product__c = hasExternal,
+                    Has_External_Product__c = false,
                     Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.PENDING,
                     Status = Utils.ORDER_COMPLAINT.CASE_STATUS.NEW_CASE,
                     Origin = Utils.ORDER_COMPLAINT.CASE_ORIGIN.WEB
@@ -98,23 +109,16 @@ public with sharing class OrderComplaintService {
                         Is_External__c = false
                 ));
             }
-            for (OrderItem orderItem : externalItems) {
-                caseOrderProducts.add(new Case_Order_Product__c(
-                        Case__c = aCase.Id,
-                        Order__c = orderId,
-                        Order_Product__c = orderItem.Id,
-                        Product_Name__c = orderItem.Product2.Name,
-                        Is_External__c = true
-                ));
-            }
             insert caseOrderProducts;
 
             update new Order(
                     Id = orderId,
                     ComplaintCaseId__c = aCase.Id,
-                    External_Complaint_Correlation_Id__c = correlationId,
-                    Tracking_Case__c = null
+                    External_Complaint_Correlation_Id__c = null,
+                    Tracking_Case__c = null,
+                    Pending_Complaint_JSON__c = null
             );
+
             Approval.ProcessSubmitRequest approvalRequest = new Approval.ProcessSubmitRequest();
             approvalRequest.setObjectId(aCase.Id);
             approvalRequest.setSubmitterId(UserInfo.getUserId());
@@ -123,7 +127,19 @@ public with sharing class OrderComplaintService {
 
             result.caseId = aCase.Id;
         } else if (hasExternal) {
-            update new Order(Id = orderId, External_Complaint_Correlation_Id__c = correlationId, Tracking_Case__c = null);
+            OrderComplaintPayload.PendingComplaint pendingData = new OrderComplaintPayload.PendingComplaint();
+            pendingData.reason = reason;
+            pendingData.expectedRefundType = expectedRefundType;
+            pendingData.localItemIds = new List<Id>();
+            for (OrderItem orderItem : localItems) pendingData.localItemIds.add(orderItem.Id);
+
+            update new Order(
+                    Id = orderId,
+                    External_Complaint_Correlation_Id__c = correlationId,
+                    Tracking_Case__c = null,
+                    ComplaintCaseId__c = null,
+                    Pending_Complaint_JSON__c = JSON.serialize(pendingData)
+            );
         }
 
         return result;
@@ -200,24 +216,19 @@ public with sharing class OrderComplaintService {
 
             if (aCase.Order__c != null) {
                 Order currentOrder = [
-                    SELECT Id, Tracking_Case__c, External_Complaint_Correlation_Id__c
+                    SELECT Id, External_Complaint_Correlation_Id__c
                     FROM Order
                     WHERE Id = :aCase.Order__c
                 ];
-                if (String.isNotBlank(currentOrder.External_Complaint_Correlation_Id__c)) {
-                    // External complaint still pending — wait for Konrad's response before updating Order
-                } else if (currentOrder.Tracking_Case__c == null) {
-                    update new Order(Id = aCase.Order__c, Refund_Type__c = refundType, Refund_Amount__c = approvedAmount);
-                } else {
-                    Case trackingCase = [
-                        SELECT Id, Refund_Status__c, Refund_Amount__c
-                        FROM Case
-                        WHERE Id = :currentOrder.Tracking_Case__c
-                    ];
-                    if (trackingCase.Refund_Status__c == Utils.ORDER_COMPLAINT.REFUND_STATUS.APPROVED) {
-                        Decimal externalAmount = trackingCase.Refund_Amount__c != null ? trackingCase.Refund_Amount__c : 0;
-                        update new Order(Id = aCase.Order__c, Refund_Type__c = refundType, Refund_Amount__c = approvedAmount + externalAmount);
+                if (String.isBlank(currentOrder.External_Complaint_Correlation_Id__c)) {
+                    Decimal externalAmount = 0;
+                    for (Case_Order_Product__c cop : [
+                        SELECT Refund_Amount__c FROM Case_Order_Product__c
+                        WHERE Case__c = :caseId AND Is_External__c = true
+                    ]) {
+                        externalAmount += cop.Refund_Amount__c != null ? cop.Refund_Amount__c : 0;
                     }
+                    update new Order(Id = aCase.Order__c, Refund_Type__c = refundType, Refund_Amount__c = approvedAmount + externalAmount);
                 }
             }
             ErrorLogger.logInfo('OrderComplaintService.approveComplaint', 'Refund type ' + refundType + ' applied to Case: ' + caseId + (aCase.Order__c != null ? ' and Order: ' + aCase.Order__c : ''));
@@ -241,7 +252,8 @@ public with sharing class OrderComplaintService {
                     aCase.External_Case_Id__c,
                     responseStatus,
                     aCase.Refund_Amount__c,
-                    refundType
+                    refundType,
+                    aCase.Id
             ));
             ErrorLogger.logInfo('OrderComplaintService.approveComplaint', 'Enqueued approval sync to Org B | externalCaseId: ' + aCase.External_Case_Id__c + ' | status: ' + responseStatus);
         }

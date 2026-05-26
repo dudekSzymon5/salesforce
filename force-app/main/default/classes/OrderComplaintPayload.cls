@@ -1,18 +1,33 @@
 public with sharing class OrderComplaintPayload {
 
+    public class LineItem {
+        public String productId;
+        public Decimal refundAmount;
+        public String refundType;
+        public String status;
+    }
+
+    public class PendingComplaint {
+        public String reason;
+        public String expectedRefundType;
+        public List<Id> localItemIds;
+    }
+
     public class OrderComplaintController {
         private String orderId;
         private String caseId;
         private String reason;
         private String productIds;
         private Decimal refundAmount;
+        private String lineItemsJson;
 
-        public OrderComplaintController(String caseId, String orderId, String productIds, String reason, Decimal refundAmount) {
+        public OrderComplaintController(String caseId, String orderId, String productIds, String reason, Decimal refundAmount, String lineItemsJson) {
             this.caseId = caseId;
             this.orderId = orderId;
             this.productIds = productIds;
             this.reason = reason;
             this.refundAmount = refundAmount;
+            this.lineItemsJson = lineItemsJson;
         }
 
         public String toJSON(){
@@ -23,6 +38,7 @@ public with sharing class OrderComplaintPayload {
             generator.writeStringField('Reason__c', reason);
             generator.writeStringField('Product_Ids__c', productIds);
             generator.writeNumberField('Refund_Amount__c', refundAmount);
+            generator.writeStringField('Line_Items_JSON__c', lineItemsJson != null ? lineItemsJson : '[]');
             generator.writeEndObject();
             return generator.getAsString();
         }
@@ -32,12 +48,14 @@ public with sharing class OrderComplaintPayload {
         private String status;
         private Decimal finalRefundAmount;
         private String finalRefundType;
+        private String lineItemsJson;
 
-        public ApprovalSyncQueueable(String caseId, Decimal finalRefundAmount, String finalRefundType, String status) {
+        public ApprovalSyncQueueable(String caseId, Decimal finalRefundAmount, String finalRefundType, String status, String lineItemsJson) {
             this.caseId = caseId;
             this.finalRefundAmount = finalRefundAmount;
             this.finalRefundType = finalRefundType;
             this.status = status;
+            this.lineItemsJson = lineItemsJson;
         }
 
         public String toJSON() {
@@ -47,6 +65,7 @@ public with sharing class OrderComplaintPayload {
             generator.writeStringField('Status__c', status);
             generator.writeNumberField('Final_Refund_Amount__c', finalRefundAmount);
             generator.writeStringField('Final_Refund_Type__c', finalRefundType);
+            generator.writeStringField('Line_Items_JSON__c', lineItemsJson != null ? lineItemsJson : '[]');
             generator.writeEndObject();
             return generator.getAsString();
         }
