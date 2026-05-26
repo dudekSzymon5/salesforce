@@ -126,7 +126,7 @@ export default class OrderComplaint extends NavigationMixin(LightningElement) {
                     this._unsubscribe();
                     this.waitingForExternal = false;
                     this.errorMessage = labelErrorRetry;
-                }, 30000);
+                }, 15000);
             }
 
         } catch (exception) {
