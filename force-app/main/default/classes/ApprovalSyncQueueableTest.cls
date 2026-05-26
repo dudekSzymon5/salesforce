@@ -12,7 +12,8 @@ private class ApprovalSyncQueueableTest {
                 'test-correlation-id',
                 Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.APPROVED_FULL,
                 100.00,
-                Utils.ORDER_COMPLAINT.REFUND_TYPE.FULL
+                Utils.ORDER_COMPLAINT.REFUND_TYPE.FULL,
+                null
         ));
         Test.stopTest();
     }
@@ -26,7 +27,8 @@ private class ApprovalSyncQueueableTest {
                 'test-correlation-id',
                 Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.REJECTED,
                 0,
-                Utils.ORDER_COMPLAINT.REFUND_TYPE.REJECTED
+                Utils.ORDER_COMPLAINT.REFUND_TYPE.REJECTED,
+                null
         ));
         Test.stopTest();
     }

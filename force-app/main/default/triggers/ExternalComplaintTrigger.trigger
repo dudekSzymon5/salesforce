@@ -33,7 +33,12 @@ trigger ExternalComplaintTrigger on External_Complaint__e (after insert) {
     try {
         Set<String> allExternalProductIds = new Set<String>();
         for (External_Complaint__e externalComplaint : Trigger.new) {
-            if (String.isNotBlank(externalComplaint.Product_Ids__c)) {
+            if (String.isNotBlank(externalComplaint.Line_Items_JSON__c)) {
+                List<OrderComplaintPayload.LineItem> items = (List<OrderComplaintPayload.LineItem>) JSON.deserialize(externalComplaint.Line_Items_JSON__c, List<OrderComplaintPayload.LineItem>.class);
+                for (OrderComplaintPayload.LineItem item : items) {
+                    if (String.isNotBlank(item.productId)) allExternalProductIds.add(item.productId);
+                }
+            } else if (String.isNotBlank(externalComplaint.Product_Ids__c)) {
                 allExternalProductIds.addAll(externalComplaint.Product_Ids__c.split(','));
             }
         }
@@ -50,17 +55,30 @@ trigger ExternalComplaintTrigger on External_Complaint__e (after insert) {
         List<Case_Order_Product__c> caseOrderProducts = new List<Case_Order_Product__c>();
         for (Integer i = 0; i < casesToInsert.size(); i++) {
             External_Complaint__e externalComplaint = Trigger.new[i];
-            if (String.isBlank(externalComplaint.Product_Ids__c)) {
-                continue;
-            }
-            for (String externalId : externalComplaint.Product_Ids__c.split(',')) {
-                Product2 product = productsByExternalId.get(externalId);
-                if (product != null) {
-                    caseOrderProducts.add(new Case_Order_Product__c(
-                        Case__c = casesToInsert[i].Id,
-                        Product_Name__c = product.Name,
-                        Is_External__c = true
-                    ));
+
+            if (String.isNotBlank(externalComplaint.Line_Items_JSON__c)) {
+                List<OrderComplaintPayload.LineItem> lineItems = (List<OrderComplaintPayload.LineItem>) JSON.deserialize(externalComplaint.Line_Items_JSON__c, List<OrderComplaintPayload.LineItem>.class);
+                for (OrderComplaintPayload.LineItem item : lineItems) {
+                    Product2 product = productsByExternalId.get(item.productId);
+                    if (product != null) {
+                        caseOrderProducts.add(new Case_Order_Product__c(
+                            Case__c = casesToInsert[i].Id,
+                            Product_Name__c = product.Name,
+                            Refund_Amount__c = item.refundAmount != null ? item.refundAmount : 0,
+                            Is_External__c = true
+                        ));
+                    }
+                }
+            } else if (String.isNotBlank(externalComplaint.Product_Ids__c)) {
+                for (String externalId : externalComplaint.Product_Ids__c.split(',')) {
+                    Product2 product = productsByExternalId.get(externalId);
+                    if (product != null) {
+                        caseOrderProducts.add(new Case_Order_Product__c(
+                            Case__c = casesToInsert[i].Id,
+                            Product_Name__c = product.Name,
+                            Is_External__c = true
+                        ));
+                    }
                 }
             }
         }
@@ -103,7 +121,5 @@ trigger ExternalComplaintTrigger on External_Complaint__e (after insert) {
         return;
     }
 
-    // Używam queueable żeby wysłać Konradowi response.
-    // Dlatego, że jestem na triggerze to używam queueable
     System.enqueueJob(new ComplaintResponseQueueable(casesToInsert, Trigger.new));
 }
