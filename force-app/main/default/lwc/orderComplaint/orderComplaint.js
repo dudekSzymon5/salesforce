@@ -3,6 +3,7 @@ import { CloseActionScreenEvent } from 'lightning/actions';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { NavigationMixin } from 'lightning/navigation';
 import { subscribe, unsubscribe } from 'lightning/empApi';
+import { notifyRecordUpdateAvailable } from 'lightning/uiRecordApi';
 import getOrderProducts from '@salesforce/apex/OrderComplaintController.getOrderProducts';
 import submitComplaint from '@salesforce/apex/OrderComplaintController.submitComplaint';
 import labelSuccess from '@salesforce/label/c.Common_Success';
@@ -120,6 +121,7 @@ export default class OrderComplaint extends NavigationMixin(LightningElement) {
             if (!this.correlationId) {
                 this._navigateToCase();
             } else {
+                notifyRecordUpdateAvailable([{ recordId: this.recordId }]);
                 this.waitingForExternal = true;
                 this.isLoading = false;
                 this.externalResponseTimeout = setTimeout(() => {

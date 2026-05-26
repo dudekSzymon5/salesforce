@@ -3,7 +3,7 @@ trigger ExternalComplaintTrigger on External_Complaint__e (after insert) {
     List<External_Complaint_Response__e> errorResponses = new List<External_Complaint_Response__e>();
 
     for (External_Complaint__e externalComplaint : Trigger.new) {
-        ErrorLogger.logInfo('ExternalComplaintTrigger', 'Received External_Complaint__e | Case_Id__c: ' + externalComplaint.Case_Id__c + ' | Order_Id__c: ' + externalComplaint.Order_Id__c);
+        ErrorLogger.logInfo('ExternalComplaintTrigger', 'Received External_Complaint__e | payload: ' + JSON.serialize(externalComplaint));
         casesToInsert.add(new Case(
             Complaint_Reason__c = externalComplaint.Reason__c,
             External_Case_Id__c = externalComplaint.Case_Id__c,
@@ -48,8 +48,13 @@ trigger ExternalComplaintTrigger on External_Complaint__e (after insert) {
                 SELECT Id, Name, External_Product_Id__c
                 FROM Product2
                 WHERE External_Product_Id__c IN :allExternalProductIds
+                OR Id IN :allExternalProductIds
         ]) {
-            productsByExternalId.put(product.External_Product_Id__c, product);
+            if (String.isNotBlank(product.External_Product_Id__c) && allExternalProductIds.contains(product.External_Product_Id__c)) {
+                productsByExternalId.put(product.External_Product_Id__c, product);
+            } else {
+                productsByExternalId.put(product.Id, product);
+            }
         }
 
         List<Case_Order_Product__c> caseOrderProducts = new List<Case_Order_Product__c>();

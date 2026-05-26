@@ -5,6 +5,7 @@ public class OrderComplaintUtils {
     public RefundStatus REFUND_STATUS { get {return new RefundStatus();} }
     public RefundType REFUND_TYPE { get {return new RefundType();} }
     public ApprovalAction APPROVAL_ACTION { get {return new ApprovalAction();} }
+    public NotificationType NOTIFICATION_TYPE { get {return new NotificationType();} }
 
     public class CaseStatus {
         public String NEW_CASE { get {return 'New';} }
@@ -30,5 +31,9 @@ public class OrderComplaintUtils {
     public class ApprovalAction {
         public String APPROVE { get {return 'Approve';} }
         public String REJECT { get {return 'Reject';} }
+    }
+
+    public class NotificationType {
+        public String COMPLAINT_DECISION { get {return 'Complaint_Decision';} }
     }
 }

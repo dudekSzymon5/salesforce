@@ -5,9 +5,9 @@ private class ExternalComplaintResponseTriggerTest {
         Account account = TestDataFactory.createAccount();
         Order order = TestDataFactory.order().forAccount(account.Id).create();
         update new Order(
-            Id = order.Id,
-            External_Complaint_Correlation_Id__c = correlationId,
-            Pending_Complaint_JSON__c = '{"reason":"Test","expectedRefundType":"Full","localItemIds":[]}'
+                Id = order.Id,
+                External_Complaint_Correlation_Id__c = correlationId,
+                Pending_Complaint_JSON__c = '{"reason":"Test","expectedRefundType":"Full","localItemIds":[]}'
         );
         return order;
     }
@@ -18,12 +18,12 @@ private class ExternalComplaintResponseTriggerTest {
 
         Test.startTest();
         EventBus.publish(new External_Complaint_Response__e(
-            Case_Id__c = correlationId,
-            Status__c = Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.APPROVED_FULL
+                Case_Id__c = correlationId,
+                Status__c = Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.APPROVED_FULL
         ));
         Test.stopTest();
 
-        List<Case> cases = [SELECT Id FROM Case WHERE External_Case_Id__c = :correlationId];
+        List<Case> cases = [SELECT Id FROM Case];
         Assert.areEqual(0, cases.size(), 'No Case should be created when Order is not found');
     }
 
@@ -34,17 +34,17 @@ private class ExternalComplaintResponseTriggerTest {
 
         Test.startTest();
         EventBus.publish(new External_Complaint_Response__e(
-            Case_Id__c = correlationId,
-            Status__c = Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.APPROVED_FULL,
-            Final_Refund_Type__c = Utils.ORDER_COMPLAINT.REFUND_TYPE.FULL,
-            Final_Refund_Amount__c = 200.00
+                Case_Id__c = correlationId,
+                Status__c = Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.APPROVED_FULL,
+                Final_Refund_Type__c = Utils.ORDER_COMPLAINT.REFUND_TYPE.FULL,
+                Final_Refund_Amount__c = 200.00
         ));
         Test.stopTest();
 
         List<Case> cases = [
-            SELECT Id, Refund_Status__c, Status, Has_External_Product__c, Refund_Amount__c
-            FROM Case
-            WHERE Order__c = :order.Id
+                SELECT Id, Refund_Status__c, Status, Has_External_Product__c, Refund_Amount__c
+                FROM Case
+                WHERE Order__c = :order.Id
         ];
         Assert.areEqual(1, cases.size(), 'Should create one Case from external approved response');
         Assert.areEqual(Utils.ORDER_COMPLAINT.REFUND_STATUS.APPROVED, cases[0].Refund_Status__c);
@@ -65,15 +65,15 @@ private class ExternalComplaintResponseTriggerTest {
 
         Test.startTest();
         EventBus.publish(new External_Complaint_Response__e(
-            Case_Id__c = correlationId,
-            Status__c = Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.REJECTED
+                Case_Id__c = correlationId,
+                Status__c = Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.REJECTED
         ));
         Test.stopTest();
 
         List<Case> cases = [
-            SELECT Id, Refund_Status__c, Status
-            FROM Case
-            WHERE Order__c = :order.Id
+                SELECT Id, Refund_Status__c, Status
+                FROM Case
+                WHERE Order__c = :order.Id
         ];
         Assert.areEqual(1, cases.size(), 'Should create one Case from external rejected response');
         Assert.areEqual(Utils.ORDER_COMPLAINT.REFUND_STATUS.REJECTED, cases[0].Refund_Status__c);
@@ -94,21 +94,21 @@ private class ExternalComplaintResponseTriggerTest {
         insert localItem;
 
         update new Order(
-            Id = order.Id,
-            External_Complaint_Correlation_Id__c = correlationId,
-            Pending_Complaint_JSON__c = JSON.serialize(new Map<String, Object>{
-                'reason' => 'Mixed test',
-                'expectedRefundType' => 'Full',
-                'localItemIds' => new List<Id>{ localItem.Id }
-            })
+                Id = order.Id,
+                External_Complaint_Correlation_Id__c = correlationId,
+                Pending_Complaint_JSON__c = JSON.serialize(new Map<String, Object>{
+                        'reason' => 'Mixed test',
+                        'expectedRefundType' => 'Full',
+                        'localItemIds' => new List<Id>{ localItem.Id }
+                })
         );
 
         Test.startTest();
         EventBus.publish(new External_Complaint_Response__e(
-            Case_Id__c = correlationId,
-            Status__c = Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.APPROVED_FULL,
-            Final_Refund_Type__c = Utils.ORDER_COMPLAINT.REFUND_TYPE.FULL,
-            Final_Refund_Amount__c = 100.00
+                Case_Id__c = correlationId,
+                Status__c = Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.APPROVED_FULL,
+                Final_Refund_Type__c = Utils.ORDER_COMPLAINT.REFUND_TYPE.FULL,
+                Final_Refund_Amount__c = 100.00
         ));
         Test.stopTest();
 
@@ -129,19 +129,19 @@ private class ExternalComplaintResponseTriggerTest {
         insert localItem;
 
         update new Order(
-            Id = order.Id,
-            External_Complaint_Correlation_Id__c = correlationId,
-            Pending_Complaint_JSON__c = JSON.serialize(new Map<String, Object>{
-                'reason' => 'Mixed rejected test',
-                'expectedRefundType' => 'Full',
-                'localItemIds' => new List<Id>{ localItem.Id }
-            })
+                Id = order.Id,
+                External_Complaint_Correlation_Id__c = correlationId,
+                Pending_Complaint_JSON__c = JSON.serialize(new Map<String, Object>{
+                        'reason' => 'Mixed rejected test',
+                        'expectedRefundType' => 'Full',
+                        'localItemIds' => new List<Id>{ localItem.Id }
+                })
         );
 
         Test.startTest();
         EventBus.publish(new External_Complaint_Response__e(
-            Case_Id__c = correlationId,
-            Status__c = Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.REJECTED
+                Case_Id__c = correlationId,
+                Status__c = Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.REJECTED
         ));
         Test.stopTest();
 
@@ -158,8 +158,8 @@ private class ExternalComplaintResponseTriggerTest {
 
         Test.startTest();
         EventBus.publish(new External_Complaint_Response__e(
-            Case_Id__c = correlationId,
-            Status__c = 'Created'
+                Case_Id__c = correlationId,
+                Status__c = 'Created'
         ));
         Test.stopTest();
 

@@ -7,9 +7,10 @@ public with sharing class OrderComplaintService {
 
     public static List<Case_Order_Product__c> getCaseProducts(Id caseId) {
         return [
-                SELECT Id, Product_Name__c, Order_Product__r.UnitPrice, Order_Product__r.Quantity, Refund_Amount__c
+                SELECT Id, Product_Name__c, Order_Product__r.UnitPrice, Order_Product__r.Quantity, Refund_Amount__c, Is_External__c
                 FROM Case_Order_Product__c
-                WHERE Case__c = :caseId AND Is_External__c = false AND Order_Product__c != null
+                WHERE Case__c = :caseId
+                AND ((Is_External__c = false AND Order_Product__c != null) OR Is_External__c = true)
         ];
     }
 
@@ -204,7 +205,12 @@ public with sharing class OrderComplaintService {
                 }
                 if (!productsToUpdate.isEmpty()) update productsToUpdate;
                 if (localProductCount == 0) {
-                    approvedAmount = aCase.Refund_Amount__c != null ? aCase.Refund_Amount__c : 0;
+                    for (Case_Order_Product__c cop : [
+                        SELECT Refund_Amount__c FROM Case_Order_Product__c
+                        WHERE Case__c = :caseId AND Is_External__c = true
+                    ]) {
+                        approvedAmount += cop.Refund_Amount__c != null ? cop.Refund_Amount__c : 0;
+                    }
                 }
             }
 
@@ -271,7 +277,11 @@ public with sharing class OrderComplaintService {
             localProductCount++;
         }
         if (localProductCount == 0) {
-            Case aCase = [SELECT Refund_Amount__c FROM Case WHERE Id = :caseId];
+            Case aCase = [
+                SELECT Refund_Amount__c 
+                FROM Case 
+                WHERE Id = :caseId
+            ];
             total = aCase.Refund_Amount__c != null ? aCase.Refund_Amount__c : 0;
         }
         return total;
