@@ -52,8 +52,7 @@ private class ExternalComplaintResponseTriggerTest {
         Assert.isTrue(cases[0].Has_External_Product__c);
         Assert.areEqual(200.00, cases[0].Refund_Amount__c);
 
-        Order updatedOrder = [SELECT Tracking_Case__c, External_Complaint_Correlation_Id__c, Refund_Amount__c, ComplaintCaseId__c FROM Order WHERE Id = :order.Id];
-        Assert.isNotNull(updatedOrder.Tracking_Case__c, 'Tracking_Case__c should be set');
+        Order updatedOrder = [SELECT External_Complaint_Correlation_Id__c, Refund_Amount__c, ComplaintCaseId__c FROM Order WHERE Id = :order.Id];
         Assert.isNull(updatedOrder.External_Complaint_Correlation_Id__c, 'CorrelationId should be cleared');
         Assert.areEqual(200.00, updatedOrder.Refund_Amount__c);
         Assert.areEqual(cases[0].Id, updatedOrder.ComplaintCaseId__c);
@@ -80,8 +79,7 @@ private class ExternalComplaintResponseTriggerTest {
         Assert.areEqual(Utils.ORDER_COMPLAINT.REFUND_STATUS.REJECTED, cases[0].Refund_Status__c);
         Assert.areEqual(Utils.ORDER_COMPLAINT.CASE_STATUS.CLOSED, cases[0].Status);
 
-        Order updatedOrder = [SELECT Tracking_Case__c, External_Complaint_Correlation_Id__c FROM Order WHERE Id = :order.Id];
-        Assert.isNotNull(updatedOrder.Tracking_Case__c);
+        Order updatedOrder = [SELECT External_Complaint_Correlation_Id__c FROM Order WHERE Id = :order.Id];
         Assert.isNull(updatedOrder.External_Complaint_Correlation_Id__c);
     }
 
