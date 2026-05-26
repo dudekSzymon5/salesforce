@@ -97,15 +97,18 @@ private class OrderComplaintControllerTest {
         );
         Test.stopTest();
 
-        Assert.isNotNull(result.caseId, 'Should create a local Case for local product');
+        Assert.isNull(result.caseId, 'No Case should be created immediately for mixed complaint');
         Assert.isNotNull(result.correlationId, 'Should return a correlation UUID for external product');
         Assert.isTrue(result.correlationId.contains('-'), 'Correlation ID should be a UUID');
 
-        Case aCase = [SELECT Id, Complaint_Reason__c FROM Case WHERE Id = :result.caseId];
-        Assert.areEqual('Mixed reason', aCase.Complaint_Reason__c);
+        Order updatedOrder = [SELECT Pending_Complaint_JSON__c, External_Complaint_Correlation_Id__c FROM Order WHERE Id = :order.Id];
+        Assert.isNotNull(updatedOrder.Pending_Complaint_JSON__c, 'Order should store pending complaint data');
+        Assert.areEqual(result.correlationId, updatedOrder.External_Complaint_Correlation_Id__c);
 
-        List<Case_Order_Product__c> lines = [SELECT Id, Is_External__c FROM Case_Order_Product__c WHERE Case__c = :result.caseId];
-        Assert.areEqual(2, lines.size(), 'Both local and external products should be linked to the local Case');
+        OrderComplaintPayload.PendingComplaint pending = (OrderComplaintPayload.PendingComplaint) JSON.deserialize(
+            updatedOrder.Pending_Complaint_JSON__c, OrderComplaintPayload.PendingComplaint.class);
+        Assert.areEqual(1, pending.localItemIds.size(), 'Pending data should contain the local item ID');
+        Assert.areEqual(localItem.Id, pending.localItemIds[0]);
     }
 
     @IsTest

@@ -4,7 +4,11 @@ private class ExternalComplaintResponseTriggerTest {
     static Order createOrderWithCorrelation(String correlationId) {
         Account account = TestDataFactory.createAccount();
         Order order = TestDataFactory.order().forAccount(account.Id).create();
-        update new Order(Id = order.Id, External_Complaint_Correlation_Id__c = correlationId);
+        update new Order(
+            Id = order.Id,
+            External_Complaint_Correlation_Id__c = correlationId,
+            Pending_Complaint_JSON__c = '{"reason":"Test","expectedRefundType":"Full","localItemIds":[]}'
+        );
         return order;
     }
 
@@ -82,23 +86,23 @@ private class ExternalComplaintResponseTriggerTest {
     }
 
     @IsTest
-    static void testTriggerApprovedWithExistingLocalCase() {
-        String correlationId = 'test-uuid-approved-with-local';
+    static void testTriggerMixedApprovedCreatesPendingCase() {
+        String correlationId = 'test-uuid-mixed-approved';
         Account account = TestDataFactory.createAccount();
+        Product2 localProduct = TestDataFactory.product().create();
+        PricebookEntry localEntry = TestDataFactory.addToPricebook(localProduct.Id, 50);
         Order order = TestDataFactory.order().forAccount(account.Id).create();
-
-        Case localCase = new Case(
-            Status = Utils.ORDER_COMPLAINT.CASE_STATUS.CLOSED,
-            Origin = Utils.ORDER_COMPLAINT.CASE_ORIGIN.WEB,
-            Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.APPROVED,
-            Refund_Amount__c = 50.00
-        );
-        insert localCase;
+        OrderItem localItem = new OrderItem(OrderId = order.Id, PricebookEntryId = localEntry.Id, Quantity = 1, UnitPrice = 50);
+        insert localItem;
 
         update new Order(
             Id = order.Id,
             External_Complaint_Correlation_Id__c = correlationId,
-            ComplaintCaseId__c = localCase.Id
+            Pending_Complaint_JSON__c = JSON.serialize(new Map<String, Object>{
+                'reason' => 'Mixed test',
+                'expectedRefundType' => 'Full',
+                'localItemIds' => new List<Id>{ localItem.Id }
+            })
         );
 
         Test.startTest();
@@ -110,13 +114,43 @@ private class ExternalComplaintResponseTriggerTest {
         ));
         Test.stopTest();
 
-        List<Case> cases = [SELECT Id, Refund_Status__c FROM Case WHERE Order__c = :order.Id];
+        List<Case> cases = [SELECT Id, Refund_Status__c, Status FROM Case WHERE Order__c = :order.Id];
         Assert.areEqual(1, cases.size(), 'Should create one Case from external response');
-        Assert.areEqual(Utils.ORDER_COMPLAINT.REFUND_STATUS.APPROVED, cases[0].Refund_Status__c);
+        Assert.areEqual(Utils.ORDER_COMPLAINT.REFUND_STATUS.PENDING, cases[0].Refund_Status__c);
+        Assert.areEqual(Utils.ORDER_COMPLAINT.CASE_STATUS.NEW_CASE, cases[0].Status);
+    }
 
-        Order updatedOrder = [SELECT Refund_Amount__c, Refund_Type__c FROM Order WHERE Id = :order.Id];
-        Assert.areEqual(150.00, updatedOrder.Refund_Amount__c, 'Refund should combine local (50) + external (100)');
-        Assert.areEqual(Utils.ORDER_COMPLAINT.REFUND_TYPE.FULL, updatedOrder.Refund_Type__c);
+    @IsTest
+    static void testTriggerMixedRejectedClosesCase() {
+        String correlationId = 'test-uuid-mixed-rejected';
+        Account account = TestDataFactory.createAccount();
+        Product2 localProduct = TestDataFactory.product().create();
+        PricebookEntry localEntry = TestDataFactory.addToPricebook(localProduct.Id, 50);
+        Order order = TestDataFactory.order().forAccount(account.Id).create();
+        OrderItem localItem = new OrderItem(OrderId = order.Id, PricebookEntryId = localEntry.Id, Quantity = 1, UnitPrice = 50);
+        insert localItem;
+
+        update new Order(
+            Id = order.Id,
+            External_Complaint_Correlation_Id__c = correlationId,
+            Pending_Complaint_JSON__c = JSON.serialize(new Map<String, Object>{
+                'reason' => 'Mixed rejected test',
+                'expectedRefundType' => 'Full',
+                'localItemIds' => new List<Id>{ localItem.Id }
+            })
+        );
+
+        Test.startTest();
+        EventBus.publish(new External_Complaint_Response__e(
+            Case_Id__c = correlationId,
+            Status__c = Utils.EXTERNAL_COMPLAINT.RESPONSE_STATUS.REJECTED
+        ));
+        Test.stopTest();
+
+        List<Case> cases = [SELECT Id, Refund_Status__c, Status FROM Case WHERE Order__c = :order.Id];
+        Assert.areEqual(1, cases.size(), 'Should create one Case even when external rejects');
+        Assert.areEqual(Utils.ORDER_COMPLAINT.REFUND_STATUS.REJECTED, cases[0].Refund_Status__c);
+        Assert.areEqual(Utils.ORDER_COMPLAINT.CASE_STATUS.CLOSED, cases[0].Status);
     }
 
     @IsTest
