@@ -30,7 +30,7 @@ public class ComplaintResponseQueueable implements Queueable, Database.AllowsCal
             request.setBody(body);
 
             try {
-                ErrorLogger.logInfo('ComplaintResponseQueueable', 'Sending response | Case_Id__c: ' + originalEvent.Case_Id__c + ' | External_Case_Id__c: ' + createdCase.Id);
+                ErrorLogger.logInfo('ComplaintResponseQueueable', 'Sending response | Case_Id__c: ' + originalEvent.Case_Id__c + ' | External_Case_Id__c: ' + createdCase.Id + ' | payload: ' + body);
 
                 HttpResponse response = httpClient.send(request);
 

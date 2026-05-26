@@ -50,9 +50,12 @@ export default class ApproveComplaint extends LightningElement {
             this.caseProducts = data.map(p => ({
                 Id: p.Id,
                 name: p.Product_Name__c,
-                unitPrice: p.Order_Product__r?.UnitPrice || 0,
-                quantity: p.Order_Product__r?.Quantity || 0,
-                maxAmount: (p.Order_Product__r?.UnitPrice || 0) * (p.Order_Product__r?.Quantity || 0)
+                isExternal: p.Is_External__c,
+                unitPrice: p.Is_External__c ? (p.Refund_Amount__c || 0) : (p.Order_Product__r?.UnitPrice || 0),
+                quantity: p.Is_External__c ? 1 : (p.Order_Product__r?.Quantity || 0),
+                maxAmount: p.Is_External__c
+                    ? (p.Refund_Amount__c || 0)
+                    : (p.Order_Product__r?.UnitPrice || 0) * (p.Order_Product__r?.Quantity || 0)
             }));
             const refunds = {};
             this.caseProducts.forEach(p => { refunds[p.Id] = 0; });
@@ -60,16 +63,36 @@ export default class ApproveComplaint extends LightningElement {
         }
     }
 
+    get localProducts() {
+        return this.caseProducts.filter(p => !p.isExternal);
+    }
+
+    get externalProducts() {
+        return this.caseProducts.filter(p => p.isExternal);
+    }
+
+    get hasExternalProducts() {
+        return this.externalProducts.length > 0;
+    }
+
+    get externalRefundTotal() {
+        return this.externalProducts.reduce((sum, p) => sum + p.maxAmount, 0);
+    }
+
     get showPartialInput() {
         return this.approvedRefundType === 'Partial';
+    }
+
+    get showProductSummary() {
+        return this.hasExternalProducts && (this.approvedRefundType === 'Full' || this.approvedRefundType === 'Partial');
     }
 
     get isApproveDisabled() {
         if (!this.approvedRefundType) return true;
         if (this.showPartialInput) {
-            const total = this.caseProducts.reduce((sum, p) => sum + (this.productRefunds[p.Id] || 0), 0);
+            const total = this.localProducts.reduce((sum, p) => sum + (this.productRefunds[p.Id] || 0), 0);
             if (total <= 0) return true;
-            if (this.caseProducts.some(p => (this.productRefunds[p.Id] || 0) > p.maxAmount)) return true;
+            if (this.localProducts.some(p => (this.productRefunds[p.Id] || 0) > p.maxAmount)) return true;
         }
         return false;
     }
@@ -94,7 +117,7 @@ export default class ApproveComplaint extends LightningElement {
 
     async handleApprove() {
         const productRefundsJson = this.showPartialInput
-            ? JSON.stringify(this.caseProducts.map(p => ({ id: p.Id, amount: this.productRefunds[p.Id] || 0 })))
+            ? JSON.stringify(this.localProducts.map(p => ({ id: p.Id, amount: this.productRefunds[p.Id] || 0 })))
             : null;
 
         try {
