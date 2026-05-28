@@ -1,6 +1,6 @@
 public with sharing class OrderComplaintController {
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<OrderItem> getOrderProducts(Id orderId) {
         try {
             return OrderComplaintService.getOrderProducts(orderId);
