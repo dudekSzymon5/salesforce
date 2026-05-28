@@ -11,6 +11,7 @@ public with sharing class OrderComplaintPayload {
         public String reason;
         public String expectedRefundType;
         public List<Id> localItemIds;
+        public List<Id> externalItemIds;
         public String externalLineItemsJson;
     }
 

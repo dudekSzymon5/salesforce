@@ -60,6 +60,16 @@ trigger ExternalComplaintResponseTrigger on External_Complaint_Response__e (afte
         return;
     }
 
+    Map<Id, String> externalItemIdToCorrelationId = new Map<Id, String>();
+    for (String corrId : pendingDataByCorrelationId.keySet()) {
+        OrderComplaintPayload.PendingComplaint pd = pendingDataByCorrelationId.get(corrId);
+        if (pd.externalItemIds != null) {
+            for (Id itemId : pd.externalItemIds) {
+                externalItemIdToCorrelationId.put(itemId, corrId);
+            }
+        }
+    }
+
     Map<Id, OrderItem> orderItemsById = allLocalItemIds.isEmpty() ? new Map<Id, OrderItem>() : new Map<Id, OrderItem>([
             SELECT Id, Product2.Name
             FROM OrderItem
@@ -69,11 +79,49 @@ trigger ExternalComplaintResponseTrigger on External_Complaint_Response__e (afte
     Map<String, Product2> productsByExternalId = new Map<String, Product2>();
     if (!allExternalProductIds.isEmpty()) {
         for (Product2 product : [
-            SELECT Id, Name, External_Product_Id__c 
-            FROM Product2 
+            SELECT Id, Name, External_Product_Id__c
+            FROM Product2
             WHERE External_Product_Id__c IN :allExternalProductIds
         ]) {
             productsByExternalId.put(product.External_Product_Id__c, product);
+        }
+    }
+
+    // Build map (orderId + '_' + product2Id) -> OrderItem.Id for external products
+    Map<String, Id> orderItemByOrderAndProduct2 = new Map<String, Id>();
+    if (!productsByExternalId.isEmpty()) {
+        Set<Id> allOrderIds = new Set<Id>();
+        Set<Id> allProduct2Ids = new Set<Id>();
+        for (Order ord : ordersByCorrelationId.values()) {
+            allOrderIds.add(ord.Id);
+        }
+        for (Product2 prod : productsByExternalId.values()) {
+            allProduct2Ids.add(prod.Id);
+        }
+        for (OrderItem oi : [
+            SELECT Id, OrderId, Product2Id
+            FROM OrderItem
+            WHERE OrderId IN :allOrderIds
+            AND Product2Id IN :allProduct2Ids
+        ]) {
+            orderItemByOrderAndProduct2.put(oi.OrderId + '_' + oi.Product2Id, oi.Id);
+        }
+    }
+
+    // Primary lookup: correlationId -> External_Product_Id__c -> OrderItem.Id (uses stored IDs, reliable)
+    Map<String, Map<String, Id>> extProductIdToItemIdByCorrelation = new Map<String, Map<String, Id>>();
+    if (!externalItemIdToCorrelationId.isEmpty()) {
+        for (OrderItem oi : [
+            SELECT Id, Product2.External_Product_Id__c
+            FROM OrderItem
+            WHERE Id IN :externalItemIdToCorrelationId.keySet()
+            AND Product2.External_Product_Id__c != null
+        ]) {
+            String corrId = externalItemIdToCorrelationId.get(oi.Id);
+            if (!extProductIdToItemIdByCorrelation.containsKey(corrId)) {
+                extProductIdToItemIdByCorrelation.put(corrId, new Map<String, Id>());
+            }
+            extProductIdToItemIdByCorrelation.get(corrId).put(oi.Product2.External_Product_Id__c, oi.Id);
         }
     }
 
@@ -173,9 +221,15 @@ trigger ExternalComplaintResponseTrigger on External_Complaint_Response__e (afte
             for (OrderComplaintPayload.LineItem lineItem : lineItems) {
                 Product2 product = productsByExternalId.get(lineItem.productId);
                 if (product != null) {
+                    Map<String, Id> extProdToItem = extProductIdToItemIdByCorrelation.get(correlationId);
+                    Id orderItemId = extProdToItem != null ? extProdToItem.get(lineItem.productId) : null;
+                    if (orderItemId == null) {
+                        orderItemId = orderItemByOrderAndProduct2.get(targetOrder.Id + '_' + product.Id);
+                    }
                     caseOrderProducts.add(new Case_Order_Product__c(
                             Case__c = newCase.Id,
                             Order__c = targetOrder.Id,
+                            Order_Product__c = orderItemId,
                             Product_Name__c = product.Name,
                             Refund_Amount__c = isApproved && lineItem.refundAmount != null ? lineItem.refundAmount : 0,
                             Is_External__c = true
