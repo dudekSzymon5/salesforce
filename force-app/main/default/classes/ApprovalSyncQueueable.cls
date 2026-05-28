@@ -46,8 +46,12 @@ public class ApprovalSyncQueueable implements Queueable, Database.AllowsCallouts
         for (Case_Order_Product__c caseOrderProduct : caseOrderProducts) productNames.add(caseOrderProduct.Product_Name__c);
 
         Map<String, String> externalIdByName = new Map<String, String>();
-        for (Product2 p : [SELECT Id, Name, External_Product_Id__c FROM Product2 WHERE Name IN :productNames]) {
-            externalIdByName.put(p.Name, String.isNotBlank(p.External_Product_Id__c) ? p.External_Product_Id__c : p.Id);
+        for (Product2 product : [
+            SELECT Id, Name, External_Product_Id__c 
+            FROM Product2 
+            WHERE Name IN :productNames
+        ]) {
+            externalIdByName.put(product.Name, String.isNotBlank(product.External_Product_Id__c) ? product.External_Product_Id__c : product.Id);
         }
 
         List<OrderComplaintPayload.LineItem> lineItems = new List<OrderComplaintPayload.LineItem>();

@@ -62,6 +62,7 @@ public with sharing class OrderComplaintService {
 
         ComplaintResult result = new ComplaintResult();
         String correlationId = null;
+        String lineItemsJson = null;
 
         if (hasExternal) {
             List<OrderComplaintPayload.LineItem> lineItems = new List<OrderComplaintPayload.LineItem>();
@@ -72,7 +73,7 @@ public with sharing class OrderComplaintService {
                 lineItem.refundType = expectedRefundType;
                 lineItems.add(lineItem);
             }
-            String lineItemsJson = JSON.serialize(lineItems);
+            lineItemsJson = JSON.serialize(lineItems);
 
             correlationId = generateUUID();
             HttpRequest request = new HttpRequest();
@@ -144,6 +145,7 @@ public with sharing class OrderComplaintService {
             OrderComplaintPayload.PendingComplaint pendingData = new OrderComplaintPayload.PendingComplaint();
             pendingData.reason = reason;
             pendingData.expectedRefundType = expectedRefundType;
+            pendingData.externalLineItemsJson = lineItemsJson;
             pendingData.localItemIds = new List<Id>();
             for (OrderItem orderItem : localItems) {
                 pendingData.localItemIds.add(orderItem.Id);

@@ -45,8 +45,11 @@ trigger ExternalComplaintResponseTrigger on External_Complaint_Response__e (afte
             allLocalItemIds.addAll(pendingData.localItemIds);
         }
 
-        if (String.isNotBlank(response.Line_Items_JSON__c)) {
-            List<OrderComplaintPayload.LineItem> lineItems = (List<OrderComplaintPayload.LineItem>) JSON.deserialize(response.Line_Items_JSON__c, List<OrderComplaintPayload.LineItem>.class);
+        String lineItemsSourceForIds = String.isNotBlank(response.Line_Items_JSON__c)
+                ? response.Line_Items_JSON__c
+                : pendingData.externalLineItemsJson;
+        if (String.isNotBlank(lineItemsSourceForIds)) {
+            List<OrderComplaintPayload.LineItem> lineItems = (List<OrderComplaintPayload.LineItem>) JSON.deserialize(lineItemsSourceForIds, List<OrderComplaintPayload.LineItem>.class);
             for (OrderComplaintPayload.LineItem lineItem : lineItems) {
                 if (String.isNotBlank(lineItem.productId)) allExternalProductIds.add(lineItem.productId);
             }
@@ -162,8 +165,11 @@ trigger ExternalComplaintResponseTrigger on External_Complaint_Response__e (afte
             }
         }
 
-        if (String.isNotBlank(response.Line_Items_JSON__c)) {
-            List<OrderComplaintPayload.LineItem> lineItems = (List<OrderComplaintPayload.LineItem>) JSON.deserialize(response.Line_Items_JSON__c, List<OrderComplaintPayload.LineItem>.class);
+        String lineItemsSource = String.isNotBlank(response.Line_Items_JSON__c)
+                ? response.Line_Items_JSON__c
+                : pendingData.externalLineItemsJson;
+        if (String.isNotBlank(lineItemsSource)) {
+            List<OrderComplaintPayload.LineItem> lineItems = (List<OrderComplaintPayload.LineItem>) JSON.deserialize(lineItemsSource, List<OrderComplaintPayload.LineItem>.class);
             for (OrderComplaintPayload.LineItem lineItem : lineItems) {
                 Product2 product = productsByExternalId.get(lineItem.productId);
                 if (product != null) {
@@ -171,7 +177,7 @@ trigger ExternalComplaintResponseTrigger on External_Complaint_Response__e (afte
                             Case__c = newCase.Id,
                             Order__c = targetOrder.Id,
                             Product_Name__c = product.Name,
-                            Refund_Amount__c = lineItem.refundAmount != null ? lineItem.refundAmount : 0,
+                            Refund_Amount__c = isApproved && lineItem.refundAmount != null ? lineItem.refundAmount : 0,
                             Is_External__c = true
                     ));
                 }
@@ -198,7 +204,7 @@ trigger ExternalComplaintResponseTrigger on External_Complaint_Response__e (afte
                     : (response.Status__c == approvedFull ? Utils.ORDER_COMPLAINT.REFUND_TYPE.FULL : Utils.ORDER_COMPLAINT.REFUND_TYPE.PARTIAL);
             orderUpdate.Refund_Amount__c = totalRefund;
             orderUpdate.Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.APPROVED;
-        } else if (!isMixed && !isApproved) {
+        } else if (!isApproved) {
             orderUpdate.Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.REJECTED;
         }
         ordersToUpdate.add(orderUpdate);
