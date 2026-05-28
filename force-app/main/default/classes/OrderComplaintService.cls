@@ -23,6 +23,18 @@ public with sharing class OrderComplaintService {
     }
 
     public static ComplaintResult submitComplaint(Id orderId, String reason, String expectedRefundType, List<Id> selectedOrderItemsId) {
+        Order order = [
+            SELECT Status, ComplaintCaseId__c, External_Complaint_Correlation_Id__c
+            FROM Order
+            WHERE Id = :orderId
+        ];
+        if (order.Status != 'Activated') {
+            throw new AuraHandledException('Complaint can only be submitted for an Activated Order.');
+        }
+        if (order.ComplaintCaseId__c != null || String.isNotBlank(order.External_Complaint_Correlation_Id__c)) {
+            throw new AuraHandledException('A complaint already exists for this Order.');
+        }
+
         List<OrderItem> getItems = [
                 SELECT Id, Product2Id, Product2.Name, Product2.Is_External__c, Product2.External_Product_Id__c, Quantity, UnitPrice
                 FROM OrderItem
@@ -132,7 +144,9 @@ public with sharing class OrderComplaintService {
             pendingData.reason = reason;
             pendingData.expectedRefundType = expectedRefundType;
             pendingData.localItemIds = new List<Id>();
-            for (OrderItem orderItem : localItems) pendingData.localItemIds.add(orderItem.Id);
+            for (OrderItem orderItem : localItems) {
+                pendingData.localItemIds.add(orderItem.Id);
+            }
 
             update new Order(
                     Id = orderId,
@@ -146,7 +160,7 @@ public with sharing class OrderComplaintService {
         return result;
     }
 
-    public static void approveComplaint(Id caseId, String refundType, Decimal refundAmount, String comment, String action, String productRefundsJson) {
+    public static void approveComplaint(Id caseId, String refundType, String comment, String productRefundsJson) {
         List<ProcessInstanceWorkitem> workitems = [
                 SELECT Id
                 FROM ProcessInstanceWorkitem
@@ -176,40 +190,59 @@ public with sharing class OrderComplaintService {
         ];
 
         if (approvalAction == Utils.ORDER_COMPLAINT.APPROVAL_ACTION.APPROVE) {
-            Decimal approvedAmount = refundAmount != null ? refundAmount : 0;
+            Decimal approvedAmount = 0;
 
             if (refundType == Utils.ORDER_COMPLAINT.REFUND_TYPE.PARTIAL && String.isNotBlank(productRefundsJson)) {
-                List<Object> rawList = (List<Object>) JSON.deserializeUntyped(productRefundsJson);
+                List<Object> productRefundList = (List<Object>) JSON.deserializeUntyped(productRefundsJson);
+
+                Set<Id> productIds = new Set<Id>();
+                for (Object productRefund : productRefundList) {
+                    productIds.add((Id) ((Map<String, Object>) productRefund).get('id'));
+                }
+                Map<Id, Case_Order_Product__c> caseProductsById = new Map<Id, Case_Order_Product__c>([
+                    SELECT Id, Order_Product__r.UnitPrice, Order_Product__r.Quantity
+                    FROM Case_Order_Product__c
+                    WHERE Id IN :productIds AND Is_External__c = false
+                ]);
+
                 List<Case_Order_Product__c> productsToUpdate = new List<Case_Order_Product__c>();
-                approvedAmount = 0;
-                for (Object raw : rawList) {
-                    Map<String, Object> entry = (Map<String, Object>) raw;
-                    Decimal amount = entry.get('amount') != null ? (Decimal) entry.get('amount') : 0;
-                    productsToUpdate.add(new Case_Order_Product__c(Id = (Id) entry.get('id'), Refund_Amount__c = amount));
+                for (Object productRefund : productRefundList) {
+                    Map<String, Object> productRefundEntry = (Map<String, Object>) productRefund;
+                    Decimal amount = productRefundEntry.get('amount') != null ? (Decimal) productRefundEntry.get('amount') : 0;
+                    if (amount < 0) {
+                        throw new AuraHandledException('Refund amount cannot be negative.');
+                    }
+                    Case_Order_Product__c cop = caseProductsById.get((Id) productRefundEntry.get('id'));
+                    if (cop != null) {
+                        Decimal maxAmount = cop.Order_Product__r.UnitPrice * cop.Order_Product__r.Quantity;
+                        if (amount > maxAmount) {
+                            throw new AuraHandledException('Refund amount exceeds product value.');
+                        }
+                    }
+                    productsToUpdate.add(new Case_Order_Product__c(Id = (Id) productRefundEntry.get('id'), Refund_Amount__c = amount));
                     approvedAmount += amount;
                 }
                 if (!productsToUpdate.isEmpty()) update productsToUpdate;
             } else if (refundType == Utils.ORDER_COMPLAINT.REFUND_TYPE.FULL) {
-                approvedAmount = 0;
                 Integer localProductCount = 0;
                 List<Case_Order_Product__c> productsToUpdate = new List<Case_Order_Product__c>();
-                for (Case_Order_Product__c cop : [
+                for (Case_Order_Product__c caseProduct : [
                         SELECT Id, Order_Product__r.UnitPrice, Order_Product__r.Quantity
                         FROM Case_Order_Product__c
                         WHERE Case__c = :caseId AND Is_External__c = false AND Order_Product__c != null
                 ]) {
-                    Decimal productAmount = cop.Order_Product__r.UnitPrice * cop.Order_Product__r.Quantity;
+                    Decimal productAmount = caseProduct.Order_Product__r.UnitPrice * caseProduct.Order_Product__r.Quantity;
                     approvedAmount += productAmount;
                     localProductCount++;
-                    productsToUpdate.add(new Case_Order_Product__c(Id = cop.Id, Refund_Amount__c = productAmount));
+                    productsToUpdate.add(new Case_Order_Product__c(Id = caseProduct.Id, Refund_Amount__c = productAmount));
                 }
                 if (!productsToUpdate.isEmpty()) update productsToUpdate;
                 if (localProductCount == 0) {
-                    for (Case_Order_Product__c cop : [
+                    for (Case_Order_Product__c externalCaseProduct : [
                         SELECT Refund_Amount__c FROM Case_Order_Product__c
                         WHERE Case__c = :caseId AND Is_External__c = true
                     ]) {
-                        approvedAmount += cop.Refund_Amount__c != null ? cop.Refund_Amount__c : 0;
+                        approvedAmount += externalCaseProduct.Refund_Amount__c != null ? externalCaseProduct.Refund_Amount__c : 0;
                     }
                 }
             }

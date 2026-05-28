@@ -16,6 +16,8 @@ private class OrderComplaintControllerTest {
             UnitPrice = 100
         );
         insert item;
+        order.Status = 'Activated';
+        update order;
         return item;
     }
 
@@ -90,6 +92,8 @@ private class OrderComplaintControllerTest {
         OrderItem localItem = new OrderItem(OrderId = order.Id, PricebookEntryId = localEntry.Id, Quantity = 1, UnitPrice = 100);
         OrderItem externalItem = new OrderItem(OrderId = order.Id, PricebookEntryId = externalEntry.Id, Quantity = 2, UnitPrice = 200);
         insert new List<OrderItem>{ localItem, externalItem };
+        order.Status = 'Activated';
+        update order;
 
         Test.startTest();
         OrderComplaintService.ComplaintResult result = OrderComplaintController.submitComplaint(
@@ -148,7 +152,7 @@ private class OrderComplaintControllerTest {
 
         Test.startTest();
         try {
-            OrderComplaintController.approveComplaint(aCase.Id, 'Partial', 50.00, 'comment', 'Approve', null);
+            OrderComplaintController.approveComplaint(aCase.Id, 'Partial', 'comment', null);
             Assert.fail('Expected AuraHandledException');
         } catch (AuraHandledException e) {
             Assert.isNotNull(e.getMessage());

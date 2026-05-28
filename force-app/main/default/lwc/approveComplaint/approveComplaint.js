@@ -47,28 +47,28 @@ export default class ApproveComplaint extends LightningElement {
     @wire(getCaseProducts, { caseId: '$recordId' })
     wiredProducts({ data }) {
         if (data) {
-            this.caseProducts = data.map(p => ({
-                Id: p.Id,
-                name: p.Product_Name__c,
-                isExternal: p.Is_External__c,
-                unitPrice: p.Is_External__c ? (p.Refund_Amount__c || 0) : (p.Order_Product__r?.UnitPrice || 0),
-                quantity: p.Is_External__c ? 1 : (p.Order_Product__r?.Quantity || 0),
-                maxAmount: p.Is_External__c
-                    ? (p.Refund_Amount__c || 0)
-                    : (p.Order_Product__r?.UnitPrice || 0) * (p.Order_Product__r?.Quantity || 0)
+            this.caseProducts = data.map(product => ({
+                Id: product.Id,
+                name: product.Product_Name__c,
+                isExternal: product.Is_External__c,
+                unitPrice: product.Is_External__c ? (product.Refund_Amount__c || 0) : (product.Order_Product__r?.UnitPrice || 0),
+                quantity: product.Is_External__c ? 1 : (product.Order_Product__r?.Quantity || 0),
+                maxAmount: product.Is_External__c
+                    ? (product.Refund_Amount__c || 0)
+                    : (product.Order_Product__r?.UnitPrice || 0) * (product.Order_Product__r?.Quantity || 0)
             }));
             const refunds = {};
-            this.caseProducts.forEach(p => { refunds[p.Id] = 0; });
+            this.caseProducts.forEach(product => { refunds[product.Id] = 0; });
             this.productRefunds = refunds;
         }
     }
 
     get localProducts() {
-        return this.caseProducts.filter(p => !p.isExternal);
+        return this.caseProducts.filter(product => !product.isExternal);
     }
 
     get externalProducts() {
-        return this.caseProducts.filter(p => p.isExternal);
+        return this.caseProducts.filter(product => product.isExternal);
     }
 
     get hasExternalProducts() {
@@ -76,7 +76,7 @@ export default class ApproveComplaint extends LightningElement {
     }
 
     get externalRefundTotal() {
-        return this.externalProducts.reduce((sum, p) => sum + p.maxAmount, 0);
+        return this.externalProducts.reduce((sum, product) => sum + product.maxAmount, 0);
     }
 
     get showPartialInput() {
@@ -90,9 +90,9 @@ export default class ApproveComplaint extends LightningElement {
     get isApproveDisabled() {
         if (!this.approvedRefundType) return true;
         if (this.showPartialInput) {
-            const total = this.localProducts.reduce((sum, p) => sum + (this.productRefunds[p.Id] || 0), 0);
+            const total = this.localProducts.reduce((sum, product) => sum + (this.productRefunds[product.Id] || 0), 0);
             if (total <= 0) return true;
-            if (this.localProducts.some(p => (this.productRefunds[p.Id] || 0) > p.maxAmount)) return true;
+            if (this.localProducts.some(product => (this.productRefunds[product.Id] || 0) > product.maxAmount)) return true;
         }
         return false;
     }
@@ -115,21 +115,19 @@ export default class ApproveComplaint extends LightningElement {
         this.dispatchEvent(new CloseActionScreenEvent());
     }
 
-    async handleApprove() {
+    async handleApprove() { // Jeśli partial serializuje loklane produkty z kwotami do JSON
         const productRefundsJson = this.showPartialInput
-            ? JSON.stringify(this.localProducts.map(p => ({ id: p.Id, amount: this.productRefunds[p.Id] || 0 })))
+            ? JSON.stringify(this.localProducts.map(product => ({ id: product.Id, amount: this.productRefunds[product.Id] || 0 })))
             : null;
 
         try {
-            await approveComplaint({
+            await approveComplaint({ // Wywołuje apex z caseId, refuntTYpe, comments
                 caseId: this.recordId,
                 refundType: this.approvedRefundType,
-                refundAmount: null,
                 comment: this.comments,
-                action: null,
                 productRefundsJson: productRefundsJson
             });
-            notifyRecordUpdateAvailable([{ recordId: this.recordId }]);
+            notifyRecordUpdateAvailable([{ recordId: this.recordId }]); // Odświeża dane na stronie Case'a
             this.dispatchEvent(new ShowToastEvent({
                 title: labelSuccess,
                 message: labelDecisionSubmitted,

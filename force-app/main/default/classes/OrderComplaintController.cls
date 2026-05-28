@@ -37,9 +37,9 @@ public with sharing class OrderComplaintController {
     }
 
     @AuraEnabled
-    public static void approveComplaint(Id caseId, String refundType, Decimal refundAmount, String comment, String action, String productRefundsJson) {
+    public static void approveComplaint(Id caseId, String refundType, String comment, String productRefundsJson) {
         try {
-            OrderComplaintService.approveComplaint(caseId, refundType, refundAmount, comment, action, productRefundsJson);
+            OrderComplaintService.approveComplaint(caseId, refundType, comment, productRefundsJson);
         } catch (AuraHandledException e) {
             throw e;
         } catch (Exception e) {
