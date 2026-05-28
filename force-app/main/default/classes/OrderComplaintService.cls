@@ -92,7 +92,7 @@ public with sharing class OrderComplaintService {
             HttpResponse response = new Http().send(request);
 
             if (response.getStatusCode() != 200 && response.getStatusCode() != 201) {
-                throw new AuraHandledException('External system rejected the complaint: ' + response.getStatusCode());
+                throw new AuraHandledException('External system rejected the complaint:' + response.getStatusCode());
             }
 
             result.correlationId = correlationId;
@@ -129,7 +129,8 @@ public with sharing class OrderComplaintService {
                     ComplaintCaseId__c = aCase.Id,
                     External_Complaint_Correlation_Id__c = null,
                     Tracking_Case__c = null,
-                    Pending_Complaint_JSON__c = null
+                    Pending_Complaint_JSON__c = null,
+                    Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.PENDING
             );
 
             Approval.ProcessSubmitRequest approvalRequest = new Approval.ProcessSubmitRequest();
@@ -153,7 +154,8 @@ public with sharing class OrderComplaintService {
                     External_Complaint_Correlation_Id__c = correlationId,
                     Tracking_Case__c = null,
                     ComplaintCaseId__c = null,
-                    Pending_Complaint_JSON__c = JSON.serialize(pendingData)
+                    Pending_Complaint_JSON__c = JSON.serialize(pendingData),
+                    Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.PENDING
             );
         }
 
@@ -267,7 +269,7 @@ public with sharing class OrderComplaintService {
                     ]) {
                         externalAmount += cop.Refund_Amount__c != null ? cop.Refund_Amount__c : 0;
                     }
-                    update new Order(Id = aCase.Order__c, Refund_Type__c = refundType, Refund_Amount__c = approvedAmount + externalAmount);
+                    update new Order(Id = aCase.Order__c, Refund_Type__c = refundType, Refund_Amount__c = approvedAmount + externalAmount, Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.APPROVED);
                 }
             }
             ErrorLogger.logInfo('OrderComplaintService.approveComplaint', 'Refund type ' + refundType + ' applied to Case: ' + caseId + (aCase.Order__c != null ? ' and Order: ' + aCase.Order__c : ''));
@@ -275,6 +277,9 @@ public with sharing class OrderComplaintService {
             aCase.Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.REJECTED;
             aCase.Status = Utils.ORDER_COMPLAINT.CASE_STATUS.CLOSED;
             update aCase;
+            if (aCase.Order__c != null) {
+                update new Order(Id = aCase.Order__c, Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.REJECTED);
+            }
         }
 
         if (String.isNotBlank(aCase.External_Case_Id__c)) {
