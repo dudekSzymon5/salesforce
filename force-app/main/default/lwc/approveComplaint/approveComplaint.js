@@ -115,19 +115,19 @@ export default class ApproveComplaint extends LightningElement {
         this.dispatchEvent(new CloseActionScreenEvent());
     }
 
-    async handleApprove() { // Jeśli partial serializuje loklane produkty z kwotami do JSON
+    async handleApprove() {
         const productRefundsJson = this.showPartialInput
             ? JSON.stringify(this.localProducts.map(product => ({ id: product.Id, amount: this.productRefunds[product.Id] || 0 })))
             : null;
 
         try {
-            await approveComplaint({ // Wywołuje apex z caseId, refuntTYpe, comments
+            await approveComplaint({
                 caseId: this.recordId,
                 refundType: this.approvedRefundType,
                 comment: this.comments,
                 productRefundsJson: productRefundsJson
             });
-            notifyRecordUpdateAvailable([{ recordId: this.recordId }]); // Odświeża dane na stronie Case'a
+            notifyRecordUpdateAvailable([{ recordId: this.recordId }]);
             this.dispatchEvent(new ShowToastEvent({
                 title: labelSuccess,
                 message: labelDecisionSubmitted,
