@@ -193,6 +193,9 @@ public class TestDataFactory {
         public OrderBuilder withPricebook(Id pricebookId) {
             order.Pricebook2Id = pricebookId; return this;
         }
+        public OrderBuilder activated() {
+            order.Status = 'Activated'; return this;
+        }
 
         public Order build() {
             if (order.Pricebook2Id == null) {

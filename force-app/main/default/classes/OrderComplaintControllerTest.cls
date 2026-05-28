@@ -8,7 +8,7 @@ private class OrderComplaintControllerTest {
         Product2 product = isExternal ? TestDataFactory.product().external().create() : TestDataFactory.product().create();
 
         PricebookEntry pricebookEntry = TestDataFactory.addToPricebook(product.Id, 100);
-        Order order = TestDataFactory.order().forAccount(account.Id).create();
+        Order order = TestDataFactory.order().forAccount(account.Id).activated().create();
         OrderItem item = new OrderItem(
             OrderId = order.Id,
             PricebookEntryId = pricebookEntry.Id,
@@ -85,7 +85,7 @@ private class OrderComplaintControllerTest {
         PricebookEntry localEntry = TestDataFactory.addToPricebook(localProduct.Id, 100);
         PricebookEntry externalEntry = TestDataFactory.addToPricebook(externalProduct.Id, 200);
 
-        Order order = TestDataFactory.order().forAccount(account.Id).create();
+        Order order = TestDataFactory.order().forAccount(account.Id).activated().create();
 
         OrderItem localItem = new OrderItem(OrderId = order.Id, PricebookEntryId = localEntry.Id, Quantity = 1, UnitPrice = 100);
         OrderItem externalItem = new OrderItem(OrderId = order.Id, PricebookEntryId = externalEntry.Id, Quantity = 2, UnitPrice = 200);
