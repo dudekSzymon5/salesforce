@@ -28,16 +28,22 @@ trigger ExternalComplaintResponseTrigger on External_Complaint_Response__e (afte
 
         Boolean isApproved = response.Status__c == approvedFull || response.Status__c == approvedPartial;
         Boolean isRejected = response.Status__c == rejectedStatus;
-        if (!isApproved && !isRejected) continue;
+        if (!isApproved && !isRejected) {
+            continue;
+        }
 
         Order targetOrder = ordersByCorrelationId.get(response.Case_Id__c);
-        if (targetOrder == null || String.isBlank(targetOrder.Pending_Complaint_JSON__c)) continue;
+        if (targetOrder == null || String.isBlank(targetOrder.Pending_Complaint_JSON__c)) {
+            continue;
+        }
 
         OrderComplaintPayload.PendingComplaint pendingData = (OrderComplaintPayload.PendingComplaint) JSON.deserialize(targetOrder.Pending_Complaint_JSON__c, OrderComplaintPayload.PendingComplaint.class);
         pendingDataByCorrelationId.put(response.Case_Id__c, pendingData);
         responseByCorrelationId.put(response.Case_Id__c, response);
 
-        if (pendingData.localItemIds != null) allLocalItemIds.addAll(pendingData.localItemIds);
+        if (pendingData.localItemIds != null) {
+            allLocalItemIds.addAll(pendingData.localItemIds);
+        }
 
         if (String.isNotBlank(response.Line_Items_JSON__c)) {
             List<OrderComplaintPayload.LineItem> lineItems = (List<OrderComplaintPayload.LineItem>) JSON.deserialize(response.Line_Items_JSON__c, List<OrderComplaintPayload.LineItem>.class);
@@ -47,7 +53,9 @@ trigger ExternalComplaintResponseTrigger on External_Complaint_Response__e (afte
         }
     }
 
-    if (pendingDataByCorrelationId.isEmpty()) return;
+    if (pendingDataByCorrelationId.isEmpty()) {
+        return;
+    }
 
     Map<Id, OrderItem> orderItemsById = allLocalItemIds.isEmpty() ? new Map<Id, OrderItem>() : new Map<Id, OrderItem>([
             SELECT Id, Product2.Name
@@ -57,7 +65,11 @@ trigger ExternalComplaintResponseTrigger on External_Complaint_Response__e (afte
 
     Map<String, Product2> productsByExternalId = new Map<String, Product2>();
     if (!allExternalProductIds.isEmpty()) {
-        for (Product2 product : [SELECT Id, Name, External_Product_Id__c FROM Product2 WHERE External_Product_Id__c IN :allExternalProductIds]) {
+        for (Product2 product : [
+            SELECT Id, Name, External_Product_Id__c 
+            FROM Product2 
+            WHERE External_Product_Id__c IN :allExternalProductIds
+        ]) {
             productsByExternalId.put(product.External_Product_Id__c, product);
         }
     }
@@ -189,8 +201,12 @@ trigger ExternalComplaintResponseTrigger on External_Complaint_Response__e (afte
         ordersToUpdate.add(orderUpdate);
     }
 
-    if (!caseOrderProducts.isEmpty()) insert caseOrderProducts;
-    if (!ordersToUpdate.isEmpty()) update ordersToUpdate;
+    if (!caseOrderProducts.isEmpty()) {
+        insert caseOrderProducts;
+    }
+    if (!ordersToUpdate.isEmpty()) {
+        update ordersToUpdate;
+    }
 
     for (Case mixedCase : mixedCasesForApproval) {
         try {

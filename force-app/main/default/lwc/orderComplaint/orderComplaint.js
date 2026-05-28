@@ -153,11 +153,7 @@ export default class OrderComplaint extends NavigationMixin(LightningElement) {
                         message: labelExternalRegistered,
                         variant: 'success'
                     }));
-                    if (this.caseId) {
-                        this._navigateToCase();
-                    } else {
-                        this.dispatchEvent(new CloseActionScreenEvent());
-                    }
+                     this.dispatchEvent(new CloseActionScreenEvent());
                 }
             }
         });

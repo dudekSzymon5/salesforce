@@ -30,7 +30,7 @@ public with sharing class OrderComplaintPayload {
             this.lineItemsJson = lineItemsJson;
         }
 
-        public String toJSON(){
+        public String toJSON() {
             JSONGenerator generator = JSON.createGenerator(false);
             generator.writeStartObject();
             generator.writeStringField('Order_Id__c', orderId);
