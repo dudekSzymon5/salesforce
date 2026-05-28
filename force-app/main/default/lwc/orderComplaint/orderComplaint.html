@@ -1,65 +1,83 @@
 <template>
     <lightning-modal-header label={labelNewComplaintTitle}></lightning-modal-header>
-<lightning-modal-body>
-    <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered">
-        <thead>
-            <tr class="slds-line-height_reset">
-                <th scope="col" style="width: 3rem;"></th>
-                <th scope="col"><div class="slds-truncate">{labelColProduct}</div></th>
-                <th scope="col"><div class="slds-truncate">{labelColQuantity}</div></th>
-                <th scope="col"><div class="slds-truncate">{labelColUnitPrice}</div></th>
-            </tr>
-        </thead>
-        <tbody>
-            <template for:each={products} for:item="product">
-                <tr key={product.Id}>
-                    <td>
-                        <lightning-input
-                            type="checkbox"
-                            label=""
-                            data-id={product.Id}
-                            onchange={handleProductSelect}>
-                        </lightning-input>
-                    </td>
-                    <td>{product.name}</td>
-                    <td>{product.quantity}</td>
-                    <td>{product.unitPrice} $</td>
-                </tr>
-            </template>
-        </tbody>
-    </table>
+    <lightning-modal-body>
+        <template if:true={showOrderNotActivatedMessage}>
+            <div class="slds-notify slds-notify_alert slds-alert_warning" role="alert">
+                <span class="slds-assistive-text">warning</span>
+                <p>{labelOrderNotActivated}</p>
+            </div>
+        </template>
 
-    <lightning-textarea
-        label={labelComplaintReason}
-        value={reason}
-        onchange={handleReasonChange}>
-    </lightning-textarea>
+        <template if:true={showNoProductsMessage}>
+            <div class="slds-notify slds-notify_alert slds-alert_warning" role="alert">
+                <span class="slds-assistive-text">warning</span>
+                <p>{labelAllProductsComplained}</p>
+            </div>
+        </template>
 
-    <lightning-combobox
-        label={labelRefundExpectation}
-        value={expectedRefundType}
-        options={refundOptions}
-        onchange={handleRefundChange}>
-    </lightning-combobox>
-</lightning-modal-body>
+        <template if:true={showForm}>
+            <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered">
+                <thead>
+                    <tr class="slds-line-height_reset">
+                        <th scope="col" style="width: 3rem;"></th>
+                        <th scope="col"><div class="slds-truncate">{labelColProduct}</div></th>
+                        <th scope="col"><div class="slds-truncate">{labelColQuantity}</div></th>
+                        <th scope="col"><div class="slds-truncate">{labelColUnitPrice}</div></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={products} for:item="product">
+                        <tr key={product.Id}>
+                            <td>
+                                <lightning-input
+                                    type="checkbox"
+                                    label=""
+                                    data-id={product.Id}
+                                    onchange={handleProductSelect}>
+                                </lightning-input>
+                            </td>
+                            <td>{product.name}</td>
+                            <td>{product.quantity}</td>
+                            <td>{product.unitPrice} $</td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
 
-<lightning-modal-footer>
-    <template if:true={waitingForExternal}>
-        <lightning-spinner alternative-text={labelWaitingSpinner} size="small"></lightning-spinner>
-        <span class="slds-m-left_small">{labelWaitingMessage}</span>
-    </template>
+            <lightning-textarea
+                label={labelComplaintReason}
+                value={reason}
+                onchange={handleReasonChange}>
+            </lightning-textarea>
 
-    <template if:true={errorMessage}>
-        <p class="slds-text-color_error slds-m-bottom_small">{errorMessage}</p>
-    </template>
+            <lightning-combobox
+                label={labelRefundExpectation}
+                value={expectedRefundType}
+                options={refundOptions}
+                onchange={handleRefundChange}>
+            </lightning-combobox>
+        </template>
+    </lightning-modal-body>
 
-    <lightning-button label={labelCancel} onclick={handleCancel}></lightning-button>
+    <lightning-modal-footer>
+        <template if:true={waitingForExternal}>
+            <lightning-spinner alternative-text={labelWaitingSpinner} size="small"></lightning-spinner>
+            <span class="slds-m-left_small">{labelWaitingMessage}</span>
+        </template>
 
-    <lightning-button
-        label={labelSubmit}
-        variant="brand"
-        onclick={handleSubmit}
-        disabled={isSubmitDisabled}>
-    </lightning-button>
-</lightning-modal-footer>
+        <template if:true={errorMessage}>
+            <p class="slds-text-color_error slds-m-bottom_small">{errorMessage}</p>
+        </template>
+
+        <lightning-button label={labelCancel} onclick={handleCancel}></lightning-button>
+
+        <template if:true={showForm}>
+            <lightning-button
+                label={labelSubmit}
+                variant="brand"
+                onclick={handleSubmit}
+                disabled={isSubmitDisabled}>
+            </lightning-button>
+        </template>
+    </lightning-modal-footer>
 </template>

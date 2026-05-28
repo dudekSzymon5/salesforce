@@ -6,10 +6,40 @@ public with sharing class OrderComplaintService {
     }
 
     public static List<OrderItem> getOrderProducts(Id orderId) {
+        Set<Id> excludedIds = new Set<Id>();
+
+        for (Case_Order_Product__c cop : [
+            SELECT Order_Product__c
+            FROM Case_Order_Product__c
+            WHERE Order__c = :orderId
+            AND Order_Product__c != null
+        ]) {
+            excludedIds.add(cop.Order_Product__c);
+        }
+
+        Order ord = [SELECT Pending_Complaint_JSON__c FROM Order WHERE Id = :orderId];
+        if (String.isNotBlank(ord.Pending_Complaint_JSON__c)) {
+            try {
+                OrderComplaintPayload.PendingComplaint pending =
+                    (OrderComplaintPayload.PendingComplaint) JSON.deserialize(
+                        ord.Pending_Complaint_JSON__c, OrderComplaintPayload.PendingComplaint.class
+                    );
+                if (pending.localItemIds != null) {
+                    excludedIds.addAll(pending.localItemIds);
+                }
+                if (pending.externalItemIds != null) {
+                    excludedIds.addAll(pending.externalItemIds);
+                }
+            } catch (Exception e) {
+                ErrorLogger.log('OrderComplaintService.getOrderProducts', e, orderId);
+            }
+        }
+
         return [
-                SELECT Id, Product2Id, Product2.Name, Product2.Is_External__c, Quantity, UnitPrice
-                FROM OrderItem
-                WHERE OrderId = :orderId
+            SELECT Id, Product2Id, Product2.Name, Product2.Is_External__c, Quantity, UnitPrice
+            FROM OrderItem
+            WHERE OrderId = :orderId
+            AND Id NOT IN :excludedIds
         ];
     }
 
@@ -21,9 +51,6 @@ public with sharing class OrderComplaintService {
         ];
         if (order.Status != 'Activated') {
             throw new AuraHandledException('Complaint can only be submitted for an Activated Order.');
-        }
-        if (order.ComplaintCaseId__c != null || String.isNotBlank(order.External_Complaint_Correlation_Id__c)) {
-            throw new AuraHandledException('A complaint already exists for this Order.');
         }
 
         List<OrderItem> getItems = [
@@ -54,6 +81,10 @@ public with sharing class OrderComplaintService {
         ComplaintResult result = new ComplaintResult();
         String correlationId = null;
         String lineItemsJson = null;
+
+        if (hasExternal && String.isNotBlank(order.External_Complaint_Correlation_Id__c)) {
+            throw new AuraHandledException('An external complaint is already pending for this order. Please wait for it to be processed.');
+        }
 
         if (hasExternal) {
             List<OrderComplaintPayload.LineItem> lineItems = new List<OrderComplaintPayload.LineItem>();
@@ -116,14 +147,18 @@ public with sharing class OrderComplaintService {
             }
             insert caseOrderProducts;
 
-            update new Order(
+            Order orderToUpdate = new Order(
                     Id = orderId,
                     ComplaintCaseId__c = aCase.Id,
-                    External_Complaint_Correlation_Id__c = null,
                     Tracking_Case__c = null,
-                    Pending_Complaint_JSON__c = null,
                     Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.PENDING
             );
+            // Preserve pending external complaint data if one is still in flight
+            if (String.isBlank(order.External_Complaint_Correlation_Id__c)) {
+                orderToUpdate.External_Complaint_Correlation_Id__c = null;
+                orderToUpdate.Pending_Complaint_JSON__c = null;
+            }
+            update orderToUpdate;
 
             Approval.ProcessSubmitRequest approvalRequest = new Approval.ProcessSubmitRequest();
             approvalRequest.setObjectId(aCase.Id);
@@ -140,6 +175,10 @@ public with sharing class OrderComplaintService {
             pendingData.localItemIds = new List<Id>();
             for (OrderItem orderItem : localItems) {
                 pendingData.localItemIds.add(orderItem.Id);
+            }
+            pendingData.externalItemIds = new List<Id>();
+            for (OrderItem orderItem : externalItems) {
+                pendingData.externalItemIds.add(orderItem.Id);
             }
 
             update new Order(

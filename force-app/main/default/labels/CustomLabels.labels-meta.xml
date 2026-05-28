@@ -619,5 +619,19 @@
         <shortDescription>Message shown while waiting for external system confirmation</shortDescription>
         <value>Waiting for external system confirmation...</value>
     </labels>
+    <labels>
+        <fullName>Complaint_OrderNotActivated</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Message shown when Order is not in Activated status</shortDescription>
+        <value>Complaints can only be submitted for Activated orders.</value>
+    </labels>
+    <labels>
+        <fullName>Complaint_AllProductsComplained</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Message shown when all order products already have active complaints</shortDescription>
+        <value>All products on this order already have active complaints.</value>
+    </labels>
 
 </CustomLabels>

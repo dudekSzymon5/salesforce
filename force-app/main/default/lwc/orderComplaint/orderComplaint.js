@@ -3,7 +3,8 @@ import { CloseActionScreenEvent } from 'lightning/actions';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { NavigationMixin } from 'lightning/navigation';
 import { subscribe, unsubscribe } from 'lightning/empApi';
-import { notifyRecordUpdateAvailable } from 'lightning/uiRecordApi';
+import { getRecord, getFieldValue, notifyRecordUpdateAvailable } from 'lightning/uiRecordApi';
+import ORDER_STATUS from '@salesforce/schema/Order.Status';
 import getOrderProducts from '@salesforce/apex/OrderComplaintController.getOrderProducts';
 import submitComplaint from '@salesforce/apex/OrderComplaintController.submitComplaint';
 import labelSuccess from '@salesforce/label/c.Common_Success';
@@ -24,11 +25,19 @@ import labelExternalRegistered from '@salesforce/label/c.Complaint_ExternalRegis
 import labelSubmittedSuccess from '@salesforce/label/c.Complaint_SubmittedSuccess';
 import labelErrorRetry from '@salesforce/label/c.Complaint_ErrorRetry';
 import labelStatusFailed from '@salesforce/label/c.Complaint_StatusFailed';
+import labelOrderNotActivated from '@salesforce/label/c.Complaint_OrderNotActivated';
+import labelAllProductsComplained from '@salesforce/label/c.Complaint_AllProductsComplained';
 
 const WHERE_TO_RESPONSE = '/event/External_Complaint_Response__e';
 
 export default class OrderComplaint extends NavigationMixin(LightningElement) {
-    @api recordId
+    _recordId;
+    @api
+    get recordId() { return this._recordId; }
+    set recordId(value) {
+        this._recordId = value;
+        if (value) this._loadProducts();
+    }
 
     @track products = []
     @track selectedProductIds = []
@@ -37,6 +46,8 @@ export default class OrderComplaint extends NavigationMixin(LightningElement) {
     @track errorMessage = ''
     @track isLoading = false
     @track waitingForExternal = false
+    @track orderStatus = null
+    @track productsLoaded = false
 
     labelNewComplaintTitle = labelNewComplaintTitle;
     labelComplaintReason = labelComplaintReason;
@@ -48,6 +59,8 @@ export default class OrderComplaint extends NavigationMixin(LightningElement) {
     labelColProduct = labelColProduct;
     labelColQuantity = labelColQuantity;
     labelColUnitPrice = labelColUnitPrice;
+    labelOrderNotActivated = labelOrderNotActivated;
+    labelAllProductsComplained = labelAllProductsComplained;
 
     subscription = null
     externalResponseTimeout = null
@@ -60,19 +73,47 @@ export default class OrderComplaint extends NavigationMixin(LightningElement) {
         { label: labelRefundFull, value: 'Full' }
     ];
 
-    @wire(getOrderProducts, { orderId: '$recordId' })
-    wiredProducts({ data, error }) {
+    @wire(getRecord, { recordId: '$recordId', fields: [ORDER_STATUS] })
+    wiredOrder({ data, error }) {
         if (data) {
-            this.products = data.map(item => ({
-                Id: item.Id,
-                name: item.Product2.Name,
-                quantity: item.Quantity,
-                unitPrice: item.UnitPrice,
-                isExternal: item.Product2.Is_External__c
-            }))
+            this.orderStatus = getFieldValue(data, ORDER_STATUS);
         } else if (error) {
-            this.errorMessage = labelErrorLoadProducts;
+            this.orderStatus = null;
         }
+    }
+
+    _loadProducts() {
+        getOrderProducts({ orderId: this._recordId })
+            .then(data => {
+                this.productsLoaded = true;
+                this.products = data.map(item => ({
+                    Id: item.Id,
+                    name: item.Product2.Name,
+                    quantity: item.Quantity,
+                    unitPrice: item.UnitPrice,
+                    isExternal: item.Product2.Is_External__c
+                }));
+            })
+            .catch(() => {
+                this.productsLoaded = true;
+                this.errorMessage = labelErrorLoadProducts;
+            });
+    }
+
+    get isOrderActivated() {
+        return this.orderStatus === 'Activated';
+    }
+
+    get showOrderNotActivatedMessage() {
+        return this.orderStatus != null && !this.isOrderActivated;
+    }
+
+    get showNoProductsMessage() {
+        return this.isOrderActivated && this.productsLoaded && this.products.length === 0;
+    }
+
+    get showForm() {
+        return this.isOrderActivated && this.productsLoaded && this.products.length > 0;
     }
 
     handleProductSelect(event) {
