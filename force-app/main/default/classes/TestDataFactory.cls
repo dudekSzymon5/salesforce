@@ -183,6 +183,7 @@ public class TestDataFactory {
                 Status = 'Draft',
                 EffectiveDate = Date.today()
         );
+        private Boolean shouldActivate = false;
 
         public OrderBuilder forAccount(Id accountId) {
             order.AccountId = accountId; return this;
@@ -194,7 +195,7 @@ public class TestDataFactory {
             order.Pricebook2Id = pricebookId; return this;
         }
         public OrderBuilder activated() {
-            order.Status = 'Activated'; return this;
+            shouldActivate = true; return this;
         }
 
         public Order build() {
@@ -207,6 +208,10 @@ public class TestDataFactory {
         public Order create() {
             build();
             insert order;
+            if (shouldActivate) {
+                order.Status = 'Activated';
+                update order;
+            }
             return order;
         }
     }
