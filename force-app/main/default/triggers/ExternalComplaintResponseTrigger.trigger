@@ -197,6 +197,9 @@ trigger ExternalComplaintResponseTrigger on External_Complaint_Response__e (afte
                     ? response.Final_Refund_Type__c
                     : (response.Status__c == approvedFull ? Utils.ORDER_COMPLAINT.REFUND_TYPE.FULL : Utils.ORDER_COMPLAINT.REFUND_TYPE.PARTIAL);
             orderUpdate.Refund_Amount__c = totalRefund;
+            orderUpdate.Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.APPROVED;
+        } else if (!isMixed && !isApproved) {
+            orderUpdate.Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.REJECTED;
         }
         ordersToUpdate.add(orderUpdate);
     }
