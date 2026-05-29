@@ -1,0 +1,89 @@
+Track Name,Race Country,Race Name,Driver,Team,Tire Compound,Laps,Wear Percent
+Albert Park,Australia,Australian GP,Max Verstappen,Red Bull Racing,Soft,18,72.5
+Albert Park,Australia,Australian GP,Lando Norris,McLaren,Medium,24,65.3
+Albert Park,Australia,Australian GP,Lewis Hamilton,Ferrari,Hard,33,49.8
+Albert Park,Australia,Australian GP,Charles Leclerc,Ferrari,Soft,17,80.1
+Shanghai International Circuit,China,Chinese GP,George Russell,Mercedes,Medium,26,61.4
+Shanghai International Circuit,China,Chinese GP,Kimi Antonelli,Mercedes,Soft,15,78.9
+Shanghai International Circuit,China,Chinese GP,Oscar Piastri,McLaren,Hard,35,52.3
+Shanghai International Circuit,China,Chinese GP,Fernando Alonso,Aston Martin,Medium,23,67.7
+Suzuka Circuit,Japan,Japanese GP,Max Verstappen,Red Bull Racing,Hard,38,44.6
+Suzuka Circuit,Japan,Japanese GP,Charles Leclerc,Ferrari,Medium,27,63.2
+Suzuka Circuit,Japan,Japanese GP,Alexander Albon,Williams,,21,55.0
+Suzuka Circuit,Japan,Japanese GP,Carlos Sainz Jr.,Williams,Soft,16,84.5
+Miami International Autodrome,USA,Miami GP,Lando Norris,McLaren,Soft,19,76.3
+Miami International Autodrome,USA,Miami GP,Oscar Piastri,McLaren,Medium,25,62.8
+Miami International Autodrome,USA,Miami GP,Lewis Hamilton,Ferrari,Hard,32,51.4
+Miami International Autodrome,USA,Miami GP,Pierre Gasly,Alpine,Soft,18,79.6
+Circuit Gilles Villeneuve,Canada,Canadian GP,Max Verstappen,Red Bull Racing,Medium,28,58.9
+Circuit Gilles Villeneuve,Canada,Canadian GP,George Russell,Mercedes,Soft,17,82.1
+Circuit Gilles Villeneuve,Canada,Canadian GP,Nico Hulkenberg,Audi,Hard,34,47.3
+Circuit Gilles Villeneuve,Canada,Canadian GP,Valtteri Bottas,Cadillac,Medium,26,64.5
+Circuit de Monaco,Monaco,Monaco GP,Charles Leclerc,Ferrari,Hard,45,38.2
+Circuit de Monaco,Monaco,Monaco GP,Max Verstappen,Red Bull Racing,Medium,42,41.7
+Circuit de Monaco,Monaco,Monaco GP,Fernando Alonso,Aston Martin,Hard,44,39.8
+Circuit de Monaco,Monaco,Monaco GP,Lando Norris,McLaren,Medium,40,43.1
+Circuit de Barcelona-Catalunya,Spain,Barcelona GP,Lewis Hamilton,Ferrari,Hard,36,50.6
+Circuit de Barcelona-Catalunya,Spain,Barcelona GP,Kimi Antonelli,Mercedes,Medium,27,63.9
+Circuit de Barcelona-Catalunya,Spain,Barcelona GP,Franco Colapinto,Alpine,Soft,14,112.3
+Circuit de Barcelona-Catalunya,Spain,Barcelona GP,Gabriel Bortoleto,Audi,Hard,34,53.2
+Red Bull Ring,Austria,Austrian GP,Max Verstappen,Red Bull Racing,Soft,16,81.4
+Red Bull Ring,Austria,Austrian GP,Oscar Piastri,McLaren,Medium,22,68.7
+Red Bull Ring,Austria,Austrian GP,Esteban Ocon,Haas,Hard,30,55.9
+Red Bull Ring,Austria,Austrian GP,Liam Lawson,Racing Bulls,Soft,15,85.2
+Silverstone,United Kingdom,British GP,Lewis Hamilton,Ferrari,Hard,38,46.3
+Silverstone,United Kingdom,British GP,Lando Norris,McLaren,Soft,19,77.8
+Silverstone,United Kingdom,British GP,George Russell,Mercedes,Medium,29,60.4
+Silverstone,United Kingdom,British GP,Lance Stroll,Aston Martin,Hard,36,49.1
+Spa-Francorchamps,Belgium,Belgian GP,Max Verstappen,Red Bull Racing,Soft,13,88.6
+Spa-Francorchamps,Belgium,Belgian GP,Charles Leclerc,Ferrari,Hard,37,45.7
+Spa-Francorchamps,Belgium,Belgian GP,Oscar Piastri,McLaren,Medium,24,66.3
+Spa-Francorchamps,Belgium,Belgian GP,Oliver Bearman,Haas,Soft,12,91.4
+Hungaroring,Hungary,Hungarian GP,Lewis Hamilton,Ferrari,Medium,28,62.1
+Hungaroring,Hungary,Hungarian GP,Kimi Antonelli,Mercedes,Hard,35,51.8
+Hungaroring,Hungary,Hungarian GP,Fernando Alonso,Aston Martin,Soft,18,79.3
+Hungaroring,Hungary,Hungarian GP,Arvid Lindblad,Racing Bulls,Medium,26,65.7
+Circuit Zandvoort,Netherlands,Dutch GP,Max Verstappen,Red Bull Racing,Soft,17,83.2
+Circuit Zandvoort,Netherlands,Dutch GP,Lando Norris,McLaren,Hard,33,52.6
+Circuit Zandvoort,Netherlands,Dutch GP,Valtteri Bottas,Cadillac,Medium,0,44.8
+Circuit Zandvoort,Netherlands,Dutch GP,Isack Hadjar,Red Bull Racing,Soft,16,86.1
+Autodromo Nazionale Monza,Italy,Italian GP,George Russell,Mercedes,Soft,14,85.9
+Autodromo Nazionale Monza,Italy,Italian GP,Charles Leclerc,Ferrari,Hard,29,48.3
+Autodromo Nazionale Monza,Italy,Italian GP,Lewis Hamilton,Ferrari,Medium,22,69.4
+Autodromo Nazionale Monza,Italy,Italian GP,Carlos Sainz Jr.,Williams,Soft,13,88.7
+Circuito de Madring,Spain,Spanish GP,Max Verstappen,Red Bull Racing,Hard,36,50.2
+Circuito de Madring,Spain,Spanish GP,Oscar Piastri,McLaren,Medium,27,64.8
+Circuito de Madring,Spain,Spanish GP,Pierre Gasly,Alpine,Soft,17,81.5
+Circuito de Madring,Spain,Spanish GP,Gabriel Bortoleto,Audi,Hard,35,52.9
+Baku City Circuit,Azerbaijan,Azerbaijan GP,Lando Norris,McLaren,Medium,24,67.3
+Baku City Circuit,Azerbaijan,Azerbaijan GP,Charles Leclerc,Ferrari,Soft,16,82.6
+Baku City Circuit,Azerbaijan,Azerbaijan GP,Sergio Perez,Cadillac,Hard,31,54.1
+Baku City Circuit,Azerbaijan,Azerbaijan GP,Franco Colapinto,Alpine,Medium,22,70.8
+Marina Bay Street Circuit,Singapore,Singapore GP,Lewis Hamilton,Ferrari,Hard,40,42.7
+Marina Bay Street Circuit,Singapore,Singapore GP,Max Verstappen,Red Bull Racing,Medium,35,55.3
+Marina Bay Street Circuit,Singapore,Singapore GP,George Russell,Mercedes,Soft,20,76.4
+Marina Bay Street Circuit,Singapore,Singapore GP,Esteban Ocon,Haas,Hard,38,44.9
+Circuit of the Americas,USA,United States GP,Lando Norris,McLaren,Soft,18,78.2
+Circuit of the Americas,USA,United States GP,Oscar Piastri,McLaren,Hard,34,51.7
+Circuit of the Americas,USA,United States GP,Lance Stroll,Aston Martin,Intermediate,25,60.3
+Circuit of the Americas,USA,United States GP,Kimi Antonelli,Mercedes,Medium,26,63.5
+Autodromo Hermanos Rodriguez,Mexico,Mexico City GP,Max Verstappen,Red Bull Racing,Medium,29,59.6
+Autodromo Hermanos Rodriguez,Mexico,Mexico City GP,Lewis Hamilton,Ferrari,Hard,37,47.8
+Autodromo Hermanos Rodriguez,Mexico,Mexico City GP,Carlos Sainz Jr.,Williams,Soft,17,80.9
+Autodromo Hermanos Rodriguez,Mexico,Mexico City GP,Nico Hulkenberg,Audi,Medium,27,65.1
+Autodromo Jose Carlos Pace Interlagos,Brazil,Brazilian GP,Charles Leclerc,Ferrari,Soft,16,83.4
+Autodromo Jose Carlos Pace Interlagos,Brazil,Brazilian GP,Lando Norris,McLaren,Hard,35,50.8
+Autodromo Jose Carlos Pace Interlagos,Brazil,Brazilian GP,Fernando Alonso,Aston Martin,Medium,25,66.2
+Autodromo Jose Carlos Pace Interlagos,Brazil,Brazilian GP,Arvid Lindblad,Racing Bulls,Soft,15,87.3
+Las Vegas Street Circuit,USA,Las Vegas GP,,Red Bull Racing,Hard,30,53.6
+Las Vegas Street Circuit,USA,Las Vegas GP,Max Verstappen,Red Bull Racing,Soft,14,86.7
+Las Vegas Street Circuit,USA,Las Vegas GP,George Russell,Mercedes,Medium,24,68.4
+Las Vegas Street Circuit,USA,Las Vegas GP,Oliver Bearman,Haas,Hard,29,56.2
+Lusail International Circuit,Qatar,Qatar GP,Lando Norris,McLaren,Soft,19,77.6
+Lusail International Circuit,Qatar,Qatar GP,Oscar Piastri,McLaren,Medium,28,61.9
+Lusail International Circuit,Qatar,Qatar GP,Lewis Hamilton,Ferrari,Hard,36,48.5
+Lusail International Circuit,Qatar,Qatar GP,Isack Hadjar,Red Bull Racing,Soft,18,80.3
+Yas Marina Circuit,UAE,Abu Dhabi GP,Max Verstappen,Red Bull Racing,Medium,27,62.7
+Yas Marina Circuit,UAE,Abu Dhabi GP,Charles Leclerc,Ferrari,Hard,35,50.1
+Yas Marina Circuit,UAE,Abu Dhabi GP,Lando Norris,McLaren,Soft,17,79.4
+Yas Marina Circuit,UAE,Abu Dhabi GP,Kimi Antonelli,Mercedes,Medium,26,64.3

@@ -478,6 +478,232 @@
         <value>Submit</value>
     </labels>
 
+    <!-- RaceTireImport -->
+    <labels>
+        <fullName>RaceTireImport_Title</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Card title for Race Tire Data CSV import component</shortDescription>
+        <value>Race Tire Data — CSV Import</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_SelectFile</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>File input label</shortDescription>
+        <value>Select CSV File</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ButtonImport</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Import button label</shortDescription>
+        <value>Import Valid Records</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ButtonGoToRecords</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Button to navigate to Race Tire Data list view</shortDescription>
+        <value>Go to Race Tire Data</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ButtonReset</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Reset/start over button label</shortDescription>
+        <value>Import Another File</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ResultsHeading</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Import results section heading</shortDescription>
+        <value>Import Results</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_Valid</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Label for valid row count</shortDescription>
+        <value>valid</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_Invalid</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Label for invalid row count</shortDescription>
+        <value>invalid</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ColTrackName</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Track Name column header</shortDescription>
+        <value>Track Name</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ColRaceCountry</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Race Country column header</shortDescription>
+        <value>Race Country</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ColRaceName</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Race Name column header</shortDescription>
+        <value>Race Name</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ColTeam</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Team column header</shortDescription>
+        <value>Team</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ColDriver</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Driver column header</shortDescription>
+        <value>Driver</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ColCompound</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Tire Compound column header</shortDescription>
+        <value>Compound</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ColLaps</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Laps column header</shortDescription>
+        <value>Laps</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ColWear</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Wear Percent column header</shortDescription>
+        <value>Wear %</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ColStatus</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Status column header in preview table</shortDescription>
+        <value>Status</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ColResult</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Result column header in results table</shortDescription>
+        <value>Result</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_StatusOk</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Valid row status indicator</shortDescription>
+        <value>OK</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_SavedPrefix</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Prefix for successfully saved record result message</shortDescription>
+        <value>Saved</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ErrImportFailed</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Generic import failure message</shortDescription>
+        <value>Import failed</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ErrTrackNameRequired</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Validation error when Track Name is missing</shortDescription>
+        <value>Track Name is required</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ErrRaceNameRequired</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Validation error when Race Name is missing</shortDescription>
+        <value>Race Name is required</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ErrDriverRequired</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Validation error when Driver is missing</shortDescription>
+        <value>Driver is required</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ErrCompoundRequired</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Validation error when Tire Compound is missing</shortDescription>
+        <value>Tire Compound is required</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ErrCompoundInvalid</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Validation error when Tire Compound value is not allowed</shortDescription>
+        <value>Compound must be Soft, Medium or Hard</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ErrLapsRequired</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Validation error when Laps is missing</shortDescription>
+        <value>Laps is required</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ErrLapsInvalid</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Validation error when Laps value is not a positive number</shortDescription>
+        <value>Laps must be a positive number</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ErrWearRequired</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Validation error when Wear Percent is missing</shortDescription>
+        <value>Wear Percent is required</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ErrWearRange</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Validation error when Wear Percent is out of 0-100 range</shortDescription>
+        <value>Wear Percent must be between 0 and 100</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ErrWearInvalid</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Validation error when Wear Percent is not a number</shortDescription>
+        <value>Wear Percent must be a valid number</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ErrLapsNotNumber</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Validation error when Laps is not a number</shortDescription>
+        <value>Laps must be a valid number</value>
+    </labels>
+
     <!-- Complaint -->
     <labels>
         <fullName>Complaint_RefundTypePartial</fullName>

@@ -1,0 +1,32 @@
+.THIS .row-success td {
+    background-color: #d4edda !important;
+}
+.THIS .row-error td {
+    background-color: #f8d7da !important;
+}
+.THIS .valid-label {
+    color: #28a745;
+    font-weight: bold;
+}
+.THIS .error-label {
+    color: #dc3545;
+    font-weight: bold;
+}
+.THIS .count-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+}
+.THIS .count-separator {
+    color: #c9c9c9;
+    font-weight: 300;
+}
+.THIS .table-wrap {
+    overflow-x: auto;
+}
+.THIS .status-cell {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}

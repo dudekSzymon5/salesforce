@@ -328,6 +328,49 @@ public class TestDataFactory {
         });
     }
 
+    public class RaceTireRowBuilder {
+        private Map<String, Object> row = new Map<String, Object>{
+            'trackName'    => 'Silverstone',
+            'raceCountry'  => 'United Kingdom',
+            'raceName'     => 'British GP',
+            'driver'       => 'Lewis Hamilton',
+            'team'         => 'Ferrari',
+            'tireCompound' => 'Hard',
+            'laps'         => '38',
+            'wearPercent'  => '46.3'
+        };
+
+        public RaceTireRowBuilder withTrackName(String trackName) {
+            row.put('trackName', trackName); return this;
+        }
+        public RaceTireRowBuilder withRaceName(String raceName) {
+            row.put('raceName', raceName); return this;
+        }
+        public RaceTireRowBuilder withDriver(String driver) {
+            row.put('driver', driver); return this;
+        }
+        public RaceTireRowBuilder withTeam(String team) {
+            row.put('team', team); return this;
+        }
+        public RaceTireRowBuilder withCompound(String compound) {
+            row.put('tireCompound', compound); return this;
+        }
+        public RaceTireRowBuilder withLaps(String laps) {
+            row.put('laps', laps); return this;
+        }
+        public RaceTireRowBuilder withWear(String wearPercent) {
+            row.put('wearPercent', wearPercent); return this;
+        }
+
+        public Map<String, Object> build() {
+            return row;
+        }
+    }
+
+    public static RaceTireRowBuilder raceTireRow() {
+        return new RaceTireRowBuilder();
+    }
+
     public static String buildProductPayload(Product2 product) {
         String extId = String.isNotBlank(product.External_Product_Id__c) ? product.External_Product_Id__c : product.Id;
         return JSON.serialize(new Map<String, Object>{
