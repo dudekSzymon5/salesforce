@@ -2,13 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="705241f2-16ab-4a4d-a856-ff87bf59e88e" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/force-app/main/default/classes/OrderComplaintController.cls" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/classes/OrderComplaintController.cls" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/force-app/main/default/classes/OrderComplaintControllerTest.cls" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/classes/OrderComplaintControllerTest.cls" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/force-app/main/default/classes/OrderComplaintPayload.cls" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/classes/OrderComplaintPayload.cls" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/force-app/main/default/classes/OrderComplaintService.cls" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/classes/OrderComplaintService.cls" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/force-app/main/default/lwc/approveComplaint/approveComplaint.js" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/lwc/approveComplaint/approveComplaint.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/force-app/main/default/lwc/orderComplaint/orderComplaint.js" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/lwc/orderComplaint/orderComplaint.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/force-app/main/default/triggers/ExternalComplaintResponseTrigger.trigger" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/triggers/ExternalComplaintResponseTrigger.trigger" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/force-app/main/default/classes/CaseTriggerHandler.cls-meta.xml" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/classes/CaseTriggerHandler.cls-meta.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/force-app/main/default/triggers/CaseOrderProductTrigger.trigger-meta.xml" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/triggers/CaseOrderProductTrigger.trigger-meta.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/force-app/main/default/triggers/CaseTrigger.trigger-meta.xml" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/triggers/CaseTrigger.trigger-meta.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -96,7 +93,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "feat/defer-case-creation-until-external-response",
+    "git-widget-placeholder": "feat/per-product-complaint-management",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/szymon.dudek_britene/Documents/szkolenie/szkolenie-salesforce",
     "project.structure.last.edited": "Modules",
