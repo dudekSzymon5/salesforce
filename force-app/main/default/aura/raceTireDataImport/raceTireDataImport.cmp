@@ -1,0 +1,165 @@
+<aura:component
+    controller="RaceTireDataImportController"
+    implements="force:appHostable,flexipage:availableForAllPageTypes"
+    access="global"
+>
+    <aura:attribute name="parsedRows" type="List" default="[]"/>
+    <aura:attribute name="importResults" type="List" default="[]"/>
+    <aura:attribute name="isParsed" type="Boolean" default="false"/>
+    <aura:attribute name="showResults" type="Boolean" default="false"/>
+    <aura:attribute name="isLoading" type="Boolean" default="false"/>
+    <aura:attribute name="validCount" type="Integer" default="0"/>
+    <aura:attribute name="errorCount" type="Integer" default="0"/>
+
+    <lightning:card title="{!$Label.c.RaceTireImport_Title}" iconName="utility:upload">
+        <div class="slds-p-around_medium">
+
+            <!-- Upload -->
+            <aura:if isTrue="{!!v.showResults}">
+                <lightning:input
+                    type="file"
+                    label="{!$Label.c.RaceTireImport_SelectFile}"
+                    accept=".csv"
+                    onchange="{!c.handleFileChange}"
+                />
+            </aura:if>
+
+            <!-- Preview -->
+            <aura:if isTrue="{!v.isParsed}">
+                <div class="slds-m-top_large">
+
+                    <div class="slds-grid slds-gutters slds-m-bottom_small">
+                        <div class="slds-col">
+                            <div class="count-row">
+                                <lightning:icon iconName="utility:success" size="x-small" variant="success"/>
+                                <span class="valid-label">{!v.validCount}&nbsp;{!$Label.c.RaceTireImport_Valid}</span>
+                                <span class="count-separator">/</span>
+                                <lightning:icon iconName="utility:error" size="x-small" variant="error"/>
+                                <span class="error-label">{!v.errorCount}&nbsp;{!$Label.c.RaceTireImport_Invalid}</span>
+                            </div>
+                        </div>
+                        <div class="slds-col slds-text-align_right">
+                            <lightning:button
+                                variant="brand"
+                                label="{!$Label.c.RaceTireImport_ButtonImport}"
+                                onclick="{!c.handleImport}"
+                                disabled="{!or(v.isLoading, v.validCount == 0)}"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                            <thead>
+                                <tr class="slds-line-height_reset">
+                                    <th>#</th>
+                                    <th>{!$Label.c.RaceTireImport_ColTrackName}</th>
+                                    <th>{!$Label.c.RaceTireImport_ColRaceCountry}</th>
+                                    <th>{!$Label.c.RaceTireImport_ColRaceName}</th>
+                                    <th>{!$Label.c.RaceTireImport_ColDriver}</th>
+                                    <th>{!$Label.c.RaceTireImport_ColTeam}</th>
+                                    <th>{!$Label.c.RaceTireImport_ColCompound}</th>
+                                    <th>{!$Label.c.RaceTireImport_ColLaps}</th>
+                                    <th>{!$Label.c.RaceTireImport_ColWear}</th>
+                                    <th>{!$Label.c.RaceTireImport_ColStatus}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <aura:iteration items="{!v.parsedRows}" var="row">
+                                    <tr class="{!row.rowClass}">
+                                        <td>{!row.rowNumber}</td>
+                                        <td>{!row.trackName}</td>
+                                        <td>{!row.raceCountry}</td>
+                                        <td>{!row.raceName}</td>
+                                        <td>{!row.driver}</td>
+                                        <td>{!row.team}</td>
+                                        <td>{!row.tireCompound}</td>
+                                        <td>{!row.laps}</td>
+                                        <td>{!row.wearPercent}</td>
+                                        <td>
+                                            <aura:if isTrue="{!row.isValid}">
+                                                <lightning:icon iconName="utility:success" size="x-small" variant="success"/>
+                                                <aura:set attribute="else">
+                                                    <div class="status-cell">
+                                                        <lightning:icon iconName="utility:error" size="x-small" variant="error"/>
+                                                        <span class="error-label">{!row.error}</span>
+                                                    </div>
+                                                </aura:set>
+                                            </aura:if>
+                                        </td>
+                                    </tr>
+                                </aura:iteration>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </aura:if>
+
+            <!-- Results -->
+            <aura:if isTrue="{!v.showResults}">
+                <div class="slds-m-top_large">
+
+                    <div class="slds-grid slds-gutters slds-m-bottom_small">
+                        <div class="slds-col">
+                            <h3 class="slds-text-heading_small">{!$Label.c.RaceTireImport_ResultsHeading}</h3>
+                        </div>
+                        <div class="slds-col slds-text-align_right">
+                            <lightning:button
+                                label="{!$Label.c.RaceTireImport_ButtonReset}"
+                                onclick="{!c.handleReset}"
+                            />
+                            <lightning:button
+                                variant="brand"
+                                label="{!$Label.c.RaceTireImport_ButtonGoToRecords}"
+                                onclick="{!c.handleGoToRecords}"
+                            />
+                        </div>
+                    </div>
+
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>{!$Label.c.RaceTireImport_ColDriver}</th>
+                                <th>{!$Label.c.RaceTireImport_ColTeam}</th>
+                                <th>{!$Label.c.RaceTireImport_ColTrackName}</th>
+                                <th>{!$Label.c.RaceTireImport_ColRaceName}</th>
+                                <th>{!$Label.c.RaceTireImport_ColResult}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <aura:iteration items="{!v.importResults}" var="result">
+                                <tr class="{!result.rowClass}">
+                                    <td>{!result.rowNumber}</td>
+                                    <td>{!result.driver}</td>
+                                    <td>{!result.team}</td>
+                                    <td>{!result.trackName}</td>
+                                    <td>{!result.raceName}</td>
+                                    <td>
+                                        <aura:if isTrue="{!result.isSuccess}">
+                                            <lightning:icon iconName="utility:success" size="x-small" variant="success"/>
+                                            <aura:set attribute="else">
+                                                <lightning:icon iconName="utility:error" size="x-small" variant="error"/>
+                                            </aura:set>
+                                        </aura:if>
+                                        <span class="slds-m-left_xx-small">{!result.message}</span>
+                                    </td>
+                                </tr>
+                            </aura:iteration>
+                        </tbody>
+                    </table>
+
+                </div>
+            </aura:if>
+
+            <aura:if isTrue="{!v.isLoading}">
+                <div class="slds-m-top_medium slds-text-align_center">
+                    <lightning:spinner size="medium" alternativeText="Loading..."/>
+                </div>
+            </aura:if>
+
+        </div>
+    </lightning:card>
+
+</aura:component>
