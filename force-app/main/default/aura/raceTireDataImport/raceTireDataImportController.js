@@ -21,6 +21,16 @@
         navigationEvent.fire();
     },
 
+    handleDownloadSuccess: function(component, event, helper) {
+        var results = component.get('v.importResults').filter(function(r) { return r.isSuccess; });
+        helper.downloadCSV(results, 'import_success.csv');
+    },
+
+    handleDownloadErrors: function(component, event, helper) {
+        var results = component.get('v.importResults').filter(function(r) { return !r.isSuccess; });
+        helper.downloadCSV(results, 'import_errors.csv');
+    },
+
     handleReset: function(component, resetEvent, helper) {
         component.set('v.parsedRows', []);
         component.set('v.importResults', []);

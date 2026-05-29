@@ -114,6 +114,30 @@
         return null;
     },
 
+    downloadCSV: function(rows, filename) {
+        var q = String.fromCharCode(34);
+        var wrap = function(s) { return q + (s || '').split(q).join(q + q) + q; };
+        var headers = ['#', 'Driver', 'Team', 'Track Name', 'Race Name', 'Message'];
+        var lines = [headers.join(',')];
+        rows.forEach(function(row) {
+            lines.push([
+                row.rowNumber,
+                wrap(row.driver),
+                wrap(row.team),
+                wrap(row.trackName),
+                wrap(row.raceName),
+                wrap(row.message)
+            ].join(','));
+        });
+        var csv = lines.join('\n');
+        var link = document.createElement('a');
+        link.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv));
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    },
+
     importRecords: function(component) {
         component.set('v.isLoading', true);
 

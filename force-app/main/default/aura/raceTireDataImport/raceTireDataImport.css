@@ -30,3 +30,34 @@
     align-items: center;
     gap: 6px;
 }
+.THIS .upload-zone-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+}
+.THIS .upload-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 3rem 4rem;
+    border: 2px dashed #dddbda;
+    border-radius: 0.5rem;
+    background-color: #f9f9f9;
+    max-width: 480px;
+    width: 100%;
+}
+.THIS .upload-zone:hover {
+    border-color: #0176d3;
+    background-color: #f0f8ff;
+}
+.THIS .upload-input {
+    width: 100%;
+}
+.THIS .replace-file-row {
+    max-width: 400px;
+}
+.THIS .slds-button__icon {
+    vertical-align: middle;
+}
