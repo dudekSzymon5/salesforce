@@ -703,6 +703,20 @@
         <shortDescription>Validation error when Laps is not a number</shortDescription>
         <value>Laps must be a valid number</value>
     </labels>
+    <labels>
+        <fullName>RaceTireImport_ButtonDownloadSuccess</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Button to download successful import results as CSV</shortDescription>
+        <value>Download Success Log</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_ButtonDownloadErrors</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Button to download failed import results as CSV</shortDescription>
+        <value>Download Error Log</value>
+    </labels>
 
     <!-- Complaint -->
     <labels>

@@ -14,14 +14,36 @@
     <lightning:card title="{!$Label.c.RaceTireImport_Title}" iconName="utility:upload">
         <div class="slds-p-around_medium">
 
-            <!-- Upload -->
+            <!-- Upload — big centered zone (no file yet) -->
             <aura:if isTrue="{!!v.showResults}">
-                <lightning:input
-                    type="file"
-                    label="{!$Label.c.RaceTireImport_SelectFile}"
-                    accept=".csv"
-                    onchange="{!c.handleFileChange}"
-                />
+                <aura:if isTrue="{!!v.isParsed}">
+                    <div class="upload-zone-wrapper">
+                        <div class="upload-zone">
+                            <lightning:icon iconName="utility:upload" size="large" class="slds-m-bottom_small"/>
+                            <p class="slds-text-heading_small slds-m-bottom_x-small">{!$Label.c.RaceTireImport_SelectFile}</p>
+                            <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_medium">CSV</p>
+                            <lightning:input
+                                type="file"
+                                label=""
+                                accept=".csv"
+                                onchange="{!c.handleFileChange}"
+                                class="upload-input"
+                            />
+                        </div>
+                    </div>
+                </aura:if>
+
+                <!-- Upload — compact replace (file already parsed) -->
+                <aura:if isTrue="{!v.isParsed}">
+                    <div class="replace-file-row slds-m-bottom_small">
+                        <lightning:input
+                            type="file"
+                            label="{!$Label.c.RaceTireImport_SelectFile}"
+                            accept=".csv"
+                            onchange="{!c.handleFileChange}"
+                        />
+                    </div>
+                </aura:if>
             </aura:if>
 
             <!-- Preview -->
@@ -82,7 +104,7 @@
                                                 <aura:set attribute="else">
                                                     <div class="status-cell">
                                                         <lightning:icon iconName="utility:error" size="x-small" variant="error"/>
-                                                        <span class="error-label">{!row.error}</span>
+                                                        <span>{!row.error}</span>
                                                     </div>
                                                 </aura:set>
                                             </aura:if>
@@ -105,6 +127,16 @@
                             <h3 class="slds-text-heading_small">{!$Label.c.RaceTireImport_ResultsHeading}</h3>
                         </div>
                         <div class="slds-col slds-text-align_right">
+                            <lightning:button
+                                iconName="utility:download"
+                                label="{!$Label.c.RaceTireImport_ButtonDownloadSuccess}"
+                                onclick="{!c.handleDownloadSuccess}"
+                            />
+                            <lightning:button
+                                iconName="utility:download"
+                                label="{!$Label.c.RaceTireImport_ButtonDownloadErrors}"
+                                onclick="{!c.handleDownloadErrors}"
+                            />
                             <lightning:button
                                 label="{!$Label.c.RaceTireImport_ButtonReset}"
                                 onclick="{!c.handleReset}"
@@ -137,13 +169,15 @@
                                     <td>{!result.trackName}</td>
                                     <td>{!result.raceName}</td>
                                     <td>
-                                        <aura:if isTrue="{!result.isSuccess}">
-                                            <lightning:icon iconName="utility:success" size="x-small" variant="success"/>
-                                            <aura:set attribute="else">
-                                                <lightning:icon iconName="utility:error" size="x-small" variant="error"/>
-                                            </aura:set>
-                                        </aura:if>
-                                        <span class="slds-m-left_xx-small">{!result.message}</span>
+                                        <div class="status-cell">
+                                            <aura:if isTrue="{!result.isSuccess}">
+                                                <lightning:icon iconName="utility:success" size="x-small" variant="success"/>
+                                                <aura:set attribute="else">
+                                                    <lightning:icon iconName="utility:error" size="x-small" variant="error"/>
+                                                </aura:set>
+                                            </aura:if>
+                                            <span>{!result.message}</span>
+                                        </div>
                                     </td>
                                 </tr>
                             </aura:iteration>
