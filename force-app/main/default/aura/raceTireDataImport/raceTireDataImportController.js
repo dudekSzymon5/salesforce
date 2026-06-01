@@ -22,13 +22,17 @@
     },
 
     handleDownloadSuccess: function(component, event, helper) {
-        var results = component.get('v.importResults').filter(function(r) { return r.isSuccess; });
-        helper.downloadCSV(results, 'import_success.csv');
+        var results = component.get('v.importResults').filter(function(result) {
+            return result.isSuccess;
+        });
+        helper.downloadCSV(results, $A.get('$Label.c.RaceTireImport_FileSuccess'));
     },
 
     handleDownloadErrors: function(component, event, helper) {
-        var results = component.get('v.importResults').filter(function(r) { return !r.isSuccess; });
-        helper.downloadCSV(results, 'import_errors.csv');
+        var results = component.get('v.importResults').filter(function(result) {
+            return !result.isSuccess;
+        });
+        helper.downloadCSV(results, $A.get('$Label.c.RaceTireImport_FileErrors'));
     },
 
     handleReset: function(component, resetEvent, helper) {

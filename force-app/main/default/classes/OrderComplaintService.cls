@@ -40,6 +40,7 @@ public with sharing class OrderComplaintService {
             FROM OrderItem
             WHERE OrderId = :orderId
             AND Id NOT IN :excludedIds
+            AND UnitPrice >= 0
         ];
     }
 

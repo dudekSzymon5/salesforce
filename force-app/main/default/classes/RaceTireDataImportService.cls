@@ -23,7 +23,6 @@ public with sharing class RaceTireDataImportService {
         @AuraEnabled public Id recordId;
     }
 
-    private static final Set<String> VALID_COMPOUNDS = new Set<String>{ 'Soft', 'Medium', 'Hard' };
 
     public static List<ImportResult> importRecords(String rowsJson) {
         List<RowData> rows = (List<RowData>) JSON.deserialize(rowsJson, List<RowData>.class);
@@ -37,7 +36,7 @@ public with sharing class RaceTireDataImportService {
             String error = validate(row);
 
             if (error != null) {
-                result.status = 'error';
+                result.status = Utils.RACE_TIRE_IMPORT.STATUS.ERROR;
                 result.errorMessage = error;
             } else {
                 resultIndices.add(results.size());
@@ -88,10 +87,10 @@ public with sharing class RaceTireDataImportService {
         for (Integer i = 0; i < saveResults.size(); i++) {
             ImportResult result = results[resultIndices[i]];
             if (saveResults[i].isSuccess()) {
-                result.status = 'success';
+                result.status = Utils.RACE_TIRE_IMPORT.STATUS.SUCCESS;
                 result.recordId = saveResults[i].getId();
             } else {
-                result.status = 'error';
+                result.status = Utils.RACE_TIRE_IMPORT.STATUS.ERROR;
                 result.errorMessage = saveResults[i].getErrors()[0].getMessage();
             }
         }
@@ -110,7 +109,7 @@ public with sharing class RaceTireDataImportService {
         if (String.isBlank(row.tireCompound)) {
             return System.Label.RaceTireImport_ErrCompoundRequired;
         }
-        if (!VALID_COMPOUNDS.contains(row.tireCompound)) {
+        if (!Utils.RACE_TIRE_IMPORT.TIRE_COMPOUND.VALID.contains(row.tireCompound)) {
             return System.Label.RaceTireImport_ErrCompoundInvalid;
         }
         if (String.isBlank(row.laps)) {

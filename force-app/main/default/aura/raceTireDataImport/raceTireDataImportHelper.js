@@ -1,6 +1,12 @@
 ({
     VALID_COMPOUNDS: ['Soft', 'Medium', 'Hard'],
 
+    STATUS: {
+        APEX_SUCCESS: 'SUCCESS',
+        RECORD_SUCCESS: 'success',
+        RECORD_ERROR: 'error'
+    },
+
     LABELS: {
         ERR_TRACK_NAME_REQUIRED: '$Label.c.RaceTireImport_ErrTrackNameRequired',
         ERR_RACE_NAME_REQUIRED: '$Label.c.RaceTireImport_ErrRaceNameRequired',
@@ -27,7 +33,9 @@
             return;
         }
 
-        var headers = lines[0].split(',').map(function(header) { return header.trim(); });
+        var headers = lines[0].split(',').map(function(header) { 
+            return header.trim(); 
+        });
         var rows = [];
         var validCount = 0;
         var errorCount = 0;
@@ -36,18 +44,20 @@
             if (!lines[rowIndex].trim()) {
                 continue;
             }
-            var values = lines[rowIndex].split(',').map(function(value) { return value.trim(); });
+            var values = lines[rowIndex].split(',').map(function(value) { 
+                return value.trim(); 
+            });
 
             var row = {
                 rowNumber: rowIndex,
-                trackName: this.getVal(headers, values, 'Track Name'),
-                raceCountry: this.getVal(headers, values, 'Race Country'),
-                raceName: this.getVal(headers, values, 'Race Name'),
-                driver: this.getVal(headers, values, 'Driver'),
-                team: this.getVal(headers, values, 'Team'),
-                tireCompound: this.getVal(headers, values, 'Tire Compound'),
-                laps: this.getVal(headers, values, 'Laps'),
-                wearPercent: this.getVal(headers, values, 'Wear Percent')
+                trackName: this.getColumnValue(headers, values, 'Track Name'),
+                raceCountry: this.getColumnValue(headers, values, 'Race Country'),
+                raceName: this.getColumnValue(headers, values, 'Race Name'),
+                driver: this.getColumnValue(headers, values, 'Driver'),
+                team: this.getColumnValue(headers, values, 'Team'),
+                tireCompound: this.getColumnValue(headers, values, 'Tire Compound'),
+                laps: this.getColumnValue(headers, values, 'Laps'),
+                wearPercent: this.getColumnValue(headers, values, 'Wear Percent')
             };
 
             var error = this.validate(row);
@@ -70,7 +80,7 @@
         component.set('v.isParsed', true);
     },
 
-    getVal: function(headers, values, key) {
+    getColumnValue: function(headers, values, key) {
         var headerIndex = headers.indexOf(key);
         return headerIndex >= 0 ? (values[headerIndex] || '') : '';
     },
@@ -115,18 +125,18 @@
     },
 
     downloadCSV: function(rows, filename) {
-        var q = String.fromCharCode(34);
-        var wrap = function(s) { return q + (s || '').split(q).join(q + q) + q; };
+        var quote = String.fromCharCode(34);
+        var wrapInQuotes = function(text) { return quote + (text || '').split(quote).join(quote + quote) + quote; };
         var headers = ['#', 'Driver', 'Team', 'Track Name', 'Race Name', 'Message'];
         var lines = [headers.join(',')];
         rows.forEach(function(row) {
             lines.push([
                 row.rowNumber,
-                wrap(row.driver),
-                wrap(row.team),
-                wrap(row.trackName),
-                wrap(row.raceName),
-                wrap(row.message)
+                wrapInQuotes(row.driver),
+                wrapInQuotes(row.team),
+                wrapInQuotes(row.trackName),
+                wrapInQuotes(row.raceName),
+                wrapInQuotes(row.message)
             ].join(','));
         });
         var csv = lines.join('\n');
@@ -151,11 +161,11 @@
         var helper = this;
         action.setCallback(this, function(response) {
             component.set('v.isLoading', false);
-            if (response.getState() === 'SUCCESS') {
+            if (response.getState() === helper.STATUS.APEX_SUCCESS) {
                 var savedLabel = helper.label('SAVED_PREFIX');
 
                 var importedResults = response.getReturnValue().map(function(importResult) {
-                    var isSuccess = importResult.status === 'success';
+                    var isSuccess = importResult.status === helper.STATUS.RECORD_SUCCESS;
                     return {
                         rowNumber: importResult.rowNumber,
                         driver: importResult.driver,

@@ -3,7 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="705241f2-16ab-4a4d-a856-ff87bf59e88e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/force-app/main/default/labels/CustomLabels.labels-meta.xml" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/labels/CustomLabels.labels-meta.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/force-app/main/default/aura/raceTireDataImport/raceTireDataImport.cmp" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/aura/raceTireDataImport/raceTireDataImport.cmp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/force-app/main/default/aura/raceTireDataImport/raceTireDataImportController.js" beforeDir="false" afterPath="$PROJECT_DIR$/force-app/main/default/aura/raceTireDataImport/raceTireDataImportController.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -91,7 +92,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "feat/per-product-complaint-management",
+    "git-widget-placeholder": "feat/csv-import-aura",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/szymon.dudek_britene/Documents/szkolenie/szkolenie-salesforce",
     "project.structure.last.edited": "Modules",

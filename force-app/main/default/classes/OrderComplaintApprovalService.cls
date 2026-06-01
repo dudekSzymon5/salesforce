@@ -119,6 +119,9 @@ public with sharing class OrderComplaintApprovalService {
                     update new Order(Id = aCase.Order__c, Refund_Type__c = refundType, Refund_Amount__c = approvedAmount + externalAmount, Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.APPROVED);
                 }
             }
+            if (aCase.Order__c != null && approvedAmount > 0) {
+                createRefundOrderItem(aCase.Order__c, approvedAmount);
+            }
             ErrorLogger.logInfo('OrderComplaintApprovalService.approveComplaint', 'Refund type ' + refundType + ' applied to Case: ' + caseId + (aCase.Order__c != null ? ' and Order: ' + aCase.Order__c : ''));
         } else {
             aCase.Refund_Status__c = Utils.ORDER_COMPLAINT.REFUND_STATUS.REJECTED;
@@ -147,6 +150,26 @@ public with sharing class OrderComplaintApprovalService {
                     aCase.Id
             ));
             ErrorLogger.logInfo('OrderComplaintApprovalService.approveComplaint', 'Enqueued approval sync to Org B | externalCaseId: ' + aCase.External_Case_Id__c + ' | status: ' + responseStatus);
+        }
+    }
+
+    private static void createRefundOrderItem(Id orderId, Decimal refundAmount) {
+        Order order = [SELECT Id, Pricebook2Id, Status FROM Order WHERE Id = :orderId];
+        List<Product2> refundProducts = [SELECT Id FROM Product2 WHERE Name = 'Refund' AND IsActive = true LIMIT 1];
+        if (refundProducts.isEmpty()) return;
+        List<PricebookEntry> entries = [
+            SELECT Id FROM PricebookEntry
+            WHERE Product2Id = :refundProducts[0].Id AND Pricebook2Id = :order.Pricebook2Id AND IsActive = true
+            LIMIT 1
+        ];
+        if (entries.isEmpty()) return;
+        Boolean wasActivated = order.Status == 'Activated';
+        if (wasActivated) {
+            update new Order(Id = orderId, Status = 'Draft');
+        }
+        insert new OrderItem(OrderId = orderId, PricebookEntryId = entries[0].Id, Quantity = 1, UnitPrice = -refundAmount);
+        if (wasActivated) {
+            update new Order(Id = orderId, Status = 'Activated');
         }
     }
 
