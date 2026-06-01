@@ -6,4 +6,5 @@ public class Utils {
     public static final OrderComplaintUtils ORDER_COMPLAINT = new OrderComplaintUtils();
     public static final ExternalComplaintUtils EXTERNAL_COMPLAINT = new ExternalComplaintUtils();
     public static final TestUtils TEST = new TestUtils();
+    public static final RaceTireDataImportUtils RACE_TIRE_IMPORT = new RaceTireDataImportUtils();
 }

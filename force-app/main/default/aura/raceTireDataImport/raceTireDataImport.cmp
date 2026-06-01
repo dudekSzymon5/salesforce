@@ -14,7 +14,6 @@
     <lightning:card title="{!$Label.c.RaceTireImport_Title}" iconName="utility:upload">
         <div class="slds-p-around_medium">
 
-            <!-- Upload — big centered zone (no file yet) -->
             <aura:if isTrue="{!!v.showResults}">
                 <aura:if isTrue="{!!v.isParsed}">
                     <div class="upload-zone-wrapper">
@@ -33,7 +32,6 @@
                     </div>
                 </aura:if>
 
-                <!-- Upload — compact replace (file already parsed) -->
                 <aura:if isTrue="{!v.isParsed}">
                     <div class="replace-file-row slds-m-bottom_small">
                         <lightning:input
@@ -46,7 +44,6 @@
                 </aura:if>
             </aura:if>
 
-            <!-- Preview -->
             <aura:if isTrue="{!v.isParsed}">
                 <div class="slds-m-top_large">
 
@@ -118,7 +115,6 @@
                 </div>
             </aura:if>
 
-            <!-- Results -->
             <aura:if isTrue="{!v.showResults}">
                 <div class="slds-m-top_large">
 
@@ -189,7 +185,7 @@
 
             <aura:if isTrue="{!v.isLoading}">
                 <div class="slds-m-top_medium slds-text-align_center">
-                    <lightning:spinner size="medium" alternativeText="Loading..."/>
+                    <lightning:spinner size="medium" alternativeText="{!$Label.c.RaceTireImport_LoadingText}"/>
                 </div>
             </aura:if>
 

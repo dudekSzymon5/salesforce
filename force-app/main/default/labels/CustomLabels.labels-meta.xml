@@ -717,6 +717,27 @@
         <shortDescription>Button to download failed import results as CSV</shortDescription>
         <value>Download Error Log</value>
     </labels>
+    <labels>
+        <fullName>RaceTireImport_LoadingText</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Spinner alternative text shown during import</shortDescription>
+        <value>Loading...</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_FileSuccess</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Filename for the success log CSV download</shortDescription>
+        <value>import_success.csv</value>
+    </labels>
+    <labels>
+        <fullName>RaceTireImport_FileErrors</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Filename for the error log CSV download</shortDescription>
+        <value>import_errors.csv</value>
+    </labels>
 
     <!-- Complaint -->
     <labels>
