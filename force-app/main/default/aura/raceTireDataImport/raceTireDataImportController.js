@@ -35,12 +35,26 @@
         helper.downloadCSV(results, $A.get('$Label.c.RaceTireImport_FileErrors'));
     },
 
+    handleFilterAll: function(component, event, helper) {
+        helper.applyFilter(component, 'all');
+    },
+
+    handleFilterValid: function(component, event, helper) {
+        helper.applyFilter(component, 'valid');
+    },
+
+    handleFilterInvalid: function(component, event, helper) {
+        helper.applyFilter(component, 'invalid');
+    },
+
     handleReset: function(component, resetEvent, helper) {
         component.set('v.parsedRows', []);
+        component.set('v.filteredRows', []);
         component.set('v.importResults', []);
         component.set('v.isParsed', false);
         component.set('v.showResults', false);
         component.set('v.validCount', 0);
         component.set('v.errorCount', 0);
+        component.set('v.filter', 'all');
     }
 })
