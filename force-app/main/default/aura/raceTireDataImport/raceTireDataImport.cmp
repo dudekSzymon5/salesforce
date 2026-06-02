@@ -12,6 +12,12 @@
     <aura:attribute name="errorCount" type="Integer" default="0"/>
     <aura:attribute name="filter" type="String" default="all"/>
     <aura:attribute name="filteredRows" type="List" default="[]"/>
+    <aura:attribute name="pagedRows" type="List" default="[]"/>
+    <aura:attribute name="currentPage" type="Integer" default="1"/>
+    <aura:attribute name="pageSize" type="Integer" default="30"/>
+    <aura:attribute name="totalPages" type="Integer" default="0"/>
+    <aura:attribute name="isFirstPage" type="Boolean" default="true"/>
+    <aura:attribute name="isLastPage" type="Boolean" default="true"/>
 
     <lightning:card title="{!$Label.c.RaceTireImport_Title}" iconName="utility:upload">
         <div class="slds-p-around_medium">
@@ -49,42 +55,41 @@
             <aura:if isTrue="{!v.isParsed}">
                 <div class="slds-m-top_large">
 
-                    <div class="slds-grid slds-gutters slds-m-bottom_small">
-                        <div class="slds-col">
-                            <div class="count-row">
-                                <lightning:icon iconName="utility:success" size="x-small" variant="success"/>
-                                <span class="valid-label">{!v.validCount}&nbsp;{!$Label.c.RaceTireImport_Valid}</span>
-                                <span class="count-separator">/</span>
-                                <lightning:icon iconName="utility:error" size="x-small" variant="error"/>
-                                <span class="error-label">{!v.errorCount}&nbsp;{!$Label.c.RaceTireImport_Invalid}</span>
+                    <div class="slds-m-bottom_small">
+                        <div class="count-row slds-m-bottom_x-small">
+                            <lightning:icon iconName="utility:success" size="x-small" variant="success"/>
+                            <span class="valid-label">{!v.validCount}&nbsp;{!$Label.c.RaceTireImport_Valid}</span>
+                            <span class="count-separator">/</span>
+                            <lightning:icon iconName="utility:error" size="x-small" variant="error"/>
+                            <span class="error-label">{!v.errorCount}&nbsp;{!$Label.c.RaceTireImport_Invalid}</span>
+                        </div>
+                        <div class="slds-grid slds-gutters slds-grid_vertical-align-center">
+                            <div class="slds-col">
+                                <lightning:button
+                                    label="All"
+                                    variant="{!v.filter == 'all' ? 'brand' : 'neutral'}"
+                                    onclick="{!c.handleFilterAll}"
+                                />
+                                <lightning:button
+                                    label="Valid"
+                                    variant="{!v.filter == 'valid' ? 'brand' : 'neutral'}"
+                                    onclick="{!c.handleFilterValid}"
+                                />
+                                <lightning:button
+                                    label="Invalid"
+                                    variant="{!v.filter == 'invalid' ? 'brand' : 'neutral'}"
+                                    onclick="{!c.handleFilterInvalid}"
+                                />
+                            </div>
+                            <div class="slds-col slds-text-align_right">
+                                <lightning:button
+                                    variant="brand"
+                                    label="{!$Label.c.RaceTireImport_ButtonImport}"
+                                    onclick="{!c.handleImport}"
+                                    disabled="{!or(v.isLoading, v.validCount == 0)}"
+                                />
                             </div>
                         </div>
-                        <div class="slds-col slds-text-align_right">
-                            <lightning:button
-                                variant="brand"
-                                label="{!$Label.c.RaceTireImport_ButtonImport}"
-                                onclick="{!c.handleImport}"
-                                disabled="{!or(v.isLoading, v.validCount == 0)}"
-                            />
-                        </div>
-                    </div>
-
-                    <div class="slds-m-bottom_small">
-                        <lightning:button
-                            label="All"
-                            variant="{!v.filter == 'all' ? 'brand' : 'neutral'}"
-                            onclick="{!c.handleFilterAll}"
-                        />
-                        <lightning:button
-                            label="Valid"
-                            variant="{!v.filter == 'valid' ? 'brand' : 'neutral'}"
-                            onclick="{!c.handleFilterValid}"
-                        />
-                        <lightning:button
-                            label="Invalid"
-                            variant="{!v.filter == 'invalid' ? 'brand' : 'neutral'}"
-                            onclick="{!c.handleFilterInvalid}"
-                        />
                     </div>
 
                     <div class="table-wrap">
@@ -104,7 +109,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <aura:iteration items="{!v.filteredRows}" var="row">
+                                <aura:iteration items="{!v.pagedRows}" var="row">
                                     <tr class="{!row.rowClass}">
                                         <td>{!row.rowNumber}</td>
                                         <td>{!row.trackName}</td>
@@ -130,6 +135,22 @@
                                 </aura:iteration>
                             </tbody>
                         </table>
+                    </div>
+
+                    <div class="slds-grid slds-grid_align-center slds-grid_vertical-align-center slds-m-top_small">
+                        <lightning:button
+                            label="Previous"
+                            onclick="{!c.handlePrevPage}"
+                            disabled="{!v.isFirstPage}"
+                        />
+                        <span class="slds-m-horizontal_small slds-text-body_regular">
+                            Page {!v.currentPage} of {!v.totalPages}
+                        </span>
+                        <lightning:button
+                            label="Next"
+                            onclick="{!c.handleNextPage}"
+                            disabled="{!v.isLastPage}"
+                        />
                     </div>
 
                 </div>
