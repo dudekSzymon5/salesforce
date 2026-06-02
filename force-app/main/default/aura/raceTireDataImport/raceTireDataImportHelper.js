@@ -13,6 +13,25 @@
         INVALID: 'invalid'
     },
 
+    PAGINATION: {
+        ROWS: {
+            source:      'v.filteredRows',
+            paged:       'v.pagedRows',
+            currentPage: 'v.currentPage',
+            totalPages:  'v.totalPages',
+            isFirst:     'v.isFirstPage',
+            isLast:      'v.isLastPage'
+        },
+        RESULTS: {
+            source:      'v.importResults',
+            paged:       'v.pagedResults',
+            currentPage: 'v.resultsCurrentPage',
+            totalPages:  'v.resultsTotalPages',
+            isFirst:     'v.resultsIsFirstPage',
+            isLast:      'v.resultsIsLastPage'
+        }
+    },
+
     LABELS: {
         ERR_TRACK_NAME_REQUIRED: '$Label.c.RaceTireImport_ErrTrackNameRequired',
         ERR_RACE_NAME_REQUIRED: '$Label.c.RaceTireImport_ErrRaceNameRequired',
@@ -97,7 +116,7 @@
         component.set('v.filter', this.FILTER.ALL);
         component.set('v.filteredRows', rows);
         component.set('v.currentPage', 1);
-        this.applyPagination(component);
+        this.applyPagination(component, this.PAGINATION.ROWS);
         component.set('v.isParsed', true);
     },
 
@@ -144,22 +163,32 @@
         return errors;
     },
 
-    applyPagination: function(component) {
-        var filtered = component.get('v.filteredRows');
+    changePage: function(component, cfg, direction) {
+        var currentPage = component.get(cfg.currentPage);
+        var totalPages = component.get(cfg.totalPages);
+        var nextPage = currentPage + direction;
+        if (nextPage >= 1 && nextPage <= totalPages) {
+            component.set(cfg.currentPage, nextPage);
+            this.applyPagination(component, cfg);
+        }
+    },
+
+    applyPagination: function(component, cfg) {
+        var items = component.get(cfg.source);
         var pageSize = component.get('v.pageSize');
-        var totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-        var currentPage = component.get('v.currentPage');
+        var totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+        var currentPage = component.get(cfg.currentPage);
 
         if (currentPage > totalPages) {
             currentPage = totalPages;
-            component.set('v.currentPage', currentPage);
+            component.set(cfg.currentPage, currentPage);
         }
 
         var start = (currentPage - 1) * pageSize;
-        component.set('v.totalPages', totalPages);
-        component.set('v.pagedRows', filtered.slice(start, start + pageSize));
-        component.set('v.isFirstPage', currentPage <= 1);
-        component.set('v.isLastPage', currentPage >= totalPages);
+        component.set(cfg.totalPages, totalPages);
+        component.set(cfg.paged, items.slice(start, start + pageSize));
+        component.set(cfg.isFirst, currentPage <= 1);
+        component.set(cfg.isLast, currentPage >= totalPages);
     },
 
     applyFilter: function(component, filter) {
@@ -175,7 +204,7 @@
         component.set('v.filter', filter);
         component.set('v.filteredRows', filtered);
         component.set('v.currentPage', 1);
-        this.applyPagination(component);
+        this.applyPagination(component, this.PAGINATION.ROWS);
     },
 
     downloadCSV: function(rows, filename) {
@@ -264,6 +293,8 @@
                 });
 
                 component.set('v.importResults', allResults);
+                component.set('v.resultsCurrentPage', 1);
+                helper.applyPagination(component, helper.PAGINATION.RESULTS);
                 component.set('v.isParsed', false);
                 component.set('v.showResults', true);
             } else {

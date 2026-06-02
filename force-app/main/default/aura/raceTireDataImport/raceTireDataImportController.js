@@ -47,21 +47,20 @@
         helper.applyFilter(component, helper.FILTER.INVALID);
     },
 
-    handlePrevPage: function(component, event, helper) {
-        var currentPage = component.get('v.currentPage');
-        if (currentPage > 1) {
-            component.set('v.currentPage', currentPage - 1);
-            helper.applyPagination(component);
-        }
+    handleResultsPreviousPage: function(component, event, helper) {
+        helper.changePage(component, helper.PAGINATION.RESULTS, -1);
+    },
+
+    handleResultsNextPage: function(component, event, helper) {
+        helper.changePage(component, helper.PAGINATION.RESULTS, 1);
+    },
+
+    handlePreviousPage: function(component, event, helper) {
+        helper.changePage(component, helper.PAGINATION.ROWS, -1);
     },
 
     handleNextPage: function(component, event, helper) {
-        var currentPage = component.get('v.currentPage');
-        var totalPages = component.get('v.totalPages');
-        if (currentPage < totalPages) {
-            component.set('v.currentPage', currentPage + 1);
-            helper.applyPagination(component);
-        }
+        helper.changePage(component, helper.PAGINATION.ROWS, 1);
     },
 
     handleReset: function(component, resetEvent, helper) {
@@ -78,5 +77,10 @@
         component.set('v.totalPages', 0);
         component.set('v.isFirstPage', true);
         component.set('v.isLastPage', true);
+        component.set('v.pagedResults', []);
+        component.set('v.resultsCurrentPage', 1);
+        component.set('v.resultsTotalPages', 0);
+        component.set('v.resultsIsFirstPage', true);
+        component.set('v.resultsIsLastPage', true);
     }
 })
