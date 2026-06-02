@@ -7,6 +7,12 @@
         RECORD_ERROR: 'error'
     },
 
+    FILTER: {
+        ALL: 'all',
+        VALID: 'valid',
+        INVALID: 'invalid'
+    },
+
     LABELS: {
         ERR_TRACK_NAME_REQUIRED: '$Label.c.RaceTireImport_ErrTrackNameRequired',
         ERR_RACE_NAME_REQUIRED: '$Label.c.RaceTireImport_ErrRaceNameRequired',
@@ -88,8 +94,10 @@
         component.set('v.parsedRows', rows);
         component.set('v.validCount', validCount);
         component.set('v.errorCount', errorCount);
-        component.set('v.filter', 'all');
+        component.set('v.filter', this.FILTER.ALL);
         component.set('v.filteredRows', rows);
+        component.set('v.currentPage', 1);
+        this.applyPagination(component);
         component.set('v.isParsed', true);
     },
 
@@ -136,18 +144,38 @@
         return errors;
     },
 
+    applyPagination: function(component) {
+        var filtered = component.get('v.filteredRows');
+        var pageSize = component.get('v.pageSize');
+        var totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+        var currentPage = component.get('v.currentPage');
+
+        if (currentPage > totalPages) {
+            currentPage = totalPages;
+            component.set('v.currentPage', currentPage);
+        }
+
+        var start = (currentPage - 1) * pageSize;
+        component.set('v.totalPages', totalPages);
+        component.set('v.pagedRows', filtered.slice(start, start + pageSize));
+        component.set('v.isFirstPage', currentPage <= 1);
+        component.set('v.isLastPage', currentPage >= totalPages);
+    },
+
     applyFilter: function(component, filter) {
         var allRows = component.get('v.parsedRows');
         var filtered;
-        if (filter === 'valid') {
+        if (filter === this.FILTER.VALID) {
             filtered = allRows.filter(function(row) { return row.isValid; });
-        } else if (filter === 'invalid') {
+        } else if (filter === this.FILTER.INVALID) {
             filtered = allRows.filter(function(row) { return !row.isValid; });
         } else {
             filtered = allRows;
         }
         component.set('v.filter', filter);
         component.set('v.filteredRows', filtered);
+        component.set('v.currentPage', 1);
+        this.applyPagination(component);
     },
 
     downloadCSV: function(rows, filename) {
