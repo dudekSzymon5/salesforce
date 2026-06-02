@@ -18,6 +18,11 @@
     <aura:attribute name="totalPages" type="Integer" default="0"/>
     <aura:attribute name="isFirstPage" type="Boolean" default="true"/>
     <aura:attribute name="isLastPage" type="Boolean" default="true"/>
+    <aura:attribute name="pagedResults" type="List" default="[]"/>
+    <aura:attribute name="resultsCurrentPage" type="Integer" default="1"/>
+    <aura:attribute name="resultsTotalPages" type="Integer" default="0"/>
+    <aura:attribute name="resultsIsFirstPage" type="Boolean" default="true"/>
+    <aura:attribute name="resultsIsLastPage" type="Boolean" default="true"/>
 
     <lightning:card title="{!$Label.c.RaceTireImport_Title}" iconName="utility:upload">
         <div class="slds-p-around_medium">
@@ -140,7 +145,7 @@
                     <div class="slds-grid slds-grid_align-center slds-grid_vertical-align-center slds-m-top_small">
                         <lightning:button
                             label="Previous"
-                            onclick="{!c.handlePrevPage}"
+                            onclick="{!c.handlePreviousPage}"
                             disabled="{!v.isFirstPage}"
                         />
                         <span class="slds-m-horizontal_small slds-text-body_regular">
@@ -198,7 +203,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <aura:iteration items="{!v.importResults}" var="result">
+                            <aura:iteration items="{!v.pagedResults}" var="result">
                                 <tr class="{!result.rowClass}">
                                     <td>{!result.rowNumber}</td>
                                     <td>{!result.driver}</td>
@@ -220,6 +225,22 @@
                             </aura:iteration>
                         </tbody>
                     </table>
+
+                    <div class="slds-grid slds-grid_align-center slds-grid_vertical-align-center slds-m-top_small">
+                        <lightning:button
+                            label="Previous"
+                            onclick="{!c.handleResultsPreviousPage}"
+                            disabled="{!v.resultsIsFirstPage}"
+                        />
+                        <span class="slds-m-horizontal_small slds-text-body_regular">
+                            Page {!v.resultsCurrentPage} of {!v.resultsTotalPages}
+                        </span>
+                        <lightning:button
+                            label="Next"
+                            onclick="{!c.handleResultsNextPage}"
+                            disabled="{!v.resultsIsLastPage}"
+                        />
+                    </div>
 
                 </div>
             </aura:if>
