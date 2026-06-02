@@ -10,6 +10,8 @@
     <aura:attribute name="isLoading" type="Boolean" default="false"/>
     <aura:attribute name="validCount" type="Integer" default="0"/>
     <aura:attribute name="errorCount" type="Integer" default="0"/>
+    <aura:attribute name="filter" type="String" default="all"/>
+    <aura:attribute name="filteredRows" type="List" default="[]"/>
 
     <lightning:card title="{!$Label.c.RaceTireImport_Title}" iconName="utility:upload">
         <div class="slds-p-around_medium">
@@ -67,6 +69,24 @@
                         </div>
                     </div>
 
+                    <div class="slds-m-bottom_small">
+                        <lightning:button
+                            label="All"
+                            variant="{!v.filter == 'all' ? 'brand' : 'neutral'}"
+                            onclick="{!c.handleFilterAll}"
+                        />
+                        <lightning:button
+                            label="Valid"
+                            variant="{!v.filter == 'valid' ? 'brand' : 'neutral'}"
+                            onclick="{!c.handleFilterValid}"
+                        />
+                        <lightning:button
+                            label="Invalid"
+                            variant="{!v.filter == 'invalid' ? 'brand' : 'neutral'}"
+                            onclick="{!c.handleFilterInvalid}"
+                        />
+                    </div>
+
                     <div class="table-wrap">
                         <table class="slds-table slds-table_cell-buffer slds-table_bordered">
                             <thead>
@@ -84,7 +104,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <aura:iteration items="{!v.parsedRows}" var="row">
+                                <aura:iteration items="{!v.filteredRows}" var="row">
                                     <tr class="{!row.rowClass}">
                                         <td>{!row.rowNumber}</td>
                                         <td>{!row.trackName}</td>

@@ -27,24 +27,35 @@
         return $A.get(this.LABELS[key]);
     },
 
+    detectSeparator: function(headerLine) {
+        if (headerLine.indexOf(';') !== -1) {
+            return ';';
+        }
+        if (headerLine.indexOf('\t') !== -1) {
+            return '\t';
+        }
+        return ',';
+    },
+
     parseCSV: function(component, csvText) {
         var lines = csvText.trim().split('\n');
         if (lines.length < 2) {
             return;
         }
 
-        var headers = lines[0].split(',').map(function(header) { 
-            return header.trim(); 
+        var separator = this.detectSeparator(lines[0]);
+        var headers = lines[0].split(separator).map(function(header) {
+            return header.trim();
         });
         var rows = [];
         var validCount = 0;
         var errorCount = 0;
 
         for (var rowIndex = 1; rowIndex < lines.length; rowIndex++) {
-            if (!lines[rowIndex].trim()) {
+            if (!lines[rowIndex].trim()) { // Jeśli linia po usunięciu white spaces jest pusta to continue;
                 continue;
             }
-            var values = lines[rowIndex].split(',').map(function(value) { 
+            var values = lines[rowIndex].split(separator).map(function(value) {
                 return value.trim(); 
             });
 
@@ -60,12 +71,12 @@
                 wearPercent: this.getColumnValue(headers, values, 'Wear Percent')
             };
 
-            var error = this.validate(row);
-            row.isValid = !error;
-            row.error = error || '';
-            row.rowClass = error ? 'row-error' : 'row-success';
+            var errors = this.validate(row);
+            row.isValid = errors.length === 0;
+            row.error = errors.join(' | ');
+            row.rowClass = errors.length > 0 ? 'row-error' : 'row-success';
 
-            if (error) {
+            if (errors.length > 0) {
                 errorCount++;
             } else {
                 validCount++;
@@ -77,6 +88,8 @@
         component.set('v.parsedRows', rows);
         component.set('v.validCount', validCount);
         component.set('v.errorCount', errorCount);
+        component.set('v.filter', 'all');
+        component.set('v.filteredRows', rows);
         component.set('v.isParsed', true);
     },
 
@@ -86,47 +99,63 @@
     },
 
     validate: function(row) {
-        if (!row.trackName) {
-            return this.label('ERR_TRACK_NAME_REQUIRED');
-        }
-        if (!row.raceName) {
-            return this.label('ERR_RACE_NAME_REQUIRED');
-        }
-        if (!row.driver) {
-            return this.label('ERR_DRIVER_REQUIRED');
-        }
+        var errors = [];
+
+        if (!row.trackName) errors.push(this.label('ERR_TRACK_NAME_REQUIRED'));
+        if (!row.raceName) errors.push(this.label('ERR_RACE_NAME_REQUIRED'));
+        if (!row.driver) errors.push(this.label('ERR_DRIVER_REQUIRED'));
+
         if (!row.tireCompound) {
-            return this.label('ERR_COMPOUND_REQUIRED');
+            errors.push(this.label('ERR_COMPOUND_REQUIRED'));
+        } else if (this.VALID_COMPOUNDS.indexOf(row.tireCompound) === -1) {
+            errors.push(this.label('ERR_COMPOUND_INVALID'));
         }
-        if (this.VALID_COMPOUNDS.indexOf(row.tireCompound) === -1) {
-            return this.label('ERR_COMPOUND_INVALID');
-        }
+
         if (!row.laps) {
-            return this.label('ERR_LAPS_REQUIRED');
+            errors.push(this.label('ERR_LAPS_REQUIRED'));
+        } else {
+            var laps = parseInt(row.laps, 10);
+            if (isNaN(laps)) {
+                errors.push(this.label('ERR_LAPS_NOT_NUMBER'));
+            } else if (laps <= 0) {
+                errors.push(this.label('ERR_LAPS_INVALID'));
+            }
         }
-        var laps = parseInt(row.laps, 10);
-        if (isNaN(laps)) {
-            return this.label('ERR_LAPS_NOT_NUMBER');
-        }
-        if (laps <= 0) {
-            return this.label('ERR_LAPS_INVALID');
-        }
+
         if (row.wearPercent === '') {
-            return this.label('ERR_WEAR_REQUIRED');
+            errors.push(this.label('ERR_WEAR_REQUIRED'));
+        } else {
+            var wear = parseFloat(row.wearPercent);
+            if (isNaN(wear)) {
+                errors.push(this.label('ERR_WEAR_INVALID'));
+            } else if (wear < 0 || wear > 100) {
+                errors.push(this.label('ERR_WEAR_RANGE'));
+            }
         }
-        var wear = parseFloat(row.wearPercent);
-        if (isNaN(wear)) {
-            return this.label('ERR_WEAR_INVALID');
+
+        return errors;
+    },
+
+    applyFilter: function(component, filter) {
+        var allRows = component.get('v.parsedRows');
+        var filtered;
+        if (filter === 'valid') {
+            filtered = allRows.filter(function(row) { return row.isValid; });
+        } else if (filter === 'invalid') {
+            filtered = allRows.filter(function(row) { return !row.isValid; });
+        } else {
+            filtered = allRows;
         }
-        if (wear < 0 || wear > 100) {
-            return this.label('ERR_WEAR_RANGE');
-        }
-        return null;
+        component.set('v.filter', filter);
+        component.set('v.filteredRows', filtered);
     },
 
     downloadCSV: function(rows, filename) {
         var quote = String.fromCharCode(34);
-        var wrapInQuotes = function(text) { return quote + (text || '').split(quote).join(quote + quote) + quote; };
+        var wrapInQuotes = function(text) { 
+            return quote + (text || '').split(quote).join(quote + quote) + quote; 
+        };
+
         var headers = ['#', 'Driver', 'Team', 'Track Name', 'Race Name', 'Message'];
         var lines = [headers.join(',')];
         rows.forEach(function(row) {
@@ -152,11 +181,19 @@
         component.set('v.isLoading', true);
 
         var allRows = component.get('v.parsedRows');
-        var validRows = allRows.filter(function(row) { return row.isValid; });
-        var invalidRows = allRows.filter(function(row) { return !row.isValid; });
+
+        var validRows = allRows.filter(function(row) {
+            return row.isValid; 
+        });
+
+        var invalidRows = allRows.filter(function(row) { 
+            return !row.isValid; 
+        });
 
         var action = component.get('c.importRecords');
-        action.setParams({ rowsJson: JSON.stringify(validRows) });
+        action.setParams ({ 
+            rowsJson: JSON.stringify(validRows) 
+        });
 
         var helper = this;
         action.setCallback(this, function(response) {
@@ -206,6 +243,6 @@
             }
         });
 
-        $A.enqueueAction(action);
+        $A.enqueueAction(action); // Wysyłanie danych do APEX
     }
 })
