@@ -15,20 +15,20 @@
 
     PAGINATION: {
         ROWS: {
-            source:      'v.filteredRows',
-            paged:       'v.pagedRows',
+            source: 'v.filteredRows',
+            paged: 'v.pagedRows',
             currentPage: 'v.currentPage',
-            totalPages:  'v.totalPages',
-            isFirst:     'v.isFirstPage',
-            isLast:      'v.isLastPage'
+            totalPages: 'v.totalPages',
+            isFirst: 'v.isFirstPage',
+            isLast: 'v.isLastPage'
         },
         RESULTS: {
-            source:      'v.importResults',
-            paged:       'v.pagedResults',
+            source: 'v.filteredResults',
+            paged: 'v.pagedResults',
             currentPage: 'v.resultsCurrentPage',
-            totalPages:  'v.resultsTotalPages',
-            isFirst:     'v.resultsIsFirstPage',
-            isLast:      'v.resultsIsLastPage'
+            totalPages: 'v.resultsTotalPages',
+            isFirst: 'v.resultsIsFirstPage',
+            isLast: 'v.resultsIsLastPage'
         }
     },
 
@@ -77,11 +77,11 @@
         var errorCount = 0;
 
         for (var rowIndex = 1; rowIndex < lines.length; rowIndex++) {
-            if (!lines[rowIndex].trim()) { // Jeśli linia po usunięciu white spaces jest pusta to continue;
+            if (!lines[rowIndex].trim()) {
                 continue;
             }
             var values = lines[rowIndex].split(separator).map(function(value) {
-                return value.trim(); 
+                return value.trim();
             });
 
             var row = {
@@ -128,16 +128,20 @@
     validate: function(row) {
         var errors = [];
 
-        if (!row.trackName) errors.push(this.label('ERR_TRACK_NAME_REQUIRED'));
-        if (!row.raceName) errors.push(this.label('ERR_RACE_NAME_REQUIRED'));
-        if (!row.driver) errors.push(this.label('ERR_DRIVER_REQUIRED'));
-
+        if (!row.trackName) {
+            errors.push(this.label('ERR_TRACK_NAME_REQUIRED'));
+        }
+        if (!row.raceName) {
+            errors.push(this.label('ERR_RACE_NAME_REQUIRED'));
+        }
+        if (!row.driver) {
+            errors.push(this.label('ERR_DRIVER_REQUIRED'));
+        }
         if (!row.tireCompound) {
             errors.push(this.label('ERR_COMPOUND_REQUIRED'));
         } else if (this.VALID_COMPOUNDS.indexOf(row.tireCompound) === -1) {
             errors.push(this.label('ERR_COMPOUND_INVALID'));
         }
-
         if (!row.laps) {
             errors.push(this.label('ERR_LAPS_REQUIRED'));
         } else {
@@ -159,7 +163,6 @@
                 errors.push(this.label('ERR_WEAR_RANGE'));
             }
         }
-
         return errors;
     },
 
@@ -195,9 +198,13 @@
         var allRows = component.get('v.parsedRows');
         var filtered;
         if (filter === this.FILTER.VALID) {
-            filtered = allRows.filter(function(row) { return row.isValid; });
+            filtered = allRows.filter(function(row) { 
+                return row.isValid; 
+            });
         } else if (filter === this.FILTER.INVALID) {
-            filtered = allRows.filter(function(row) { return !row.isValid; });
+            filtered = allRows.filter(function(row) { 
+                return !row.isValid; 
+            });
         } else {
             filtered = allRows;
         }
@@ -205,6 +212,26 @@
         component.set('v.filteredRows', filtered);
         component.set('v.currentPage', 1);
         this.applyPagination(component, this.PAGINATION.ROWS);
+    },
+
+    applyResultsFilter: function(component, filter) {
+        var allResults = component.get('v.importResults');
+        var filtered;
+        if (filter === this.FILTER.VALID) {
+            filtered = allResults.filter(function(result) { 
+                return result.isSuccess; 
+            });
+        } else if (filter === this.FILTER.INVALID) {
+            filtered = allResults.filter(function(result) { 
+                return !result.isSuccess; 
+            });
+        } else {
+            filtered = allResults;
+        }
+        component.set('v.resultsFilter', filter);
+        component.set('v.filteredResults', filtered);
+        component.set('v.resultsCurrentPage', 1);
+        this.applyPagination(component, this.PAGINATION.RESULTS);
     },
 
     downloadCSV: function(rows, filename) {
@@ -266,6 +293,8 @@
                         team: importResult.team,
                         trackName: importResult.trackName,
                         raceName: importResult.raceName,
+                        tireCompound: importResult.tireCompound,
+                        laps: importResult.laps,
                         isSuccess: isSuccess,
                         message: isSuccess
                             ? savedLabel + ' (ID: ' + importResult.recordId + ')'
@@ -281,6 +310,8 @@
                         team: row.team,
                         trackName: row.trackName,
                         raceName: row.raceName,
+                        tireCompound: row.tireCompound,
+                        laps: row.laps,
                         isSuccess: false,
                         message: row.error,
                         rowClass: 'row-error'
@@ -293,8 +324,7 @@
                 });
 
                 component.set('v.importResults', allResults);
-                component.set('v.resultsCurrentPage', 1);
-                helper.applyPagination(component, helper.PAGINATION.RESULTS);
+                helper.applyResultsFilter(component, helper.FILTER.ALL);
                 component.set('v.isParsed', false);
                 component.set('v.showResults', true);
             } else {
@@ -302,6 +332,6 @@
             }
         });
 
-        $A.enqueueAction(action); // Wysyłanie danych do APEX
+        $A.enqueueAction(action);
     }
 })
