@@ -47,6 +47,18 @@
         helper.applyFilter(component, helper.FILTER.INVALID);
     },
 
+    handleResultsFilterAll: function(component, event, helper) {
+        helper.applyResultsFilter(component, helper.FILTER.ALL);
+    },
+
+    handleResultsFilterValid: function(component, event, helper) {
+        helper.applyResultsFilter(component, helper.FILTER.VALID);
+    },
+
+    handleResultsFilterInvalid: function(component, event, helper) {
+        helper.applyResultsFilter(component, helper.FILTER.INVALID);
+    },
+
     handleResultsPreviousPage: function(component, event, helper) {
         helper.changePage(component, helper.PAGINATION.RESULTS, -1);
     },
@@ -77,7 +89,9 @@
         component.set('v.totalPages', 0);
         component.set('v.isFirstPage', true);
         component.set('v.isLastPage', true);
+        component.set('v.filteredResults', []);
         component.set('v.pagedResults', []);
+        component.set('v.resultsFilter', helper.FILTER.ALL);
         component.set('v.resultsCurrentPage', 1);
         component.set('v.resultsTotalPages', 0);
         component.set('v.resultsIsFirstPage', true);

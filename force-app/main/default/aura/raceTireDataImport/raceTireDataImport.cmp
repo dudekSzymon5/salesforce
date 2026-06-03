@@ -18,7 +18,9 @@
     <aura:attribute name="totalPages" type="Integer" default="0"/>
     <aura:attribute name="isFirstPage" type="Boolean" default="true"/>
     <aura:attribute name="isLastPage" type="Boolean" default="true"/>
+    <aura:attribute name="filteredResults" type="List" default="[]"/>
     <aura:attribute name="pagedResults" type="List" default="[]"/>
+    <aura:attribute name="resultsFilter" type="String" default="all"/>
     <aura:attribute name="resultsCurrentPage" type="Integer" default="1"/>
     <aura:attribute name="resultsTotalPages" type="Integer" default="0"/>
     <aura:attribute name="resultsIsFirstPage" type="Boolean" default="true"/>
@@ -164,9 +166,25 @@
             <aura:if isTrue="{!v.showResults}">
                 <div class="slds-m-top_large">
 
-                    <div class="slds-grid slds-gutters slds-m-bottom_small">
+                    <h3 class="slds-text-heading_small slds-m-bottom_small">{!$Label.c.RaceTireImport_ResultsHeading}</h3>
+
+                    <div class="slds-grid slds-gutters slds-grid_vertical-align-center slds-m-bottom_small">
                         <div class="slds-col">
-                            <h3 class="slds-text-heading_small">{!$Label.c.RaceTireImport_ResultsHeading}</h3>
+                            <lightning:button
+                                label="All"
+                                variant="{!v.resultsFilter == 'all' ? 'brand' : 'neutral'}"
+                                onclick="{!c.handleResultsFilterAll}"
+                            />
+                            <lightning:button
+                                label="Valid"
+                                variant="{!v.resultsFilter == 'valid' ? 'brand' : 'neutral'}"
+                                onclick="{!c.handleResultsFilterValid}"
+                            />
+                            <lightning:button
+                                label="Invalid"
+                                variant="{!v.resultsFilter == 'invalid' ? 'brand' : 'neutral'}"
+                                onclick="{!c.handleResultsFilterInvalid}"
+                            />
                         </div>
                         <div class="slds-col slds-text-align_right">
                             <lightning:button
@@ -199,6 +217,8 @@
                                 <th>{!$Label.c.RaceTireImport_ColTeam}</th>
                                 <th>{!$Label.c.RaceTireImport_ColTrackName}</th>
                                 <th>{!$Label.c.RaceTireImport_ColRaceName}</th>
+                                <th>{!$Label.c.RaceTireImport_ColCompound}</th>
+                                <th>{!$Label.c.RaceTireImport_ColLaps}</th>
                                 <th>{!$Label.c.RaceTireImport_ColResult}</th>
                             </tr>
                         </thead>
@@ -210,6 +230,8 @@
                                     <td>{!result.team}</td>
                                     <td>{!result.trackName}</td>
                                     <td>{!result.raceName}</td>
+                                    <td>{!result.tireCompound}</td>
+                                    <td>{!result.laps}</td>
                                     <td>
                                         <div class="status-cell">
                                             <aura:if isTrue="{!result.isSuccess}">
