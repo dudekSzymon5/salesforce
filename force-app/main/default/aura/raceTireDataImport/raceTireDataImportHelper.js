@@ -52,6 +52,37 @@
         return $A.get(this.LABELS[key]);
     },
 
+    parseLine: function(line, separator) {
+        var values = [];
+        var current = '';
+        var inQuotes = false;
+
+        for (var i = 0; i < line.length; i++) {
+            var ch = line[i];
+            if (inQuotes) {
+                if (ch === '"' && i + 1 < line.length && line[i + 1] === '"') {
+                    current += '"';
+                    i++;
+                } else if (ch === '"') {
+                    inQuotes = false;
+                } else {
+                    current += ch;
+                }
+            } else {
+                if (ch === '"') {
+                    inQuotes = true;
+                } else if (ch === separator) {
+                    values.push(current.trim());
+                    current = '';
+                } else {
+                    current += ch;
+                }
+            }
+        }
+        values.push(current.trim());
+        return values;
+    },
+
     detectSeparator: function(headerLine) {
         if (headerLine.indexOf(';') !== -1) {
             return ';';
@@ -69,9 +100,7 @@
         }
 
         var separator = this.detectSeparator(lines[0]);
-        var headers = lines[0].split(separator).map(function(header) {
-            return header.trim();
-        });
+        var headers = this.parseLine(lines[0], separator);
         var rows = [];
         var validCount = 0;
         var errorCount = 0;
@@ -80,9 +109,7 @@
             if (!lines[rowIndex].trim()) {
                 continue;
             }
-            var values = lines[rowIndex].split(separator).map(function(value) {
-                return value.trim();
-            });
+            var values = this.parseLine(lines[rowIndex], separator);
 
             var row = {
                 rowNumber: rowIndex,

@@ -20,6 +20,8 @@ public with sharing class RaceTireDataImportService {
         @AuraEnabled public String raceName;
         @AuraEnabled public String driver;
         @AuraEnabled public String team;
+        @AuraEnabled public String tireCompound;
+        @AuraEnabled public String laps;
         @AuraEnabled public Id recordId;
     }
 
@@ -57,6 +59,8 @@ public with sharing class RaceTireDataImportService {
         result.raceName = row.raceName;
         result.driver = row.driver;
         result.team = row.team;
+        result.tireCompound = row.tireCompound;
+        result.laps = row.laps;
         return result;
     }
 
